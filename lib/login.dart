@@ -1,3 +1,4 @@
+import 'package:cpmad_final/signup.dart';
 import 'package:flutter/material.dart';
 
 import 'home.dart';
@@ -58,9 +59,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _register() {
-    // TODO: Chuyển sang màn hình đăng ký
-    print('Chuyển sang trang Đăng ký');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
