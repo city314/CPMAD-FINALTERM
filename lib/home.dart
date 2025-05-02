@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'productList.dart'; // Nhớ import đúng đường dẫn
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,18 +22,38 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Danh sách Laptop mới',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Danh sách Laptop mới',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProductList()),
+                  );
+                },
+                child: const Text(
+                  'Xem tất cả',
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
             crossAxisCount: 2,
-            childAspectRatio: 3/4,
+            childAspectRatio: 3 / 4,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             physics: const NeverScrollableScrollPhysics(),
@@ -65,7 +86,7 @@ class HomeScreen extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Image.asset(
-                'assets/laptop.png', // đổi hình nếu cần
+                'assets/laptop.png', // Đảm bảo có ảnh trong assets
                 fit: BoxFit.cover,
               ),
             ),
