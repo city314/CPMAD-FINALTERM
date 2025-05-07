@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const CircleAvatar(
                     radius: 40,
-                    backgroundImage: AssetImage('assets/images/logo_with_title-removebg.png'),
+                    backgroundImage: AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
                     backgroundColor: Colors.transparent,
                   ),
                   const SizedBox(height: 16),
