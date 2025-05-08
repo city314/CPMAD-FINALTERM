@@ -1,31 +1,23 @@
-import 'package:cpmad_final/signup.dart';
-import 'package:cpmad_final/forgot_password.dart';
 import 'package:flutter/material.dart';
+import 'package:cpmad_final/login.dart';
 
-import 'home.dart';
-
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  bool _isLoading = false; // trạng thái loading
-
-  void _login() async {
+  void _submitForgotPassword() async {
     String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ email và mật khẩu')),
+        const SnackBar(content: Text('Vui lòng nhập email')),
       );
       return;
     }
@@ -34,40 +26,16 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
-
-    // Giả lập chờ login 2 giây
     await Future.delayed(const Duration(seconds: 2));
 
     setState(() {
       _isLoading = false;
     });
 
-    // TODO: Xử lý login thực tế
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đăng nhập thành công!')),
-    );
-
-    print('Đăng nhập với: $email / $password');
-  }
-
-  void _forgotPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+      SnackBar(content: Text('Yêu cầu đặt lại mật khẩu đã được gửi đến $email')),
     );
   }
-
-  void _register() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignUpScreen()),
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +72,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircleAvatar(
-                    radius: MediaQuery.of(context).size.width * 0.15 > 80
-                        ? 80
-                        : MediaQuery.of(context).size.width * 0.15,
-                    backgroundImage: AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
+                    radius: size.width * 0.15 > 80 ? 80 : size.width * 0.15,
+                    backgroundImage: const AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
+                    backgroundColor: Colors.transparent,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Chào mừng!',
+                  const Text(
+                    'Quên mật khẩu',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -128,37 +95,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Mật khẩu',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _forgotPassword,
-                      child: const Text(
-                        'Quên mật khẩu?',
-                        style: TextStyle(color: Colors.blueAccent),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      onPressed: _isLoading ? null : _submitForgotPassword,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: _isLoading ? null : _login,
                       child: _isLoading
                           ? const SizedBox(
                         height: 24,
@@ -169,25 +115,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       )
                           : const Text(
-                        'Đăng nhập',
+                        'Gửi yêu cầu',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Chưa có tài khoản?'),
-                      TextButton(
-                        onPressed: _register,
-                        child: const Text(
-                          'Đăng ký',
-                          style: TextStyle(color: Colors.blueAccent),
-                        ),
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
+                    },
+                    child: const Text(
+                      'Quay lại đăng nhập',
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  )
                 ],
               ),
             ),
