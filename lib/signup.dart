@@ -99,10 +99,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage('assets/images/logo_with_title-removebg-preview.png'),
-                    backgroundColor: Colors.transparent,
+                  CircleAvatar(
+                    radius: MediaQuery.of(context).size.width * 0.15 > 80
+                        ? 80
+                        : MediaQuery.of(context).size.width * 0.15,
+                    backgroundImage: const AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
                   ),
                   const SizedBox(height: 16),
                   Text(
