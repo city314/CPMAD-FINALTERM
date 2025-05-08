@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     radius: MediaQuery.of(context).size.width * 0.15 > 80
                         ? 80
                         : MediaQuery.of(context).size.width * 0.15,
-                    backgroundImage: AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
+                    backgroundImage: AssetImage('assets/images/logo/logo_with_title-removebg-preview.png'),
                   ),
                   const SizedBox(height: 16),
                   Text(

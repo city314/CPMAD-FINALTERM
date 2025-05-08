@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login.dart'; // nhớ đúng đường dẫn nếu file login.dart nằm cùng thư mục
+import 'package:cpmad_final/login.dart';
 
 void main() {
   runApp(const MyApp());
