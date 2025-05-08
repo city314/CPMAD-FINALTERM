@@ -4,10 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const foodRoutes = require('./routes/food');
-const donHangRoutes = require('./routes/order');
-const categoryRoutes = require('./routes/category');
-const orderDetailRoutes = require('./routes/orderDetail');
+const userRoutes = require('./routes/user');
 
 const app = express();
 const PORT = 3001;
@@ -20,10 +17,7 @@ app.use(bodyParser.json());
 connectDB();
 
 // Routes
-app.use('/api/orders', donHangRoutes);
-app.use('/api/foods', foodRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/orderdetails', orderDetailRoutes);
+app.use('/api/users', userRoutes);
 
 // Khởi chạy server
 app.listen(PORT, () => {
