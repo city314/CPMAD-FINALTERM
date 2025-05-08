@@ -1,6 +1,7 @@
 import 'package:cpmad_final/signup.dart';
 import 'package:cpmad_final/forgot_password.dart';
 import 'package:flutter/material.dart';
+import 'package:cpmad_final/service/UserService.dart';
 
 import 'home.dart';
 
@@ -30,23 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
+    await UserService.loginUser(email: email, password: password, context: context);
+    setState(() => _isLoading = false);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
-
-    // Giả lập chờ login 2 giây
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    // TODO: Xử lý login thực tế
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Đăng nhập thành công!')),
     );

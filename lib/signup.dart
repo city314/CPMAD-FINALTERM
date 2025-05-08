@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cpmad_final/service/UserService.dart';
 
 import 'home.dart';
 
@@ -15,7 +16,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
 
   bool _isLoading = false;
 
@@ -44,8 +44,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _isLoading = true;
     });
 
-    // Giả lập chờ đăng ký 2 giây
-    await Future.delayed(const Duration(seconds: 2));
+    await UserService.registerUser(
+      email: email,
+      fullName: fullName,
+      address: address,
+      password: password,
+    );
 
     setState(() {
       _isLoading = false;
