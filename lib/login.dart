@@ -100,10 +100,11 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircleAvatar(
-                    radius: 40,
+                  CircleAvatar(
+                    radius: MediaQuery.of(context).size.width * 0.15 > 80
+                        ? 80
+                        : MediaQuery.of(context).size.width * 0.15,
                     backgroundImage: AssetImage('assets/logo/logo_with_title-removebg-preview.png'),
-                    backgroundColor: Colors.transparent,
                   ),
                   const SizedBox(height: 16),
                   Text(

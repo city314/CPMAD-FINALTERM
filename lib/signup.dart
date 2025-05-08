@@ -101,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 children: [
                   const CircleAvatar(
                     radius: 40,
-                    backgroundImage: AssetImage('assets/images/logo_with_title-removebg.png'),
+                    backgroundImage: AssetImage('assets/images/logo_with_title-removebg-preview.png'),
                     backgroundColor: Colors.transparent,
                   ),
                   const SizedBox(height: 16),
