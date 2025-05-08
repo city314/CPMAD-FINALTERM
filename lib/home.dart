@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 import 'productList.dart'; // Nhớ import đúng đường dẫn
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final List<String> _allLaptops = List.generate(6, (index) => 'Laptop Model ${index + 1}');
+  List<String> _filteredLaptops = [];
+  String _searchKeyword = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredLaptops = List.from(_allLaptops); // ban đầu hiện toàn bộ
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,47 +34,77 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Danh sách Laptop mới',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm laptop...',
+                prefixIcon: Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProductList()),
-                  );
-                },
-                child: const Text(
-                  'Xem tất cả',
-                  style: TextStyle(
-                    color: Colors.blueAccent,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+              onChanged: (value) {
+                setState(() {
+                  _searchKeyword = value.toLowerCase();
+                  _filteredLaptops = _allLaptops
+                      .where((laptop) => laptop.toLowerCase().contains(_searchKeyword))
+                      .toList();
+                });
+              },
+            ),
           ),
-          const SizedBox(height: 16),
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            childAspectRatio: 3 / 4,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            physics: const NeverScrollableScrollPhysics(),
-            children: List.generate(6, (index) {
-              return _buildLaptopCard(index);
-            }),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Danh sách Laptop mới',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProductList()),
+                        );
+                      },
+                      child: const Text(
+                        'Xem tất cả',
+                        style: TextStyle(
+                          color: Colors.blueAccent,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 2,
+                  childAspectRatio: 3 / 4,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(6, (index) {
+                    return _buildLaptopCard(index);
+                  }),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -86,7 +131,7 @@ class HomeScreen extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Image.asset(
-                'assets/laptop.png', // Đảm bảo có ảnh trong assets
+                'assets/images/product/laptop.jpg', // Đảm bảo có ảnh trong assets
                 fit: BoxFit.cover,
               ),
             ),
@@ -94,17 +139,40 @@ class HomeScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   'Laptop Model ${index + 1}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   '\$999',
-                  style: TextStyle(color: Colors.blueAccent),
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Thêm vào giỏ hàng
+                  },
+                  icon: const Icon(Icons.add_shopping_cart, size: 18),
+                  label: const Text('Thêm'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
                 ),
               ],
             ),

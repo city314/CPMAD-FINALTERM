@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/login.dart';
+// import 'package:cpmad_final/home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'RobotoMono', // nếu bạn muốn dùng font mặc định khác
       ),
       home: const LoginScreen(),
+      // home: const HomeScreen(),
     );
   }
 }
