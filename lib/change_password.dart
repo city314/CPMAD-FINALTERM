@@ -148,16 +148,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
+                      Navigator.pop(context);
                     },
                     child: const Text(
-                      'Quay lại đăng nhập',
+                      'Quay lại',
                       style: TextStyle(color: Colors.blueAccent),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
