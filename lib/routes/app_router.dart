@@ -6,6 +6,7 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
+import '../screens/admin/AdminDashboardScreen.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
@@ -78,6 +79,11 @@ final GoRouter appRouter = GoRouter(
       path: '/forgot-password',
       name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: '/admin',
+      name: 'admin',
+      builder: (context, state) => const AdminDashboardScreen(),
     ),
   ],
 );
