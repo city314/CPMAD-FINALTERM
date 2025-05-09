@@ -1,5 +1,5 @@
 import 'package:cpmad_final/screens/user/signup.dart';
-import 'package:cpmad_final/screens/user/account/forgot_password.dart';
+import 'package:cpmad_final/screens/user/forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:go_router/go_router.dart';
