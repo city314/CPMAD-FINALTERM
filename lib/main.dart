@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/login.dart';
-import 'package:cpmad_final/home.dart';
+import 'routes/app_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,15 +10,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Ứng dụng Đăng nhập',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'RobotoMono', // nếu bạn muốn dùng font mặc định khác
+        fontFamily: 'RobotoMono',
       ),
-      // home: const LoginScreen(),
-      home: const HomeScreen(),
+      routerConfig: appRouter, // sử dụng GoRouter
     );
   }
 }

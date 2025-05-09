@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
-import '../home.dart';
+import '../screens/user/home.dart';
 
 class UserService {
   static const String _url = 'http://localhost:3001/api/users';
@@ -64,10 +63,7 @@ class UserService {
           const SnackBar(content: Text('Đăng nhập thành công!')),
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        context.go('/home');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Đăng nhập thất bại')),
@@ -81,4 +77,39 @@ class UserService {
     }
   }
 
+  static Future<String> sendOtpToEmail(String email) async {
+    final url = Uri.parse('$_url/forgot-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['otp']; // ⬅ trả mã OTP về
+    } else {
+      final error = jsonDecode(response.body)['message'];
+      throw Exception(error);
+    }
+  }
+
+  static Future<void> resetPassword(String email, String newPassword) async {
+    final url = Uri.parse('$_url/reset-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Lỗi khi đổi mật khẩu');
+    }
+  }
 }

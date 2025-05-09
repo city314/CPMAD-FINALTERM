@@ -1,9 +1,8 @@
-import 'package:cpmad_final/signup.dart';
-import 'package:cpmad_final/forgot_password.dart';
+import 'package:cpmad_final/screens/user/signup.dart';
+import 'package:cpmad_final/screens/user/forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/service/UserService.dart';
-
-import 'home.dart';
+import 'package:go_router/go_router.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -32,28 +31,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    await UserService.loginUser(email: email, password: password, context: context);
-    setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đăng nhập thành công!')),
-    );
+    try {
+      await UserService.loginUser(email: email, password: password, context: context);
 
-    print('Đăng nhập với: $email / $password');
-  }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đăng nhập thành công!')),
+      );
 
-  void _forgotPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-    );
-  }
-
-  void _register() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignUpScreen()),
-    );
+      print('Đăng nhập với: $email / $password');
+    } catch (e) {
+      // Bắt mọi lỗi có thể xảy ra (lỗi mạng, JSON, logic)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi đăng nhập: $e')),
+      );
+      print('❌ Lỗi đăng nhập: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
 
@@ -129,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: _forgotPassword,
+                      onPressed:() => context.go('/forgot-password'),
                       child: const Text(
                         'Quên mật khẩu?',
                         style: TextStyle(color: Colors.blueAccent),
@@ -168,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const Text('Chưa có tài khoản?'),
                       TextButton(
-                        onPressed: _register,
+                        onPressed: () => context.go('/signup'),
                         child: const Text(
                           'Đăng ký',
                           style: TextStyle(color: Colors.blueAccent),
