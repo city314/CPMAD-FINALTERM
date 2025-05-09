@@ -2,6 +2,7 @@ import 'package:cpmad_final/screens/user/signup.dart';
 import 'package:cpmad_final/screens/user/account/forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/service/UserService.dart';
+import 'package:go_router/go_router.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -38,20 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     print('Đăng nhập với: $email / $password');
-  }
-
-  void _forgotPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-    );
-  }
-
-  void _register() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignUpScreen()),
-    );
   }
 
 
@@ -127,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: _forgotPassword,
+                      onPressed:() => context.go('/forgot-password'),
                       child: const Text(
                         'Quên mật khẩu?',
                         style: TextStyle(color: Colors.blueAccent),
@@ -166,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const Text('Chưa có tài khoản?'),
                       TextButton(
-                        onPressed: _register,
+                        onPressed: () => context.go('/signup'),
                         child: const Text(
                           'Đăng ký',
                           style: TextStyle(color: Colors.blueAccent),

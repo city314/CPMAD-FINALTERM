@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/screens/user/login.dart';
+import 'package:cpmad_final/screens/user/account/account_screen.dart';
+import 'routes/app_router.dart';
 // import 'package:cpmad_final/screens/user/account/account_screen.dart';
 
 void main() {
@@ -11,15 +13,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Ứng dụng Đăng nhập',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'RobotoMono', // nếu bạn muốn dùng font mặc định khác
+        fontFamily: 'RobotoMono',
       ),
-      // home: const AccountScreen(),
-      home: LoginScreen(),
+      routerConfig: appRouter, // sử dụng GoRouter
     );
   }
 }
