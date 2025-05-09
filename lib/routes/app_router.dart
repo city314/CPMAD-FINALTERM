@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -8,6 +9,7 @@ import '../../screens/user/productList.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
+import '../screens/user/account/change_password_after_login.dart';
 import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
@@ -30,7 +32,7 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const HomeScreen(),
     ),
     GoRoute(
-      path: '/otp',
+      path: '/forgot-password/otp',
       name: 'otp',
       builder: (context, state) => const OtpScreen(),
     ),
@@ -50,19 +52,24 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const EditProfileScreen(),
     ),
     GoRoute(
-      path: '/account/orders',
+      path: '/account/order-histories',
       name: 'order_history',
       builder: (context, state) => const OrderHistoryScreen(),
     ),
     GoRoute(
-      path: '/account/change-password',
-      name: 'change_password',
-      builder: (context, state) => const ChangePasswordScreen(),
+      path: '/account/change-password-after-login',
+      name: 'change_password_after_login',
+      builder: (context, state) => const ChangePasswordAfterLoginScreen(),
     ),
     GoRoute(
       path: '/forgot-password',
       name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: '/forgot-password/otp/change-password',
+      name: 'change_password',
+      builder: (context, state) => const ChangePasswordScreen(),
     ),
   ],
 );

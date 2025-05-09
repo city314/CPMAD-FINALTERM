@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/screens/user/login.dart';
+import 'package:go_router/go_router.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -32,6 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = false;
     });
 
+    context.go('/forgot-password/otp');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Yêu cầu đặt lại mật khẩu đã được gửi đến $email')),
     );
