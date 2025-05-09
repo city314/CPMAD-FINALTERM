@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'change_password_after_login.dart';
 import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
+import 'manage_addresses_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -97,7 +98,17 @@ Widget _buildProfileCard(BuildContext context) {
           ),
           const SizedBox(height: 16),
           const Divider(),
-          buildInfoRow(Icons.location_on, 'Địa chỉ giao hàng', '123 Đường ABC, Quận 1, TP.HCM'),
+          buildInfoRow(
+            Icons.location_on,
+            'Địa chỉ giao hàng',
+            AddressData.defaultAddress,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ManageAddressesScreen()),
+              );
+            },
+          ),
           buildInfoRow(Icons.vpn_key, 'Mật khẩu', '********', onTap: () {
             Navigator.push(
               context,
