@@ -166,21 +166,6 @@ Widget _buildOptions(BuildContext context) {
         ),
       ),
       const SizedBox(height: 24),
-      const Text(
-        'Mã giảm giá hiện có',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 12),
-      ...vouchers.map((code) {
-        return ListTile(
-          leading: const Icon(Icons.local_offer),
-          title: Text(code),
-          trailing: const Text('Sử dụng'),
-          onTap: () {
-            // TODO: Áp dụng mã
-          },
-        );
-      }).toList(),
     ],
   );
 }
