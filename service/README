@@ -1,15 +1,39 @@
 //npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment swagger-jsdoc swagger-ui-express
 // pass_app_email = abfk znlx ggfn ycpk
-mongodb+srv://thonglinhiq:linhim0028@finalflutter.bfjgcda.mongodb.net/?retryWrites=true&w=majority&appName=FinalFlutter
+// CurrentUser().
+//mongodb+srv://thonglinhiq:linhim0028@finalflutter.bfjgcda.mongodb.net/?retryWrites=true&w=majority&appName=FinalFlutter
+  "scripts": {
+    "dev:user": "nodemon UserService/server.js",
+    "dev:product": "nodemon ProductService/server.js",
+    "dev:order": "nodemon OrderService/server.js",
+    "dev:dashborard": "nodemon DashboardService/server.js",
+    "dev:cart": "nodemon CartService/server.js",
+    "dev": "concurrently \"npm run dev:user\" \"npm run dev:admin\""
+  }
 
 
-// Sử dụng middleware verifyToken cho các route cần bảo vệ
-// Ví dụ:
-// js
-// Copy code
-// const verifyToken = require('../middlewares/auth');
-// router.get('/profile', verifyToken, async (req, res) => {
-//   const user = await User.findById(req.user.userId);
-//   if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
-//   res.json(user);
-// });
+các bước chạy:
+b1: npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment
+    npm install --save-dev concurrently
+b2: sửa trong package.json:
+    {
+      "dependencies": {
+        "axios": "^1.9.0",
+        "bcrypt": "^5.1.1",
+        "body-parser": "^2.2.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.5.0",
+        "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "moment": "^2.30.1",
+        "mongoose": "^8.14.2",
+        "nodemailer": "^7.0.3",
+        "uuid": "^11.1.0"
+      },
+
+      "scripts": {
+        "dev:user": "nodemon UserService/server.js",
+        "dev": "concurrently \"npm run dev:user\""
+      }
+    }
+b3: npm run dev (ở folder service)

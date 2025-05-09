@@ -26,7 +26,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || fullName.isEmpty || address.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || fullName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
       );
@@ -40,30 +40,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    await UserService.registerUser(
-      email: email,
-      fullName: fullName,
-      address: address,
-      password: password,
-    );
+    try {
+      await UserService.registerUser(
+        email: email,
+        fullName: fullName,
+        password: password,
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đăng ký thành công!')),
+      );
 
-    // TODO: Xử lý đăng ký thực tế
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đăng ký thành công!')),
-    );
-
-    // Sau đăng ký thành công, chuyển sang trang Home hoặc trang đăng nhập
-    context.go('/home');
-
-    print('Đăng ký với: $email / $password');
+      context.go('/home');
+      print('Đăng ký với: $email / $password');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi đăng ký: $e')),
+      );
+      print('❌ Lỗi đăng ký: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _goToLogin() {

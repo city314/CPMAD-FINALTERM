@@ -1,32 +1,45 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 import 'manage_addresses_screen.dart';
+import 'package:cpmad_final/service/UserService.dart';
+import 'package:go_router/go_router.dart';
 
-class AddressData {
-  static List<Address> addresses = [
-    Address(
-      id: '1',
-      receiverName: 'Nguyễn Văn A',
-      phoneNumber: '0901234567',
-      province: 'TP.HCM',
-      district: 'Quận 1',
-      ward: 'Phường Bến Nghé',
-      streetDetail: '123 Đường ABC',
-    ),
-  ];
+class AccountScreen extends StatefulWidget {
+  const AccountScreen({super.key});
 
-  static String defaultId = addresses.first.id;
-
-  static Address get defaultAddress =>
-      addresses.firstWhere((a) => a.id == defaultId);
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
 }
 
-class AccountScreen extends StatelessWidget {
-  AccountScreen({super.key});
-  final defaultAddress = AddressData.defaultAddress;
+class _AccountScreenState  extends State<AccountScreen> {
+  final currentUser = CurrentUser().email;
+  Map<String, dynamic>? userInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final data = await UserService.fetchUserByEmail(currentUser ?? 'thonglinhiq@gmail.com');
+      setState(() => userInfo = data);
+    } catch (e) {
+      print('❌ Lỗi lấy user info: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (userInfo == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tài khoản của tôi'),
@@ -51,7 +64,7 @@ class AccountScreen extends StatelessWidget {
                         flex: 2,
                         child: Column(
                           children: [
-                            _buildProfileCard(context),
+                            _buildProfileCard(context, userInfo),
                           ],
                         ),
                       ),
@@ -70,7 +83,7 @@ class AccountScreen extends StatelessWidget {
                   )
                       : Column(
                     children: [
-                      _buildProfileCard(context),
+                      _buildProfileCard(context, userInfo),
                       const SizedBox(height: 24),
                       _buildOptions(context),
                     ],
@@ -85,7 +98,12 @@ class AccountScreen extends StatelessWidget {
   }
 }
 // Profile Card
-Widget _buildProfileCard(BuildContext context) {
+Widget _buildProfileCard(BuildContext context, Map<String, dynamic>? userInfo) {
+  final name = userInfo!['name'] ?? '---';
+  final email = userInfo!['email'] ?? '---';
+  final role = userInfo!['role'] == 'admin' ? 'Quản trị viên' : 'Khách hàng';
+  final status = userInfo!['status'] == 'active' ? 'Hoạt động' : 'Vô hiệu hóa';
+
   return Card(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     color: Colors.indigo[50],
@@ -97,19 +115,19 @@ Widget _buildProfileCard(BuildContext context) {
         children: [
           Center(
             child: Column(
-              children: const [
-                CircleAvatar(
+              children: [
+                const CircleAvatar(
                   radius: 45,
-                  backgroundImage: AssetImage('assets/images/avatar.png'),
+                  backgroundImage: AssetImage('assets/images/product/laptop.jpg'),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  'Nguyễn Văn A',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  name,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  'nguyenvana@example.com',
-                  style: TextStyle(color: Colors.black54),
+                  email,
+                  style: const TextStyle(color: Colors.black54),
                 ),
               ],
             ),
@@ -127,8 +145,8 @@ Widget _buildProfileCard(BuildContext context) {
               );
             },
           ),
-          buildInfoRow(Icons.person, 'Vai trò', 'Khách hàng'),
-          buildInfoRow(Icons.lock, 'Trạng thái tài khoản', 'Hoạt động'),
+          buildInfoRow(Icons.person, 'Vai trò', role),
+          buildInfoRow(Icons.lock, 'Trạng thái tài khoản', status),
           buildInfoRow(Icons.edit, 'Chỉnh sửa thông tin', null, onTap: () {
             Navigator.push(
               context,
@@ -140,6 +158,7 @@ Widget _buildProfileCard(BuildContext context) {
     ),
   );
 }
+
 // Info Row
 Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback? onTap}) {
   return ListTile(

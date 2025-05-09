@@ -1,27 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-class Address {
-  final String id;
-  final String receiverName;
-  final String phoneNumber;
-  final String province;
-  final String district;
-  final String ward;
-  final String streetDetail;
-
-  Address({
-    required this.id,
-    required this.receiverName,
-    required this.phoneNumber,
-    required this.province,
-    required this.district,
-    required this.ward,
-    required this.streetDetail,
-  });
-
-  String get fullAddress => '$streetDetail, $ward, $district, $province';
-}
+import '../../../models/Address.dart';
+import 'package:cpmad_final/pattern/current_user.dart';
+import 'package:cpmad_final/service/UserService.dart';
+import 'package:go_router/go_router.dart';
 
 class ManageAddressesScreen extends StatefulWidget {
   const ManageAddressesScreen({super.key});
@@ -31,50 +14,38 @@ class ManageAddressesScreen extends StatefulWidget {
 }
 
 class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
-  List<Address> addresses = [
-    Address(
-      id: const Uuid().v4(),
-      receiverName: 'Nguyễn Văn A',
-      phoneNumber: '0901234567',
-      province: 'TP.HCM',
-      district: 'Quận 1',
-      ward: 'Phường Bến Nghé',
-      streetDetail: '123 Đường ABC',
-    ),
-    Address(
-      id: const Uuid().v4(),
-      receiverName: 'Trần Thị B',
-      phoneNumber: '0987654321',
-      province: 'TP.HCM',
-      district: 'Quận 3',
-      ward: 'Phường 7',
-      streetDetail: '456 Đường DEF',
-    ),
-  ];
-
-  String defaultAddressId = '';
+  List<Address> addresses = [];
+  final email = CurrentUser().email ?? 'thonglinhiq@gmail.com';
 
   @override
   void initState() {
     super.initState();
-    defaultAddressId = addresses.first.id;
+    _loadAddresses();
+  }
+
+  Future<void> _loadAddresses() async {
+    try {
+      final data = await UserService.fetchAddressesByEmail(email);
+      print(email);
+      setState(() => addresses = data);
+    } catch (e) {
+      print('Lỗi khi tải địa chỉ: $e');
+    }
   }
 
   void _addAddress() async {
     final newAddress = await _showAddressDialog();
     if (newAddress != null) {
-      setState(() {
-        addresses.add(newAddress);
-      });
+      setState(() => addresses.add(newAddress));
+      await UserService.addAddress(email, newAddress);
     }
   }
 
   void _editAddress(int index) async {
     final edited = await _showAddressDialog(initial: addresses[index]);
     if (edited != null) {
-      setState(() {
-        addresses[index] = edited.copyWith(id: addresses[index].id);
-      });
+      setState(() => addresses[index] = edited);
+      await UserService.updateAddress(email, index, edited);
     }
   }
 
@@ -87,12 +58,14 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              await UserService.deleteAddress(email, index);
               setState(() {
-                if (defaultAddressId == addresses[index].id) {
-                  defaultAddressId = addresses.first.id;
-                }
+                bool wasDefault = addresses[index].isDefault;
                 addresses.removeAt(index);
+                if (wasDefault && addresses.isNotEmpty) {
+                  addresses[0] = addresses[0].copyWith(isDefault: true);
+                }
               });
               Navigator.pop(context);
             },
@@ -154,7 +127,6 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
           TextButton(
             onPressed: () {
               final newAddress = Address(
-                id: initial?.id ?? const Uuid().v4(),
                 receiverName: nameController.text.trim(),
                 phoneNumber: phoneController.text.trim(),
                 province: provinceController.text.trim(),
@@ -178,13 +150,20 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
         title: const Text('Quản lý địa chỉ'),
         backgroundColor: Colors.blueAccent,
       ),
-      body: ListView.separated(
+      body: addresses.isEmpty
+          ? const Center(
+            child: Text(
+              'Chưa có địa chỉ',
+              style: TextStyle(fontSize: 18, color: Colors.black54),
+            ),
+          )
+          : ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: addresses.length,
         separatorBuilder: (_, __) => const Divider(),
         itemBuilder: (context, index) {
           final address = addresses[index];
-          final isDefault = address.id == defaultAddressId;
+          final isDefault = address.isDefault;
 
           return ListTile(
             leading: const Icon(Icons.location_on),
@@ -199,13 +178,17 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
               ],
             ),
             trailing: PopupMenuButton<String>(
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == 'edit') _editAddress(index);
                 if (value == 'delete') _deleteAddress(index);
                 if (value == 'default') {
                   setState(() {
-                    defaultAddressId = address.id;
+                    for (int i = 0; i < addresses.length; i++) {
+                      addresses[i] = addresses[i].copyWith(isDefault: i == index);
+                    }
                   });
+
+                  await UserService.updateAddress(email, index, addresses[index]);
                 }
               },
               itemBuilder: (_) => [
@@ -228,22 +211,22 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
 
 extension on Address {
   Address copyWith({
-    String? id,
     String? receiverName,
     String? phoneNumber,
     String? province,
     String? district,
     String? ward,
     String? streetDetail,
+    bool? isDefault,
   }) {
     return Address(
-      id: id ?? this.id,
       receiverName: receiverName ?? this.receiverName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       province: province ?? this.province,
       district: district ?? this.district,
       ward: ward ?? this.ward,
       streetDetail: streetDetail ?? this.streetDetail,
+      isDefault: isDefault ?? this.isDefault,
     );
   }
 }

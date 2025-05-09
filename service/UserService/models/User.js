@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
-  receiver_name: { type: String, required: true },
-  phone: { type: String, required: true },
-  address: { type: String, required: true },
+  receiver_name: { type: String },
+  phone: { type: String },
+  address: { type: String },
   commune: { type: String },
   district: { type: String },
   city: { type: String },
@@ -11,11 +11,13 @@ const addressSchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
+  avatar: { type: String, default: '' },
   email: { type: String, required: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
   address: [addressSchema], // <== đổi từ String sang mảng đối tượng address
   role: { type: String, enum: ['admin', 'customer'], default: 'customer' },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active'},
   time_create: { type: Date, default: Date.now },
 });
 
