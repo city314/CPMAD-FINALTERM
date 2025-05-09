@@ -90,7 +90,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
             isCurved: true,
             barWidth: 3,
-            color: Colors.blue,
+            gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent])
           ),
         ],
       ),
