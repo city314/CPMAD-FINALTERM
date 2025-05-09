@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/screens/user/login.dart';
-// import 'package:cpmad_final/screens/user/account/account_screen.dart';
+import 'package:cpmad_final/screens/user/home.dart';
+import 'package:cpmad_final/screens/admin/AdminDashboardScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,8 +18,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'RobotoMono', // nếu bạn muốn dùng font mặc định khác
       ),
-      // home: const AccountScreen(),
-      home: LoginScreen(),
+      // home: HomeScreen(),
+      home: AdminDashboardScreen(),
     );
   }
 }
