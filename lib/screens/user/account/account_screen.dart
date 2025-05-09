@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'change_password.dart';
+import 'change_password_after_login.dart';
 import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -99,7 +99,10 @@ Widget _buildProfileCard(BuildContext context) {
           const Divider(),
           buildInfoRow(Icons.location_on, 'Địa chỉ giao hàng', '123 Đường ABC, Quận 1, TP.HCM'),
           buildInfoRow(Icons.vpn_key, 'Mật khẩu', '********', onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ChangePasswordAfterLoginScreen()),
+            );
           }),
           buildInfoRow(Icons.person, 'Vai trò', 'Khách hàng'),
           buildInfoRow(Icons.lock, 'Trạng thái tài khoản', 'Hoạt động'),
@@ -130,6 +133,7 @@ Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback
 // Info Option
 Widget _buildOptions(BuildContext context) {
   final vouchers = ['GIAM10%', 'FREESHIP', 'KMHE2025'];
+  final int points = 280; // hoặc gọi từ user.loyaltyPoints;
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,14 +159,16 @@ Widget _buildOptions(BuildContext context) {
         color: Colors.orange[100],
         child: ListTile(
           leading: const Icon(Icons.star, color: Colors.orange),
-          title: const Text('280 điểm'),
+          title: Text('$points điểm'),
           subtitle: const Text('Tích lũy từ các đơn hàng trước'),
-          trailing: TextButton(
+          trailing: points > 0
+              ? TextButton(
             onPressed: () {
               // TODO: Quy đổi điểm
             },
             child: const Text('Quy đổi'),
-          ),
+          )
+              : null,
         ),
       ),
       const SizedBox(height: 24),
