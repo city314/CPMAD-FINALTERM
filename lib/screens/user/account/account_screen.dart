@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'change_password_after_login.dart';
 import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 import 'manage_addresses_screen.dart';
@@ -109,12 +108,6 @@ Widget _buildProfileCard(BuildContext context) {
               );
             },
           ),
-          buildInfoRow(Icons.vpn_key, 'Mật khẩu', '********', onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ChangePasswordAfterLoginScreen()),
-            );
-          }),
           buildInfoRow(Icons.person, 'Vai trò', 'Khách hàng'),
           buildInfoRow(Icons.lock, 'Trạng thái tài khoản', 'Hoạt động'),
           buildInfoRow(Icons.edit, 'Chỉnh sửa thông tin', null, onTap: () {

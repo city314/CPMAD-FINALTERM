@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'change_password_after_login.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -10,15 +11,13 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController(text: 'Nguyễn Văn A');
   final _emailController = TextEditingController(text: 'nguyenvana@example.com');
-  final _addressController = TextEditingController(text: '123 Đường ABC, Quận 1, TP.HCM');
   bool _isSaving = false;
 
   void _saveChanges() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final address = _addressController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || address.isEmpty) {
+    if (name.isEmpty || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
       );
@@ -81,15 +80,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _addressController,
-                  decoration: const InputDecoration(
-                    labelText: 'Địa chỉ giao hàng',
-                    prefixIcon: Icon(Icons.home),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: _isSaving ? null : _saveChanges,
@@ -108,6 +98,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   )
                       : const Text('Lưu thay đổi', style: TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChangePasswordAfterLoginScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.vpn_key, color: Colors.blueAccent),
+                  label: const Text('Đổi mật khẩu', style: TextStyle(color: Colors.blueAccent)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.blueAccent),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                 ),
               ],
             ),
