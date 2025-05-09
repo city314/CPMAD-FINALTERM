@@ -77,4 +77,39 @@ class UserService {
     }
   }
 
+  static Future<String> sendOtpToEmail(String email) async {
+    final url = Uri.parse('$_url/forgot-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['otp']; // ⬅ trả mã OTP về
+    } else {
+      final error = jsonDecode(response.body)['message'];
+      throw Exception(error);
+    }
+  }
+
+  static Future<void> resetPassword(String email, String newPassword) async {
+    final url = Uri.parse('$_url/reset-password');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Lỗi khi đổi mật khẩu');
+    }
+  }
 }
