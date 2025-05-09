@@ -31,14 +31,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    await UserService.loginUser(email: email, password: password, context: context);
-    setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đăng nhập thành công!')),
-    );
+    try {
+      await UserService.loginUser(email: email, password: password, context: context);
 
-    print('Đăng nhập với: $email / $password');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đăng nhập thành công!')),
+      );
+
+      print('Đăng nhập với: $email / $password');
+    } catch (e) {
+      // Bắt mọi lỗi có thể xảy ra (lỗi mạng, JSON, logic)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi đăng nhập: $e')),
+      );
+      print('❌ Lỗi đăng nhập: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
 
