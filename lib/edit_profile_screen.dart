@@ -1,0 +1,119 @@
+import 'package:flutter/material.dart';
+
+class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key});
+
+  @override
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final _nameController = TextEditingController(text: 'Nguyễn Văn A');
+  final _emailController = TextEditingController(text: 'nguyenvana@example.com');
+  final _addressController = TextEditingController(text: '123 Đường ABC, Quận 1, TP.HCM');
+  bool _isSaving = false;
+
+  void _saveChanges() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final address = _addressController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || address.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() => _isSaving = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Cập nhật thông tin thành công')),
+    );
+
+    Navigator.pop(context); // quay về trang tài khoản
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Chỉnh sửa thông tin'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            width: size.width > 500 ? 500 : size.width * 0.9,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                )
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Họ và tên',
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(
+                    labelText: 'Địa chỉ giao hàng',
+                    prefixIcon: Icon(Icons.home),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _isSaving ? null : _saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                  )
+                      : const Text('Lưu thay đổi', style: TextStyle(fontSize: 18)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

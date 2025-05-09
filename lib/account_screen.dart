@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'change_password.dart';
 import 'order_history_screen.dart';
+import 'edit_profile_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -102,18 +103,24 @@ Widget _buildProfileCard(BuildContext context) {
           }),
           buildInfoRow(Icons.person, 'Vai trò', 'Khách hàng'),
           buildInfoRow(Icons.lock, 'Trạng thái tài khoản', 'Hoạt động'),
+          buildInfoRow(Icons.edit, 'Chỉnh sửa thông tin', null, onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+            );
+          }),
         ],
       ),
     ),
   );
 }
 // Info Row
-Widget buildInfoRow(IconData icon, String title, String subtitle, {VoidCallback? onTap}) {
+Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback? onTap}) {
   return ListTile(
     contentPadding: const EdgeInsets.symmetric(horizontal: 0),
     leading: Icon(icon, color: Colors.blueAccent),
     title: Text(title),
-    subtitle: Text(subtitle),
+    subtitle: subtitle != null && subtitle.isNotEmpty ? Text(subtitle) : null,
     trailing: onTap != null
         ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blueAccent)
         : null,
