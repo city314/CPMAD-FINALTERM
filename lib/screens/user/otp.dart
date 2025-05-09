@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/login.dart';
+import 'package:cpmad_final/screens/user/login.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class OtpScreen extends StatefulWidget {
+  const OtpScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
+class _OtpScreenState extends State<OtpScreen> {
+  final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
 
   void _submitForgotPassword() async {
-    String email = _emailController.text.trim();
+    String otp = _otpController.text.trim();
 
-    if (email.isEmpty) {
+    if (otp.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập email')),
+        const SnackBar(content: Text('Vui lòng nhập mã OTP')),
       );
       return;
     }
@@ -33,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Yêu cầu đặt lại mật khẩu đã được gửi đến $email')),
+      SnackBar(content: Text('Mã OTP đã được xác minh: $otp')),
     );
   }
 
@@ -87,10 +87,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextField(
-                    controller: _emailController,
+                    controller: _otpController,
+                    keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
+                      labelText: 'Nhập mã OTP',
+                      prefixIcon: Icon(Icons.lock_open),
                       border: OutlineInputBorder(),
                     ),
                   ),

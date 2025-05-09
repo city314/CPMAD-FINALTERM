@@ -1,32 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/login.dart';
+import 'package:cpmad_final/screens/user/login.dart';
 
-class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
 
-  void _submitNewPassword() async {
-    String newPassword = _newPasswordController.text.trim();
-    String confirmPassword = _confirmPasswordController.text.trim();
+  void _submitForgotPassword() async {
+    String email = _emailController.text.trim();
 
-    if (newPassword.isEmpty || confirmPassword.isEmpty) {
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
-      );
-      return;
-    }
-
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mật khẩu xác nhận không khớp')),
+        const SnackBar(content: Text('Vui lòng nhập email')),
       );
       return;
     }
@@ -42,12 +33,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đổi mật khẩu thành công!')),
-    );
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      SnackBar(content: Text('Yêu cầu đặt lại mật khẩu đã được gửi đến $email')),
     );
   }
 
@@ -74,7 +60,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 10,
@@ -92,7 +78,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Đặt lại mật khẩu',
+                    'Quên mật khẩu',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -101,21 +87,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextField(
-                    controller: _newPasswordController,
-                    obscureText: true,
+                    controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Mật khẩu mới',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _confirmPasswordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Xác nhận mật khẩu mới',
-                      prefixIcon: Icon(Icons.lock_outline),
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -123,7 +98,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitNewPassword,
+                      onPressed: _isLoading ? null : _submitForgotPassword,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -140,7 +115,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       )
                           : const Text(
-                        'Đặt lại mật khẩu',
+                        'Gửi yêu cầu',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
@@ -148,13 +123,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
                     },
                     child: const Text(
-                      'Quay lại',
+                      'Quay lại đăng nhập',
                       style: TextStyle(color: Colors.blueAccent),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),

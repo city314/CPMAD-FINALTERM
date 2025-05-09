@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/login.dart';
+import 'package:cpmad_final/screens/user/login.dart';
 
-class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
-  final TextEditingController _otpController = TextEditingController();
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
 
-  void _submitForgotPassword() async {
-    String otp = _otpController.text.trim();
+  void _submitNewPassword() async {
+    String newPassword = _newPasswordController.text.trim();
+    String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (otp.isEmpty) {
+    if (newPassword.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mã OTP')),
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mật khẩu xác nhận không khớp')),
       );
       return;
     }
@@ -33,7 +42,12 @@ class _OtpScreenState extends State<OtpScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Mã OTP đã được xác minh: $otp')),
+      const SnackBar(content: Text('Đổi mật khẩu thành công!')),
+    );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 
@@ -60,7 +74,7 @@ class _OtpScreenState extends State<OtpScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 10,
@@ -78,7 +92,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Quên mật khẩu',
+                    'Đặt lại mật khẩu',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -87,11 +101,21 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextField(
-                    controller: _otpController,
-                    keyboardType: TextInputType.number,
+                    controller: _newPasswordController,
+                    obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'Nhập mã OTP',
-                      prefixIcon: Icon(Icons.lock_open),
+                      labelText: 'Mật khẩu mới',
+                      prefixIcon: Icon(Icons.lock),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Xác nhận mật khẩu mới',
+                      prefixIcon: Icon(Icons.lock_outline),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -99,7 +123,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitForgotPassword,
+                      onPressed: _isLoading ? null : _submitNewPassword,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -116,7 +140,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       )
                           : const Text(
-                        'Gửi yêu cầu',
+                        'Đặt lại mật khẩu',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
@@ -124,16 +148,13 @@ class _OtpScreenState extends State<OtpScreen> {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
+                      Navigator.pop(context);
                     },
                     child: const Text(
-                      'Quay lại đăng nhập',
+                      'Quay lại',
                       style: TextStyle(color: Colors.blueAccent),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/login.dart';
-// import 'package:cpmad_final/account_screen.dart';
+import 'package:cpmad_final/screens/user/login.dart';
+// import 'package:cpmad_final/screens/user/account/account_screen.dart';
 
 void main() {
   runApp(const MyApp());

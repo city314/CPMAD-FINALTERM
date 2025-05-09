@@ -1,9 +1,7 @@
-import 'package:cpmad_final/signup.dart';
-import 'package:cpmad_final/forgot_password.dart';
+import 'package:cpmad_final/screens/user/signup.dart';
+import 'package:cpmad_final/screens/user/account/forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/service/UserService.dart';
-
-import 'home.dart';
 
 
 class LoginScreen extends StatefulWidget {
