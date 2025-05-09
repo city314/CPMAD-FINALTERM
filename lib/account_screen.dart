@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'change_password.dart';
+import 'order_history_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -58,31 +59,23 @@ class AccountScreen extends StatelessWidget {
                   }),
                   buildInfoRow(Icons.person, 'Vai trò', 'Khách hàng'),
                   buildInfoRow(Icons.lock, 'Trạng thái tài khoản', 'Hoạt động'),
-                  buildInfoRow(Icons.comment, 'Bình luận đã viết', '12 bình luận'),
-                  buildInfoRow(Icons.star, 'Sản phẩm đã đánh giá', '8 sản phẩm'),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
           // Lịch sử đơn hàng
-          const Text(
-            'Lịch sử đơn hàng',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('Xem lịch sử đơn hàng'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          ...orders.map((order) {
-            return ListTile(
-              leading: const Icon(Icons.receipt_long),
-              title: Text('Đơn hàng ${order['id']}'),
-              subtitle: Text('Ngày: ${order['date']}'),
-              trailing: Text('${order['total']}'),
-              onTap: () {
-                // TODO: Xem chi tiết đơn hàng
-              },
-            );
-          }).toList(),
-
           const SizedBox(height: 24),
 
           // Điểm thưởng
