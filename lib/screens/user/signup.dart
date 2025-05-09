@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cpmad_final/service/UserService.dart';
 
 import 'home.dart';
+import 'package:go_router/go_router.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -61,17 +62,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
 
     // Sau đăng ký thành công, chuyển sang trang Home hoặc trang đăng nhập
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    context.go('/home');
 
     print('Đăng ký với: $email / $password');
   }
 
   void _goToLogin() {
     // TODO: Chuyển sang màn hình đăng nhập
-    Navigator.pop(context); // quay về màn login
+    context.go('/'); // quay về màn login
   }
 
   @override
