@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/login.dart';
-import 'package:cpmad_final/change_password.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'RobotoMono', // nếu bạn muốn dùng font mặc định khác
       ),
-      home: const ChangePasswordScreen(),
+      home: const LoginScreen(),
     );
   }
 }
