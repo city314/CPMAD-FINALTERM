@@ -131,53 +131,44 @@ class UserService {
     }
   }
 
-  static Future<List<Address>> fetchAddressesByEmail(String email) async {
-    final url = Uri.parse('$_url/$email/addresses');
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((json) => Address(
-        receiverName: json['receiver_name'] ?? '',
-        phoneNumber: json['phone'] ?? '',
-        province: json['city'] ?? '',
-        district: json['district'] ?? '',
-        ward: json['commune'] ?? '',
-        streetDetail: json['address'] ?? '',
-      )).toList();
-    } else {
-      throw Exception('Không thể tải địa chỉ');
+  static Future<List<Address>> fetchAddresses(String email) async {
+    final res = await http.get(Uri.parse('$_url/$email/addresses'));
+    if (res.statusCode == 200) {
+      final List data = jsonDecode(res.body);
+      return data.map((e) => Address.fromJson(e)).toList();
     }
+    throw Exception('Lỗi tải địa chỉ');
   }
 
   static Future<void> addAddress(String email, Address addr) async {
-    final url = Uri.parse('$_url/$email/addresses');
-    final response = await http.post(
-      url,
+    final res = await http.post(
+      Uri.parse('$_url/$email/addresses'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(addr.toJson()),
     );
-    if (response.statusCode != 200) throw Exception('Lỗi thêm địa chỉ');
+    if (res.statusCode != 200) throw Exception('Lỗi thêm địa chỉ');
   }
 
-  static Future<void> updateAddress(String email, int index, Address addr) async {
-    final url = Uri.parse('$_url/$email/addresses/$index');
-    print("toi ne");
-    final response = await http.put(
-      url,
+  static Future<void> updateAddress(String email, Address addr) async {
+    final res = await http.put(
+      Uri.parse('$_url/$email/addresses/${addr.id}'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(addr.toJson()),
     );
-    if (response.statusCode != 200) {
-      print('Body: ${response.body}');
-      throw Exception('Lỗi cập nhật địa chỉ');
-    }
+    if (res.statusCode != 200) throw Exception('Lỗi cập nhật địa chỉ');
   }
 
-  static Future<void> deleteAddress(String email, int index) async {
-    final url = Uri.parse('$_url/$email/addresses/$index');
-    final response = await http.delete(url);
-    if (response.statusCode != 200) throw Exception('Lỗi xoá địa chỉ');
+  static Future<void> deleteAddress(String email, String addressId) async {
+    final res = await http.delete(
+      Uri.parse('$_url/$email/addresses/$addressId'),
+    );
+    if (res.statusCode != 200) throw Exception('Lỗi xoá địa chỉ');
+  }
+
+  static Future<void> setDefaultAddress(String email, String addressId) async {
+    final res = await http.put(
+      Uri.parse('$_url/$email/addresses/$addressId/set-default'),
+    );
+    if (res.statusCode != 200) throw Exception('Lỗi cập nhật địa chỉ mặc định');
   }
 }

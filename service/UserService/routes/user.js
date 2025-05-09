@@ -169,70 +169,99 @@ router.get('/:email/addresses', async (req, res) => {
   }
 });
 
+router.get('/:email/addresses', async (req, res) => {
+  const user = await User.findOne({ email: req.params.email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json(user.address);
+});
+
 router.post('/:email/addresses', async (req, res) => {
   const { email } = req.params;
-  const newAddress = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'Người dùng không tồn tại' });
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (newAddress.default) {
-      user.address.forEach(addr => addr.default = false);
-    }
+  // B1: Tìm số lớn nhất trong các id dạng "ADxxx"
+const existingIds = user.address
+  .map(a => a.id) // ✅ đúng: lấy field id của mỗi address
+  .filter(id => /^AD\d{3}$/.test(id))
+  .map(id => parseInt(id.slice(2)));
 
-    user.address.push(newAddress);
-    await user.save();
+  const nextNumber = (existingIds.length > 0 ? Math.max(...existingIds) : 0) + 1;
+  const formattedId = `AD${nextNumber.toString().padStart(3, '0')}`;
 
-    res.json({ message: 'Đã thêm địa chỉ mới', addressList: user.address });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi thêm địa chỉ', error: error.message });
+  // B2: Gán ID mới
+  const newAddress = {
+    ...req.body,
+    id: formattedId,
+  };
+
+  // B3: Reset default nếu cần
+  if (newAddress.default) {
+    user.address.forEach(a => a.default = false);
   }
+
+  // B4: Thêm vào danh sách
+  user.address.push(newAddress);
+  await user.save();
+
+  res.json({ message: 'Address added', addressList: user.address });
 });
 
-router.put('/:email/addresses/:index', async (req, res) => {
-  const { email, index } = req.params;
+router.put('/:email/addresses/:id', async (req, res) => {
+  const { email, id } = req.params;
   const updated = req.body;
-  console.log('Cập nhật với body:', req.body);
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user || !user.address[index]) return res.status(404).json({ message: 'Không tìm thấy địa chỉ' });
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (updated.default) {
-      user.address.forEach(addr => addr.default = false);
-    }
+  const index = user.address.findIndex(a => a.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Address not found' });
 
-    user.address[index] = updated;
-    await user.save();
+  if (updated.default) user.address.forEach(a => a.default = false);
+  user.address[index] = updated;
+  await user.save();
 
-    res.json({ message: 'Đã cập nhật địa chỉ', addressList: user.address });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi cập nhật địa chỉ', error: error.message });
-  }
+  res.json({ message: 'Address updated', addressList: user.address });
 });
 
-router.delete('/:email/addresses/:index', async (req, res) => {
-  const { email, index } = req.params;
+router.delete('/:email/addresses/:id', async (req, res) => {
+  const { email, id } = req.params;
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user || !user.address[index]) return res.status(404).json({ message: 'Không tìm thấy địa chỉ' });
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const wasDefault = user.address[index].default;
+  const index = user.address.findIndex(a => a.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Address not found' });
 
-    user.address.splice(index, 1);
+  const wasDefault = user.address[index].default;
+  user.address.splice(index, 1);
 
-    if (wasDefault && user.address.length > 0) {
-      user.address[0].default = true;
-    }
-
-    await user.save();
-
-    res.json({ message: 'Đã xoá địa chỉ', addressList: user.address });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi khi xoá địa chỉ', error: error.message });
+  if (wasDefault && user.address.length > 0) {
+    user.address[0].default = true;
   }
+
+  await user.save();
+  res.json({ message: 'Address deleted', addressList: user.address });
+});
+
+router.put('/:email/addresses/:id/set-default', async (req, res) => {
+  const { email, id } = req.params;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  const index = user.address.findIndex(a => a.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Address not found' });
+
+  // Reset all to false
+  user.address.forEach(addr => addr.default = false);
+
+  // Set selected address to true
+  user.address[index].default = true;
+
+  await user.save();
+  res.json({ message: 'Default address updated', addressList: user.address });
 });
 
 module.exports = router;
