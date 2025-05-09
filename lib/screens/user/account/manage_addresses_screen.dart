@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
-class AddressData {
-  static List<String> addresses = [
-    '123 Đường ABC, Quận 1, TP.HCM',
-    '456 Đường DEF, Quận 3, TP.HCM',
-  ];
+class Address {
+  final String id;
+  final String receiverName;
+  final String phoneNumber;
+  final String province;
+  final String district;
+  final String ward;
+  final String streetDetail;
 
-  static int defaultIndex = 0;
+  Address({
+    required this.id,
+    required this.receiverName,
+    required this.phoneNumber,
+    required this.province,
+    required this.district,
+    required this.ward,
+    required this.streetDetail,
+  });
 
-  static String get defaultAddress => addresses[defaultIndex];
+  String get fullAddress => '$streetDetail, $ward, $district, $province';
 }
 
 class ManageAddressesScreen extends StatefulWidget {
@@ -19,12 +31,38 @@ class ManageAddressesScreen extends StatefulWidget {
 }
 
 class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
-  List<String> addresses = AddressData.addresses;
-  int defaultIndex = AddressData.defaultIndex;
+  List<Address> addresses = [
+    Address(
+      id: const Uuid().v4(),
+      receiverName: 'Nguyễn Văn A',
+      phoneNumber: '0901234567',
+      province: 'TP.HCM',
+      district: 'Quận 1',
+      ward: 'Phường Bến Nghé',
+      streetDetail: '123 Đường ABC',
+    ),
+    Address(
+      id: const Uuid().v4(),
+      receiverName: 'Trần Thị B',
+      phoneNumber: '0987654321',
+      province: 'TP.HCM',
+      district: 'Quận 3',
+      ward: 'Phường 7',
+      streetDetail: '456 Đường DEF',
+    ),
+  ];
+
+  String defaultAddressId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    defaultAddressId = addresses.first.id;
+  }
 
   void _addAddress() async {
     final newAddress = await _showAddressDialog();
-    if (newAddress != null && newAddress.trim().isNotEmpty) {
+    if (newAddress != null) {
       setState(() {
         addresses.add(newAddress);
       });
@@ -33,9 +71,9 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
 
   void _editAddress(int index) async {
     final edited = await _showAddressDialog(initial: addresses[index]);
-    if (edited != null && edited.trim().isNotEmpty) {
+    if (edited != null) {
       setState(() {
-        AddressData.defaultIndex = index;
+        addresses[index] = edited.copyWith(id: addresses[index].id);
       });
     }
   }
@@ -51,7 +89,9 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
           TextButton(
             onPressed: () {
               setState(() {
-                if (defaultIndex == index) defaultIndex = 0;
+                if (defaultAddressId == addresses[index].id) {
+                  defaultAddressId = addresses.first.id;
+                }
                 addresses.removeAt(index);
               });
               Navigator.pop(context);
@@ -63,19 +103,69 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
     );
   }
 
-  Future<String?> _showAddressDialog({String? initial}) {
-    final controller = TextEditingController(text: initial);
-    return showDialog<String>(
+  Future<Address?> _showAddressDialog({Address? initial}) {
+    final nameController = TextEditingController(text: initial?.receiverName ?? '');
+    final phoneController = TextEditingController(text: initial?.phoneNumber ?? '');
+    final provinceController = TextEditingController(text: initial?.province ?? '');
+    final districtController = TextEditingController(text: initial?.district ?? '');
+    final wardController = TextEditingController(text: initial?.ward ?? '');
+    final streetController = TextEditingController(text: initial?.streetDetail ?? '');
+
+    return showDialog<Address>(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(initial == null ? 'Thêm địa chỉ' : 'Chỉnh sửa địa chỉ'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: 'Nhập địa chỉ'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Tên người nhận'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Số điện thoại'),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: provinceController,
+                decoration: const InputDecoration(labelText: 'Tỉnh/Thành phố'),
+              ),
+              TextField(
+                controller: districtController,
+                decoration: const InputDecoration(labelText: 'Quận/Huyện'),
+              ),
+              TextField(
+                controller: wardController,
+                decoration: const InputDecoration(labelText: 'Phường/Xã'),
+              ),
+              TextField(
+                controller: streetController,
+                decoration: const InputDecoration(labelText: 'Số nhà / Chi tiết'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Lưu')),
+          TextButton(
+            onPressed: () {
+              final newAddress = Address(
+                id: initial?.id ?? const Uuid().v4(),
+                receiverName: nameController.text.trim(),
+                phoneNumber: phoneController.text.trim(),
+                province: provinceController.text.trim(),
+                district: districtController.text.trim(),
+                ward: wardController.text.trim(),
+                streetDetail: streetController.text.trim(),
+              );
+              Navigator.pop(context, newAddress);
+            },
+            child: const Text('Lưu'),
+          )
         ],
       ),
     );
@@ -93,25 +183,36 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
         itemCount: addresses.length,
         separatorBuilder: (_, __) => const Divider(),
         itemBuilder: (context, index) {
-          final isDefault = index == defaultIndex;
+          final address = addresses[index];
+          final isDefault = address.id == defaultAddressId;
+
           return ListTile(
             leading: const Icon(Icons.location_on),
-            title: Text(addresses[index]),
-            subtitle: isDefault ? const Text('Địa chỉ mặc định', style: TextStyle(color: Colors.green)) : null,
+            title: Text(address.receiverName),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('SĐT: ${address.phoneNumber}'),
+                Text('Địa chỉ: ${address.fullAddress}'),
+                if (isDefault)
+                  const Text('Địa chỉ mặc định', style: TextStyle(color: Colors.green)),
+              ],
+            ),
             trailing: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') _editAddress(index);
                 if (value == 'delete') _deleteAddress(index);
                 if (value == 'default') {
                   setState(() {
-                    defaultIndex = index;
+                    defaultAddressId = address.id;
                   });
                 }
               },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Text('Chỉnh sửa')),
                 const PopupMenuItem(value: 'delete', child: Text('Xoá')),
-                if (!isDefault) const PopupMenuItem(value: 'default', child: Text('Đặt làm mặc định')),
+                if (!isDefault)
+                  const PopupMenuItem(value: 'default', child: Text('Đặt làm mặc định')),
               ],
             ),
           );
@@ -121,6 +222,28 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
         onPressed: _addAddress,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+extension on Address {
+  Address copyWith({
+    String? id,
+    String? receiverName,
+    String? phoneNumber,
+    String? province,
+    String? district,
+    String? ward,
+    String? streetDetail,
+  }) {
+    return Address(
+      id: id ?? this.id,
+      receiverName: receiverName ?? this.receiverName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      province: province ?? this.province,
+      district: district ?? this.district,
+      ward: ward ?? this.ward,
+      streetDetail: streetDetail ?? this.streetDetail,
     );
   }
 }

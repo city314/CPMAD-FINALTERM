@@ -3,9 +3,28 @@ import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 import 'manage_addresses_screen.dart';
 
-class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key});
+class AddressData {
+  static List<Address> addresses = [
+    Address(
+      id: '1',
+      receiverName: 'Nguyễn Văn A',
+      phoneNumber: '0901234567',
+      province: 'TP.HCM',
+      district: 'Quận 1',
+      ward: 'Phường Bến Nghé',
+      streetDetail: '123 Đường ABC',
+    ),
+  ];
 
+  static String defaultId = addresses.first.id;
+
+  static Address get defaultAddress =>
+      addresses.firstWhere((a) => a.id == defaultId);
+}
+
+class AccountScreen extends StatelessWidget {
+  AccountScreen({super.key});
+  final defaultAddress = AddressData.defaultAddress;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +119,7 @@ Widget _buildProfileCard(BuildContext context) {
           buildInfoRow(
             Icons.location_on,
             'Địa chỉ giao hàng',
-            AddressData.defaultAddress,
+            null,
             onTap: () {
               Navigator.push(
                 context,
@@ -136,7 +155,6 @@ Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback
 }
 // Info Option
 Widget _buildOptions(BuildContext context) {
-  final vouchers = ['GIAM10%', 'FREESHIP', 'KMHE2025'];
   final int points = 280; // hoặc gọi từ user.loyaltyPoints;
 
   return Column(
