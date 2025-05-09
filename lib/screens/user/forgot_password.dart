@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/screens/user/login.dart';
+import 'package:cpmad_final/service/UserService.dart';
 import 'package:go_router/go_router.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -23,20 +24,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    context.go('/forgot-password/otp');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Yêu cầu đặt lại mật khẩu đã được gửi đến $email')),
-    );
+    try {
+      final otp = await UserService.sendOtpToEmail(email);
+      context.goNamed('otp', extra: {
+        'email': email,
+        'otp': otp,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã gửi OTP đến $email')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override

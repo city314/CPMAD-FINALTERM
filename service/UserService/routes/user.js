@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
 router.post('/register', async (req, res) => {
   const { email, name, password, address } = req.body;
@@ -75,10 +77,10 @@ router.post('/forgot-password', async (req, res) => {
     // Tạo mã OTP ngẫu nhiên 6 chữ số
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Lưu OTP và thời gian tạo (tuỳ cách bạn muốn lưu - tạm thời response cho đơn giản)
-    user.otpCode = otpCode;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // hết hạn sau 5 phút
-    await user.save();
+//    // Lưu OTP và thời gian tạo (tuỳ cách bạn muốn lưu - tạm thời response cho đơn giản)
+//    user.otpCode = otpCode;
+//    user.otpExpires = Date.now() + 5 * 60 * 1000; // hết hạn sau 5 phút
+//    await user.save();
 
     // Gửi email qua Nodemailer
     const transporter = nodemailer.createTransport({
@@ -100,6 +102,33 @@ router.post('/forgot-password', async (req, res) => {
 
     res.json({ message: 'OTP đã được gửi đến email của bạn', otp: otpCode});
   } catch (error) {
+  console.error('Gửi mail lỗi:', error);
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: 'Thiếu email hoặc mật khẩu mới' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.updateOne(
+      { email },
+      { $set: { password: hashed } }
+    );
+
+    res.json({ message: 'Đặt lại mật khẩu thành công' });
+  } catch (error) {
+    console.error('Lỗi đổi mật khẩu:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 });

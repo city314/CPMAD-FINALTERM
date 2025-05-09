@@ -14,7 +14,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/account',
   routes: [
     GoRoute(
       path: '/',
@@ -34,7 +34,20 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/forgot-password/otp',
       name: 'otp',
-      builder: (context, state) => const OtpScreen(),
+      builder: (context, state) {
+        final data = state.extra as Map<String, dynamic>;
+        final email = data['email'] as String;
+        final otp = data['otp'] as String;
+        return OtpScreen(email: email, otp: otp);
+      },
+    ),
+    GoRoute(
+      path: '/forgot-password/otp/change-password',
+      name: 'change_password',
+      builder: (context, state) {
+        final email = state.extra as String;
+        return ChangePasswordScreen(email: email);
+      },
     ),
     GoRoute(
       path: '/products',
@@ -65,11 +78,6 @@ final GoRouter appRouter = GoRouter(
       path: '/forgot-password',
       name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
-    ),
-    GoRoute(
-      path: '/forgot-password/otp/change-password',
-      name: 'change_password',
-      builder: (context, state) => const ChangePasswordScreen(),
     ),
   ],
 );

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cpmad_final/screens/user/login.dart';
+import 'package:go_router/go_router.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String otp;
+  final String email;
+  const OtpScreen({super.key, required this.email, required this.otp});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -13,29 +16,34 @@ class _OtpScreenState extends State<OtpScreen> {
   bool _isLoading = false;
 
   void _submitForgotPassword() async {
-    String otp = _otpController.text.trim();
+    String enteredOtp = _otpController.text.trim();
+    String actualOtp = widget.otp; // OTP được truyền từ màn trước
 
-    if (otp.isEmpty) {
+    if (enteredOtp.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập mã OTP')),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Mã OTP đã được xác minh: $otp')),
-    );
+    if (enteredOtp == actualOtp) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Mã OTP chính xác')),
+      );
+      context.goNamed('change_password', extra: widget.email);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Mã OTP không đúng')),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,13 +132,10 @@ class _OtpScreenState extends State<OtpScreen> {
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
+                      context.go('/forgot-password');
                     },
                     child: const Text(
-                      'Quay lại đăng nhập',
+                      'Quay lại',
                       style: TextStyle(color: Colors.blueAccent),
                     ),
                   )
