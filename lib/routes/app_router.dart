@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -9,11 +8,11 @@ import '../../screens/user/productList.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
-import '../screens/user/account/change_password.dart';
-import '../screens/user/account/forgot_password.dart';
+import '../screens/user/change_password.dart';
+import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/account',
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
@@ -43,7 +42,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/account',
       name: 'account',
-      builder: (context, state) => const AccountScreen(),
+      builder: (context, state) => AccountScreen(),
     ),
     GoRoute(
       path: '/account/edit',

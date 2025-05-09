@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/screens/user/login.dart';
-import 'package:cpmad_final/screens/user/account/account_screen.dart';
 import 'routes/app_router.dart';
-// import 'package:cpmad_final/screens/user/account/account_screen.dart';
 
 void main() {
   runApp(const MyApp());
