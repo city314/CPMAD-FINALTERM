@@ -10,6 +10,7 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String selectedRange = 'Tháng này';
+
   final List<String> ranges = [
     'Hôm nay',
     'Tuần này',
@@ -90,7 +91,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
             isCurved: true,
             barWidth: 3,
-            gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent])
+            gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent]),
           ),
         ],
       ),

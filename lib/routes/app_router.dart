@@ -5,7 +5,7 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
-import '../screens/admin/AdminDashboardScreen.dart';
+import '../screens/admin/admin_product.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
@@ -74,7 +74,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/admin',
       name: 'admin',
-      builder: (context, state) => const AdminDashboardScreen(),
+      builder: (context, state) => const AdminProductManagementScreen(),
     ),
   ],
 );
