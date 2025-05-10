@@ -23,9 +23,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: Colors.blueAccent,
+        title: const Text('📊 Admin Dashboard'),
+        backgroundColor: Colors.indigo,
+        elevation: 2,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -34,24 +36,52 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Dashboard tổng quan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Tổng quan',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
                 DropdownButton<String>(
                   value: selectedRange,
-                  items: ranges.map((range) => DropdownMenuItem(value: range, child: Text(range))).toList(),
+                  items: ranges
+                      .map((range) =>
+                      DropdownMenuItem(value: range, child: Text(range)))
+                      .toList(),
                   onChanged: (value) => setState(() => selectedRange = value!),
                 )
               ],
             ),
             const SizedBox(height: 16),
             _buildOverviewGrid(),
-            const SizedBox(height: 24),
-            const Text('Biểu đồ Doanh thu theo thời gian', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 32),
+            const Text(
+              '📈 Doanh thu theo thời gian',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            SizedBox(height: 200, child: _buildLineChart()),
-            const SizedBox(height: 24),
-            const Text('Biểu đồ loại sản phẩm bán chạy', style: TextStyle(fontWeight: FontWeight.bold)),
+            Card(
+              elevation: 3,
+              shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(height: 220, child: _buildLineChart()),
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              '📊 Tỷ lệ loại sản phẩm bán chạy',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            SizedBox(height: 200, child: _buildPieChart()),
+            Card(
+              elevation: 3,
+              shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(height: 220, child: _buildPieChart()),
+              ),
+            ),
           ],
         ),
       ),
