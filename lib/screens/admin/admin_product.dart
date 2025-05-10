@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 class AdminProductManagementScreen extends StatefulWidget {
@@ -36,9 +37,8 @@ class _AdminProductManagementScreenState extends State<AdminProductManagementScr
     final categoryController = TextEditingController(text: product?.category ?? '');
     final discountController = TextEditingController(text: product?.discount.toString() ?? '0');
 
-    File? pickedImage = product != null && product.imageUrl.isNotEmpty
-        ? File(product.imageUrl)
-        : null;
+    Uint8List? pickedImageBytes;
+    File? pickedImageFile;
 
     showDialog(
       context: context,
@@ -95,20 +95,39 @@ class _AdminProductManagementScreenState extends State<AdminProductManagementScr
                         final picker = ImagePicker();
                         final picked = await picker.pickImage(source: ImageSource.gallery);
                         if (picked != null) {
-                          setState(() => pickedImage = File(picked.path));
+                          if (kIsWeb) {
+                            final bytes = await picked.readAsBytes();
+                            setState(() {
+                              pickedImageBytes = bytes;
+                              pickedImageFile = null; // clear for safety
+                            });
+                          } else {
+                            setState(() {
+                              pickedImageFile = File(picked.path);
+                              pickedImageBytes = null; // clear for safety
+                            });
+                          }
                         }
                       },
                       icon: const Icon(Icons.image),
                       label: const Text('Chọn ảnh từ thư viện'),
                     ),
                     const SizedBox(height: 8),
-                    pickedImage != null
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                    pickedImageBytes != null
+                        ? SizedBox(
+                      width: double.infinity,
+                      height: 180,
+                      child: Image.memory(
+                        pickedImageBytes!,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                        : pickedImageFile != null
+                        ? SizedBox(
+                      width: double.infinity,
+                      height: 180,
                       child: Image.file(
-                        pickedImage!,
-                        height: 100,
-                        width: double.infinity,
+                        pickedImageFile!,
                         fit: BoxFit.cover,
                       ),
                     )
@@ -130,7 +149,7 @@ class _AdminProductManagementScreenState extends State<AdminProductManagementScr
                       stock: int.tryParse(stockController.text) ?? 0,
                       category: categoryController.text.trim(),
                       discount: discount,
-                      imageUrl: pickedImage?.path ?? '',
+                      imageUrl: kIsWeb ? '' : pickedImageFile?.path ?? '',
                     );
                     setState(() {
                       if (isEditing && product != null) {
@@ -195,46 +214,84 @@ class _AdminProductManagementScreenState extends State<AdminProductManagementScr
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: _products.length,
-        itemBuilder: (context, index) {
-          final product = _products[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Image.asset(product.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text('₫${product.price} • ${product.category}'),
-                        Text('Kho: ${product.stock}'),
-                        if (product.discount > 0)
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
-                            child: Text('-${product.discount}%', style: const TextStyle(color: Colors.white)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWideScreen = constraints.maxWidth > 800;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: _products.length,
+            itemBuilder: (context, index) {
+              final product = _products[index];
+
+              // Xử lý chọn imageProvider tương thích Web/Mobile
+              final ImageProvider<Object> imageProvider = (() {
+                if (kIsWeb && product.imageUrl.startsWith('http')) {
+                  return NetworkImage(product.imageUrl) as ImageProvider<Object>;
+                } else if (!kIsWeb && File(product.imageUrl).existsSync()) {
+                  return FileImage(File(product.imageUrl)) as ImageProvider<Object>;
+                } else {
+                  return const AssetImage('assets/images/product/laptop.jpg') as ImageProvider<Object>;
+                }
+              })();
+
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: isWideScreen ? 600 : double.infinity),
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Image(
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            image: imageProvider,
+                            errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
                           ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text('₫${product.price} • ${product.category}'),
+                                Text('Kho: ${product.stock}'),
+                                if (product.discount > 0)
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text('-${product.discount}%', style: const TextStyle(color: Colors.white)),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _showProductForm(product: product, isEditing: true),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _deleteProduct(product),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  Column(
-                    children: [
-                      IconButton(icon: const Icon(Icons.edit), onPressed: () => _showProductForm(product: product, isEditing: true)),
-                      IconButton(icon: const Icon(Icons.delete), onPressed: () => _deleteProduct(product)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),

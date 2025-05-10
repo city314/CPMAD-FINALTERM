@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -6,6 +5,7 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
+import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_product.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
@@ -15,7 +15,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/account',
+  initialLocation: '/admin/products',
   routes: [
     GoRoute(
       path: '/',
@@ -83,7 +83,12 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/admin',
       name: 'admin',
-      builder: (context, state) => const AdminProductManagementScreen(),
+      builder: (context, state) => const AdminDashboardScreen(),
+    ),
+    GoRoute(
+        path: '/admin/products',
+        name: 'admin_products',
+        builder: (context, state) => const AdminProductManagementScreen(),
     ),
   ],
 );
