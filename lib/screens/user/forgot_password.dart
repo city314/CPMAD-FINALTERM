@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cpmad_final/screens/user/login.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:go_router/go_router.dart';
 
@@ -42,6 +41,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _goToLogin() {
+    context.go('/'); // quay về màn login
   }
 
   @override
@@ -128,18 +131,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'Quay lại đăng nhập',
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  )
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: _goToLogin,
+                        child: const Text(
+                          'Quay lại đăng nhập',
+                          style: TextStyle(color: Colors.blueAccent),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
