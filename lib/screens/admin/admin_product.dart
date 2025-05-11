@@ -218,82 +218,89 @@ class _AdminProductManagementScreenState extends State<AdminProductManagementScr
         builder: (context, constraints) {
           final isWideScreen = constraints.maxWidth > 800;
 
-          return ListView.builder(
+          return Padding(
             padding: const EdgeInsets.all(12),
-            itemCount: _products.length,
-            itemBuilder: (context, index) {
-              final product = _products[index];
-
-              // Xử lý chọn imageProvider tương thích Web/Mobile
-              final ImageProvider<Object> imageProvider = (() {
-                if (kIsWeb && product.imageUrl.startsWith('http')) {
-                  return NetworkImage(product.imageUrl) as ImageProvider<Object>;
-                } else if (!kIsWeb && File(product.imageUrl).existsSync()) {
-                  return FileImage(File(product.imageUrl)) as ImageProvider<Object>;
-                } else {
-                  return const AssetImage('assets/images/product/laptop.jpg') as ImageProvider<Object>;
-                }
-              })();
-
-              return Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: isWideScreen ? 600 : double.infinity),
-                  child: Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image(
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            image: imageProvider,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text('₫${product.price} • ${product.category}'),
-                                Text('Kho: ${product.stock}'),
-                                if (product.discount > 0)
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 4),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text('-${product.discount}%', style: const TextStyle(color: Colors.white)),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => _showProductForm(product: product, isEditing: true),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _deleteProduct(product),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+            child: isWideScreen
+                ? GridView.builder(
+              itemCount: _products.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 3 / 2,
+              ),
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return _buildProductCard(product);
+              },
+            )
+                : ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return _buildProductCard(product);
+              },
+            ),
           );
         },
+      ),
+    );
+  }
+  Widget _buildProductCard(Product product) {
+    final ImageProvider<Object> imageProvider = (() -> ImageProvider<Object> {
+      if (kIsWeb && product.imageUrl.startsWith('http')) {
+        return NetworkImage(product.imageUrl);
+      } else if (!kIsWeb && File(product.imageUrl).existsSync()) {
+        return FileImage(File(product.imageUrl));
+      } else {
+        return const AssetImage('assets/images/product/laptop.jpg');
+      }
+    })();
+
+    return Card(
+      elevation: 3,
+      child: SizedBox(
+        height: 250, // thêm dòng này để tránh overflow trong GridView
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image(
+                image: imageProvider,
+                width: double.infinity,
+                height: 100,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+              ),
+              const SizedBox(height: 8),
+              Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text('₫${product.price}'),
+              Text('Kho: ${product.stock}'),
+              if (product.discount > 0)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
+                  child: Text('-${product.discount}%', style: const TextStyle(color: Colors.white)),
+                ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showProductForm(product: product, isEditing: true),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _deleteProduct(product),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
