@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../models/Address.dart';
+import '../../../models/address.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 

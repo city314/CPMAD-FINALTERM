@@ -1,0 +1,113 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'admin_bottom_navbar.dart';
+import 'admin_dashboard.dart';
+import 'admin_product.dart';
+import 'admin_top_navbar.dart';
+
+class AdminHome extends StatefulWidget {
+  final Widget child;
+  final int selectedIndex;
+  final ValueChanged<int> onTabChanged;
+  final String userName;
+  final String userRole;
+  final String userAvatarUrl;
+
+  const AdminHome({
+    Key? key,
+    required this.child,
+    required this.selectedIndex,
+    required this.onTabChanged,
+    required this.userName,
+    required this.userRole,
+    required this.userAvatarUrl,
+  }) : super(key: key);
+
+  @override
+  State<AdminHome> createState() => _AdminHomeState();
+}
+
+class _AdminHomeState extends State<AdminHome> {
+  int _currentIndex = 0;
+
+  // Đặt tiêu đề AppBar cho từng tab (dùng trên mobile)
+  final List<String> _titles = [
+    'Dashboard',
+    'Product Management',
+    // nếu có thêm: 'User Management', ...
+  ];
+
+  void _openProductForm() {
+    // TODO: showDialog hoặc push màn form thêm product
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery
+        .of(context)
+        .size
+        .width < 800;
+
+    // Danh sách “body” cho từng tab
+    final pages = <Widget>[
+      const AdminDashboardScreen(),
+      AdminProductScreen(onAddProduct: _openProductForm),
+      // TODO: thêm các màn khác ở đây
+    ];
+
+    return Scaffold(
+      // Trên web ta dùng sidebar, trên mobile mới dùng AppBar
+      appBar: isMobile
+          ? AppBar(
+        title: Text(_titles[_currentIndex]),
+        actions: [
+          Row(
+            children: [
+              Text(widget.userName, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              CircleAvatar(
+                radius: 16,
+                backgroundImage: NetworkImage(widget.userAvatarUrl),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+        ],
+      )
+          : null,
+
+      // Nội dung chính
+      body: isMobile
+          ? pages[_currentIndex]
+          : Row(
+        children: [
+          AdminTopNavbar(
+            selectedIndex: _currentIndex,
+            onItemSelected: (i) => setState(() => _currentIndex = i),
+            userAvatarUrl: widget.userAvatarUrl,
+            userName: widget.userName,
+            userRole: widget.userRole,
+          ),
+          Expanded(child: pages[_currentIndex]),
+        ],
+      ),
+
+      // Nút thêm product chỉ hiện trên mobile và khi đang ở tab Product (index = 1)
+      floatingActionButton: isMobile && _currentIndex == 1
+          ? FloatingActionButton.extended(
+        onPressed: _openProductForm,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Product'),
+      )
+          : null,
+
+      // Bottom navbar chỉ trên mobile
+      bottomNavigationBar: isMobile
+          ? AnimatedBottomNavBar(
+        onItemSelected: (i) => setState(() => _currentIndex = i),
+      )
+          : null,
+    );
+  }
+}
+

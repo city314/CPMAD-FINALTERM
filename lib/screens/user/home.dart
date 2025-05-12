@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Laptop Gaming ROG',
       'price': '29.990.000₫',
-      'image': 'assets/images/product/laptop.jpg',
+      'image': 'assets/images/product/laptop1.png',
     },
     {
       'name': 'PC Đồ họa',
@@ -534,7 +534,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Image.asset(
-                'assets/images/product/laptop.jpg', // Đảm bảo có ảnh trong assets
+                'assets/images/product/laptop1.png', // Đảm bảo có ảnh trong assets
                 fit: BoxFit.cover,
               ),
             ),
