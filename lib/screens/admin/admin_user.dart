@@ -1,5 +1,8 @@
+import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AdminUserScreen extends StatefulWidget {
   const AdminUserScreen({super.key});
@@ -9,32 +12,30 @@ class AdminUserScreen extends StatefulWidget {
 }
 
 class _AdminUserScreenState extends State<AdminUserScreen> {
-  final List<User> users = [
-    User(
-      id: 'u001',
-      avatar: 'https://i.pravatar.cc/150?img=1',
-      email: 'a@gmail.com',
-      name: 'Nguyễn Văn A',
-      gender: 'Nam',
-      birthday: '2000-05-10',
-      phone: '0901234567',
-      role: 'customer',
-      status: 'active',
-      timeCreate: DateTime.now().subtract(const Duration(days: 12)),
-      addresses: [
-        Address(
-          id: 'a1',
-          receiverName: 'Nguyễn Văn A',
-          phone: '0901234567',
-          address: '12 Trần Hưng Đạo',
-          commune: 'Phường 1',
-          district: 'Q1',
-          city: 'TP.HCM',
-          isDefault: true,
-        ),
-      ],
-    ),
-  ];
+  List<User> users = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  void _loadUsers() async {
+    try {
+      final result = await UserService.fetchUsers();
+      setState(() {
+        users = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Lỗi fetchUsers: $e');
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lỗi khi tải danh sách người dùng'), backgroundColor: Colors.red),
+      );
+    }
+  }
 
   void _toggleStatus(User user) {
     showDialog(
@@ -54,11 +55,21 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               child: const Text('Hủy'),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  user.status = isBanning ? 'inactive' : 'active';
-                });
+              onPressed: () async {
+                final newStatus = isBanning ? 'inactive' : 'active';
+                final success = await UserService.updateUserStatus(user.email, newStatus);
                 Navigator.pop(dialogContext);
+
+                if (success) {
+                  setState(() => user.status = newStatus);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Cập nhật trạng thái thành công FE'), backgroundColor: Colors.green),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi khi cập nhật trạng thái FE'), backgroundColor: Colors.red),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isBanning ? Colors.red : Colors.green,
@@ -117,13 +128,20 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   void _editUser(User user) {
     final nameController = TextEditingController(text: user.name);
     final emailController = TextEditingController(text: user.email);
-    final genderController = TextEditingController(text: user.gender);
+
     final phoneController = TextEditingController(text: user.phone);
-    final birthdayController = TextEditingController(text: user.birthday);
+
+    String selectedGender = user.gender;
+    DateTime? selectedBirthday = DateTime.tryParse(user.birthday);
 
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
+        final birthdayTextController = TextEditingController(
+          text: user.birthday.isNotEmpty
+              ? '${selectedBirthday?.day.toString().padLeft(2, '0')}/${selectedBirthday?.month.toString().padLeft(2, '0')}/${selectedBirthday?.year}'
+              : '',
+        );
         return AlertDialog(
           title: const Text('Chỉnh sửa thông tin'),
           content: SingleChildScrollView(
@@ -137,13 +155,33 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                   controller: emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
                 ),
-                TextField(
-                  controller: genderController,
+                DropdownButtonFormField<String>(
+                  value: selectedGender.isNotEmpty ? selectedGender : null,
                   decoration: const InputDecoration(labelText: 'Giới tính'),
+                  items: ['Male', 'Female']
+                      .map((gender) => DropdownMenuItem(value: gender, child: Text(gender)))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) selectedGender = value;
+                  },
                 ),
-                TextField(
-                  controller: birthdayController,
+                TextFormField(
+                  controller: birthdayTextController,
+                  readOnly: true,
                   decoration: const InputDecoration(labelText: 'Ngày sinh'),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedBirthday ?? DateTime(2000),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() => selectedBirthday = picked);
+                      birthdayTextController.text =
+                      '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                    }
+                  },
                 ),
                 TextField(
                   controller: phoneController,
@@ -158,18 +196,29 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               child: const Text('Hủy'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   user.name = nameController.text;
                   user.email = emailController.text;
-                  user.gender = genderController.text;
-                  user.birthday = birthdayController.text;
+                  user.gender = selectedGender;
+                  user.birthday = selectedBirthday != null
+                      ? '${selectedBirthday!.year}-${selectedBirthday!.month.toString().padLeft(2, '0')}-${selectedBirthday!.day.toString().padLeft(2, '0')}'
+                      : '';
                   user.phone = phoneController.text;
                 });
+
+                final success = await UserService.updateUser(user);
                 Navigator.pop(dialogContext);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Cập nhật thành công' : 'Lỗi khi cập nhật người dùng'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
               },
               child: const Text('Lưu'),
-            ),
+            )
           ],
         );
       },
@@ -180,6 +229,14 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (users.isEmpty) {
+      return const Center(child: Text('Không có người dùng nào.'));
+    }
 
     if (width < 800) {
       // Mobile or small tablet: List card layout

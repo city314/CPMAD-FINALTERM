@@ -193,4 +193,39 @@ class UserService {
     }
   }
 
+  static Future<List<User>> fetchUsers() async {
+    final response = await http.get(Uri.parse('$_url'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => User.fromJson(e)).toList();
+    } else {
+      throw Exception('Không thể tải danh sách người dùng');
+    }
+  }
+
+  static Future<bool> updateUser(User user) async {
+    final response = await http.put(
+      Uri.parse('$_url/${user.id}'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': user.name,
+        'email': user.email,
+        'gender': user.gender,
+        'birthday': user.birthday,
+        'phone': user.phone,
+      }),
+    );
+
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> updateUserStatus(String email, String newStatus) async {
+    final response = await http.patch(
+      Uri.parse('$_url/status/$email'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'status': newStatus}),
+    );
+
+    return response.statusCode == 200;
+  }
 }

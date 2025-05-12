@@ -5,6 +5,7 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
+import '../screens/admin/admin_chat.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_product.dart';
 import '../screens/admin/admin_user.dart';
@@ -17,7 +18,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/users',
+  initialLocation: '/admin/chat',
   routes: [
     GoRoute(
       path: '/',
@@ -137,11 +138,11 @@ final GoRouter appRouter = GoRouter(
         //   name: 'admin_coupons',
         //   builder: (c, s) => const AdminCouponScreen(),
         // ),
-        // GoRoute(
-        //   path: '/admin/chat',
-        //   name: 'admin_chat',
-        //   builder: (c, s) => const AdminChatScreen(),
-        // ),
+        GoRoute(
+          path: '/admin/chat',
+          name: 'admin_chat',
+          builder: (c, s) => CustomerSupportScreen(),
+        ),
       ],
     ),
   ],
