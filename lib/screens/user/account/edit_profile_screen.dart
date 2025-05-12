@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../pattern/current_user.dart';
+import '../../../service/UserService.dart';
 import 'change_password_after_login.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -25,14 +28,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isSaving = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cập nhật thông tin thành công')),
-    );
+    try {
+      await UserService.updateUserProfile(
+        oldEmail: CurrentUser().email ?? '', // hoặc truyền trực tiếp
+        name: name,
+        newEmail: email,
+      );
 
-    Navigator.pop(context); // quay về trang tài khoản
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cập nhật thông tin thành công')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -102,10 +117,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChangePasswordAfterLoginScreen()),
-                    );
+                    context.go('/account/change-password-after-login');
                   },
                   icon: const Icon(Icons.vpn_key, color: Colors.blueAccent),
                   label: const Text('Đổi mật khẩu', style: TextStyle(color: Colors.blueAccent)),
