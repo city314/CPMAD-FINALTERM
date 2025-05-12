@@ -14,9 +14,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 0;
   String _searchKeyword = '';
   final List<String> _sliderImages = [
-  'assets/images/slider/slider1.png',
-  'assets/images/slider/slider2.png',
-  'assets/images/slider/slider3.jpg',
+    'assets/images/slider/slider1.png',
+    'assets/images/slider/slider2.png',
+    'assets/images/slider/slider3.jpg',
   ];
   final List<Map<String, dynamic>> categories = [
     {'name': 'Laptop', 'icon': Icons.laptop},
@@ -78,6 +78,34 @@ class _HomeScreenState extends State<HomeScreen> {
       'name': 'Webcam Full HD',
       'price': '1.190.000₫',
       'image': 'assets/images/product/webcam.jpg',
+    },
+  ];
+
+  final List<Map<String, dynamic>> promotionProducts = [
+    {
+      'name': 'Laptop Gaming MSI',
+      'price': '24.990.000₫',
+      'image': 'assets/images/product/laptop3.jpg',
+    },
+    {
+      'name': 'PC Workstation',
+      'price': '32.990.000₫',
+      'image': 'assets/images/product/pc3.jpg',
+    },
+    {
+      'name': 'Màn hình 4K 32"',
+      'price': '8.990.000₫',
+      'image': 'assets/images/product/monitor3.jpg',
+    },
+    {
+      'name': 'Bàn phím Gaming RGB',
+      'price': '2.490.000₫',
+      'image': 'assets/images/product/keyboard2.jpg',
+    },
+    {
+      'name': 'Chuột Gaming RGB',
+      'price': '1.290.000₫',
+      'image': 'assets/images/product/mouse2.jpg',
     },
   ];
 
@@ -225,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) => const SizedBox(width: 18),
                     itemBuilder: (context, index) {
                       return Card(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -257,84 +285,93 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            // Hot Sale
+            SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.local_fire_department, color: Colors.red, size: 28),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Hot Sale',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 220,
-              child: Center(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  itemCount: hotSaleProducts.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final product = hotSaleProducts[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                      child: Container(
-                        width: 160,
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  product['image'],
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              product['name'],
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              product['price'],
-                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 13),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                // TODO: Thêm vào giỏ hàng
-                              },
-                              icon: const Icon(Icons.add_shopping_cart, size: 16),
-                              label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.local_fire_department, color: Colors.red, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Hot Sale',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
+                    ),
+                  ],
                 ),
               ),
             ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: hotSaleProducts.length,
+                itemBuilder: (context, index) {
+                  final product = hotSaleProducts[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                product['image'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            product['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            product['price'],
+                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 10),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Center(
@@ -354,84 +391,93 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            // Sản phẩm mới
+            SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.new_releases, color: Colors.blueAccent, size: 28),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Sản phẩm mới',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueAccent),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 220,
-              child: Center(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  itemCount: newProducts.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final product = newProducts[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                      child: Container(
-                        width: 160,
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  product['image'],
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              product['name'],
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              product['price'],
-                              style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 13),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                // TODO: Thêm vào giỏ hàng
-                              },
-                              icon: const Icon(Icons.add_shopping_cart, size: 16),
-                              label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.new_releases, color: Colors.blueAccent, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Sản phẩm mới',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                    ),
+                  ],
                 ),
               ),
             ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: newProducts.length,
+                itemBuilder: (context, index) {
+                  final product = newProducts[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                product['image'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            product['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            product['price'],
+                            style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 10),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Center(
@@ -441,6 +487,631 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Sản phẩm khuyến mãi
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.local_offer, color: Colors.orange, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Sản phẩm khuyến mãi',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.orange),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: promotionProducts.length,
+                itemBuilder: (context, index) {
+                  final product = promotionProducts[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                product['image'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            product['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            product['price'],
+                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm khuyến mãi
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Danh mục Laptop
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.laptop, color: Colors.indigo, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Laptop',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/product/laptop${index + 1}.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Laptop Gaming ${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(index + 1) * 5}.990.000₫',
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm Laptop
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Danh mục PC
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.desktop_windows, color: Colors.indigo, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'PC',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/product/pc${index + 1}.jpg',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'PC Gaming ${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(index + 1) * 7}.990.000₫',
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm PC
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Danh mục Tai nghe
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.headphones, color: Colors.indigo, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Tai nghe',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/product/headphone${index + 1}.jpg',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tai nghe Gaming ${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(index + 1) * 1}.990.000₫',
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm Tai nghe
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Danh mục Màn hình
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.monitor, color: Colors.indigo, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Màn hình',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/product/monitor${index + 1}.jpg',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Màn hình Gaming ${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(index + 1) * 3}.990.000₫',
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm Màn hình
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text('Xem tất cả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            // Danh mục Bàn phím
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.keyboard, color: Colors.indigo, size: 28),
+                    const SizedBox(width: 13),
+                    const Text(
+                      'Bàn phím',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 5,
+                  childAspectRatio: 1.1,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/product/keyboard${index + 1}.jpg',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Bàn phím Gaming ${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(index + 1) * 2}.990.000₫',
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Thêm vào giỏ hàng
+                            },
+                            icon: const Icon(Icons.add_shopping_cart, size: 16),
+                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Xem tất cả sản phẩm Bàn phím
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     shape: RoundedRectangleBorder(
