@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../models/address.dart';
+import '../../../models/user.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 
@@ -84,11 +84,11 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
 
   Future<Address?> _showAddressDialog({Address? initial}) {
     final nameController = TextEditingController(text: initial?.receiverName ?? '');
-    final phoneController = TextEditingController(text: initial?.phoneNumber ?? '');
-    final provinceController = TextEditingController(text: initial?.province ?? '');
+    final phoneController = TextEditingController(text: initial?.phone ?? '');
+    final provinceController = TextEditingController(text: initial?.city ?? '');
     final districtController = TextEditingController(text: initial?.district ?? '');
-    final wardController = TextEditingController(text: initial?.ward ?? '');
-    final streetController = TextEditingController(text: initial?.streetDetail ?? '');
+    final wardController = TextEditingController(text: initial?.commune ?? '');
+    final streetController = TextEditingController(text: initial?.address ?? '');
 
     return showDialog<Address>(
       context: context,
@@ -133,11 +133,11 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
               final newAddress = Address(
                 id: initial?.id ?? const Uuid().v4(),
                 receiverName: nameController.text.trim(),
-                phoneNumber: phoneController.text.trim(),
-                province: provinceController.text.trim(),
+                phone: phoneController.text.trim(),
+                city: provinceController.text.trim(),
                 district: districtController.text.trim(),
-                ward: wardController.text.trim(),
-                streetDetail: streetController.text.trim(),
+                commune: wardController.text.trim(),
+                address: streetController.text.trim(),
                 isDefault: initial?.isDefault ?? false,
               );
               Navigator.pop(context, newAddress);
@@ -172,7 +172,7 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('SĐT: ${address.phoneNumber}'),
+                Text('SĐT: ${address.phone}'),
                 Text('Địa chỉ: ${address.fullAddress}'),
                 if (isDefault)
                   const Text('Địa chỉ mặc định', style: TextStyle(color: Colors.green)),
@@ -219,11 +219,11 @@ extension on Address {
     return Address(
       id: id ?? this.id,
       receiverName: receiverName ?? this.receiverName,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      province: province ?? this.province,
+      phone: phoneNumber ?? this.phone,
+      city: province ?? this.city,
       district: district ?? this.district,
-      ward: ward ?? this.ward,
-      streetDetail: streetDetail ?? this.streetDetail,
+      commune: ward ?? this.commune,
+      address: streetDetail ?? this.address,
       isDefault: isDefault ?? this.isDefault,
     );
   }

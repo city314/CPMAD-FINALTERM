@@ -33,6 +33,8 @@ class Address {
     isDefault: json['default'] as bool,
   );
 
+  get fullAddress => '$address, $commune, $district, $city';
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'receiver_name': receiverName,
