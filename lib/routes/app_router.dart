@@ -88,7 +88,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
         path: '/admin/products',
         name: 'admin_products',
-        builder: (context, state) => const AdminProductManagementScreen(),
+        builder: (context, state) => AdminProductScreen(),
     ),
   ],
 );

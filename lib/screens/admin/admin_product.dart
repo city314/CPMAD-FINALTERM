@@ -1,325 +1,342 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
 
-class AdminProductManagementScreen extends StatefulWidget {
-  const AdminProductManagementScreen({super.key});
+class AdminProductScreen extends StatefulWidget {
+  const AdminProductScreen({super.key});
 
   @override
-  State<AdminProductManagementScreen> createState() => _AdminProductManagementScreenState();
+  State<AdminProductScreen> createState() => _AdminProductScreenState();
 }
 
-class _AdminProductManagementScreenState extends State<AdminProductManagementScreen> {
-  final List<Product> _products = [
+class _AdminProductScreenState extends State<AdminProductScreen> {
+  final List<Product> productList = [
     Product(
-      name: 'Laptop ABC',
-      price: 15000000,
-      stock: 10,
+      id: 'p001',
+      name: 'Gaming Laptop ROG Strix',
+      brand: 'ASUS',
+      price: 30000000,
+      discount: 10,
+      description:
+      'Laptop gaming hiệu năng cao, chip Intel Gen 13, card RTX 4060, phù hợp cho cả học tập và giải trí.',
       category: 'Laptop',
-      discount: 20,
-      imageUrl: 'assets/images/product/laptop.jpg',
+      images: ['laptop1.png', 'laptop2.png', 'laptop3.png'],
+      variants: [
+        ProductVariant(id: 'v001', name: '16GB RAM', stock: 10),
+        ProductVariant(id: 'v002', name: '32GB RAM', stock: 5),
+      ],
+      rating: 4.8,
+      reviews: ['Sản phẩm rất tốt', 'Hiệu năng ổn định'],
+      isPromotional: true,
+      isNew: true,
+      isBestSeller: true,
+      createdAt: DateTime.now(),
     ),
     Product(
-      name: 'Chuột XYZ',
-      price: 500000,
-      stock: 50,
-      category: 'Phụ kiện',
+      id: 'p002',
+      name: 'SSD Samsung 980 Pro',
+      brand: 'Samsung',
+      price: 4500000,
       discount: 0,
-      imageUrl: 'assets/images/product/laptop.jpg',
+      description:
+      'SSD tốc độ cao chuẩn PCIe Gen4, dung lượng 1TB, phù hợp cho nhu cầu chơi game và làm việc chuyên sâu.',
+      category: 'SSD',
+      images: ['ssd1.png', 'ssd2.png', 'ssd3.png'],
+      variants: [
+        ProductVariant(id: 'v003', name: '500GB', stock: 12),
+        ProductVariant(id: 'v004', name: '1TB', stock: 20),
+      ],
+      rating: 4.5,
+      reviews: ['Tốc độ cực nhanh', 'Đáng tiền'],
+      isPromotional: false,
+      isNew: false,
+      isBestSeller: true,
+      createdAt: DateTime.now(),
     ),
   ];
 
-  void _showProductForm({Product? product, required bool isEditing}) {
-    final nameController = TextEditingController(text: product?.name ?? '');
-    final priceController = TextEditingController(text: product?.price.toString() ?? '');
-    final stockController = TextEditingController(text: product?.stock.toString() ?? '');
-    final categoryController = TextEditingController(text: product?.category ?? '');
-    final discountController = TextEditingController(text: product?.discount.toString() ?? '0');
-
-    Uint8List? pickedImageBytes;
-    File? pickedImageFile;
+  void _openProductForm({Product? product}) {
+    final isEditing = product != null;
+    final nameCtrl = TextEditingController(text: product?.name ?? '');
+    final brandCtrl = TextEditingController(text: product?.brand ?? '');
+    final priceCtrl = TextEditingController(text: product?.price.toString() ?? '');
+    final discountCtrl = TextEditingController(text: product?.discount.toString() ?? '');
+    final categoryCtrl = TextEditingController(text: product?.category ?? '');
+    final descriptionCtrl = TextEditingController(text: product?.description ?? '');
 
     showDialog(
       context: context,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(isEditing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: 'Tên sản phẩm'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Giá (₫)'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: stockController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Tồn kho'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: categoryController,
-                      decoration: const InputDecoration(labelText: 'Danh mục'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: discountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Khuyến mãi (%)'),
-                      onChanged: (value) {
-                        final intVal = int.tryParse(value) ?? 0;
-                        if (intVal > 50) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('⚠️ Khuyến mãi tối đa là 50%'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    isEditing ? 'Sửa sản phẩm' : 'Thêm sản phẩm',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Tên sản phẩm')),
+                  TextField(controller: brandCtrl, decoration: const InputDecoration(labelText: 'Thương hiệu')),
+                  TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Giá')),
+                  TextField(controller: discountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Giảm giá (%)')),
+                  TextField(controller: categoryCtrl, decoration: const InputDecoration(labelText: 'Danh mục')),
+                  TextField(controller: descriptionCtrl, decoration: const InputDecoration(labelText: 'Mô tả'), maxLines: 3),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.save),
+                    label: const Text('Lưu'),
+                    onPressed: () {
+                      final newProduct = Product(
+                        id: isEditing ? product!.id : DateTime.now().millisecondsSinceEpoch.toString(),
+                        name: nameCtrl.text,
+                        brand: brandCtrl.text,
+                        price: double.tryParse(priceCtrl.text) ?? 0,
+                        discount: double.tryParse(discountCtrl.text) ?? 0,
+                        description: descriptionCtrl.text,
+                        category: categoryCtrl.text,
+                        images: ['placeholder.png'],
+                        variants: product?.variants ?? [],
+                        rating: 0,
+                        reviews: [],
+                        isPromotional: false,
+                        isNew: false,
+                        isBestSeller: false,
+                        createdAt: DateTime.now(),
+                      );
+
+                      setState(() {
+                        if (isEditing) {
+                          final index = productList.indexWhere((p) => p.id == product!.id);
+                          productList[index] = newProduct;
+                        } else {
+                          productList.add(newProduct);
                         }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final picker = ImagePicker();
-                        final picked = await picker.pickImage(source: ImageSource.gallery);
-                        if (picked != null) {
-                          if (kIsWeb) {
-                            final bytes = await picked.readAsBytes();
-                            setState(() {
-                              pickedImageBytes = bytes;
-                              pickedImageFile = null; // clear for safety
-                            });
-                          } else {
-                            setState(() {
-                              pickedImageFile = File(picked.path);
-                              pickedImageBytes = null; // clear for safety
-                            });
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.image),
-                      label: const Text('Chọn ảnh từ thư viện'),
-                    ),
-                    const SizedBox(height: 8),
-                    pickedImageBytes != null
-                        ? SizedBox(
-                      width: double.infinity,
-                      height: 180,
-                      child: Image.memory(
-                        pickedImageBytes!,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : pickedImageFile != null
-                        ? SizedBox(
-                      width: double.infinity,
-                      height: 180,
-                      child: Image.file(
-                        pickedImageFile!,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : const Text('Chưa chọn ảnh'),
-                  ],
-                ),
+                      });
+
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Huỷ'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final discount = (int.tryParse(discountController.text) ?? 0).clamp(0, 50);
-                    final newProduct = Product(
-                      name: nameController.text.trim(),
-                      price: int.tryParse(priceController.text) ?? 0,
-                      stock: int.tryParse(stockController.text) ?? 0,
-                      category: categoryController.text.trim(),
-                      discount: discount,
-                      imageUrl: kIsWeb ? '' : pickedImageFile?.path ?? '',
-                    );
-                    setState(() {
-                      if (isEditing && product != null) {
-                        final index = _products.indexOf(product);
-                        _products[index] = newProduct;
-                      } else {
-                        _products.add(newProduct);
-                      }
-                    });
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Lưu'),
-                ),
-              ],
-            );
-          },
+            ),
+          ),
         );
       },
     );
   }
 
-  void _deleteProduct(Product product) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc muốn xoá sản phẩm "${product.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
-          ElevatedButton(
-            onPressed: () {
-              setState(() => _products.remove(product));
-              Navigator.pop(context);
-            },
-            child: const Text('Xoá'),
+  Widget _buildMobileList() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(12),
+      itemCount: productList.length,
+      separatorBuilder: (_, __) => const Divider(),
+      itemBuilder: (context, index) {
+        final product = productList[index];
+        final discountedPrice = product.price * (1 - product.discount / 100);
+
+        return ListTile(
+          leading: const Icon(Icons.devices_other, size: 36, color: Colors.indigo),
+          title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Brand: ${product.brand} • ${product.category}'),
+              Text(
+                'Variants: ${product.variants.map((v) => v.name).join(', ')}',
+                style: const TextStyle(fontSize: 13),
+              ),
+              Text(
+                product.discount > 0
+                    ? '₫${discountedPrice.toStringAsFixed(0)} (Giảm ${product.discount.toInt()}%)'
+                    : '₫${product.price.toStringAsFixed(0)}',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+              Row(
+                children: [
+                  if (product.isNew) _buildBadge('Mới', Colors.green),
+                  if (product.isPromotional) _buildBadge('Khuyến mãi', Colors.orange),
+                  if (product.isBestSeller) _buildBadge('Bán chạy', Colors.purple),
+                ],
+              )
+            ],
           ),
-        ],
+          trailing: PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'edit') {
+                _openProductForm(product: product);
+              } else if (value == 'delete') {
+                setState(() {
+                  productList.removeWhere((p) => p.id == product.id);
+                });
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBadge(String label, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(right: 4, top: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
       ),
+      child: Text(label, style: TextStyle(fontSize: 11, color: color)),
+    );
+  }
+
+  Widget _buildWebTable() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: SingleChildScrollView(
+              child: DataTable(
+                columnSpacing: 24,
+                headingRowHeight: 48,
+                dataRowHeight: 64,
+                columns: const [
+                  DataColumn(label: Text('Tên')),
+                  DataColumn(label: Text('Thương hiệu')),
+                  DataColumn(label: Text('Danh mục')),
+                  DataColumn(label: Text('Biến thể')),
+                  DataColumn(label: Text('Giá')),
+                  DataColumn(label: Text('Gắn nhãn')),
+                  DataColumn(label: Text('Thao tác')),
+                ],
+                rows: productList.map((product) {
+                  final discountedPrice = product.price * (1 - product.discount / 100);
+                  final tags = [
+                    if (product.isNew) 'Mới',
+                    if (product.isPromotional) 'KM',
+                    if (product.isBestSeller) 'Bán chạy',
+                  ].join(', ');
+
+                  return DataRow(cells: [
+                    DataCell(Text(product.name)),
+                    DataCell(Text(product.brand)),
+                    DataCell(Text(product.category)),
+                    DataCell(Text(product.variants.map((v) => v.name).join(', '))),
+                    DataCell(Text(
+                      product.discount > 0
+                          ? '₫${discountedPrice.toStringAsFixed(0)} (Giảm ${product.discount.toInt()}%)'
+                          : '₫${product.price.toStringAsFixed(0)}',
+                      style: const TextStyle(color: Colors.red),
+                    )),
+                    DataCell(Text(tags)),
+                    DataCell(
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            _openProductForm(product: product);
+                          } else if (value == 'delete') {
+                            setState(() {
+                              productList.removeWhere((p) => p.id == product.id);
+                            });
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Sửa')),
+                          PopupMenuItem(value: 'delete', child: Text('Xóa')),
+                        ],
+                      ),
+                    ),
+                  ]);
+                }).toList(),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 800;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        elevation: 4,
-        title: Row(
-          children: [
-            const Icon(Icons.inventory, size: 26),
-            const SizedBox(width: 8),
-            const Text('Quản lý sản phẩm', style: TextStyle(fontSize: 18)),
-          ],
-        ),
+        title: const Text('Admin Product Management'),
         actions: [
-          Tooltip(
-            message: 'Thêm sản phẩm mới',
-            child: IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () => _showProductForm(isEditing: false),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: CircleAvatar(
+              backgroundImage: AssetImage('assets/images/admin_avatar.png'),
             ),
-          ),
+          )
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWideScreen = constraints.maxWidth > 800;
-
-          return Padding(
-            padding: const EdgeInsets.all(12),
-            child: isWideScreen
-                ? GridView.builder(
-              itemCount: _products.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 3 / 2,
-              ),
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                return _buildProductCard(product);
-              },
-            )
-                : ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                return _buildProductCard(product);
-              },
-            ),
-          );
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          _openProductForm(); // Gọi modal thêm sản phẩm
         },
+        icon: const Icon(Icons.add),
+        label: const Text('Add Product'),
       ),
-    );
-  }
-  Widget _buildProductCard(Product product) {
-    final ImageProvider<Object> imageProvider = (() -> ImageProvider<Object> {
-      if (kIsWeb && product.imageUrl.startsWith('http')) {
-        return NetworkImage(product.imageUrl);
-      } else if (!kIsWeb && File(product.imageUrl).existsSync()) {
-        return FileImage(File(product.imageUrl));
-      } else {
-        return const AssetImage('assets/images/product/laptop.jpg');
-      }
-    })();
-
-    return Card(
-      elevation: 3,
-      child: SizedBox(
-        height: 250, // thêm dòng này để tránh overflow trong GridView
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image(
-                image: imageProvider,
-                width: double.infinity,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
-              ),
-              const SizedBox(height: 8),
-              Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text('₫${product.price}'),
-              Text('Kho: ${product.stock}'),
-              if (product.discount > 0)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
-                  child: Text('-${product.discount}%', style: const TextStyle(color: Colors.white)),
-                ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _showProductForm(product: product, isEditing: true),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _deleteProduct(product),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: isWeb ? _buildWebTable() : _buildMobileList(),
     );
   }
 }
 
 class Product {
+  final String id;
   final String name;
-  final int price;
-  final int stock;
+  final String brand;
+  final double price;
+  final double discount;
+  final String description;
   final String category;
-  final int discount;
-  final String imageUrl;
+  final List<String> images;
+  final List<ProductVariant> variants;
+  final double rating;
+  final List<String> reviews;
+  final bool isPromotional;
+  final bool isNew;
+  final bool isBestSeller;
+  final DateTime createdAt;
 
   Product({
+    required this.id,
     required this.name,
+    required this.brand,
     required this.price,
-    required this.stock,
-    required this.category,
     required this.discount,
-    required this.imageUrl,
+    required this.description,
+    required this.category,
+    required this.images,
+    required this.variants,
+    required this.rating,
+    required this.reviews,
+    required this.isPromotional,
+    required this.isNew,
+    required this.isBestSeller,
+    required this.createdAt,
+  });
+}
+
+class ProductVariant {
+  final String id;
+  final String name;
+  final int stock;
+
+  ProductVariant({
+    required this.id,
+    required this.name,
+    required this.stock,
   });
 }
