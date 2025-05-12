@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
 import 'admin_dashboard.dart';
@@ -6,18 +5,16 @@ import 'admin_product.dart';
 import 'admin_top_navbar.dart';
 
 class AdminHome extends StatefulWidget {
-  final Widget child;
-  final int selectedIndex;
-  final ValueChanged<int> onTabChanged;
+  // final Widget child;
+  // final int selectedIndex;
   final String userName;
   final String userRole;
   final String userAvatarUrl;
 
   const AdminHome({
     Key? key,
-    required this.child,
-    required this.selectedIndex,
-    required this.onTabChanged,
+    // required this.child,
+    // required this.selectedIndex,
     required this.userName,
     required this.userRole,
     required this.userAvatarUrl,
@@ -37,10 +34,6 @@ class _AdminHomeState extends State<AdminHome> {
     // nếu có thêm: 'User Management', ...
   ];
 
-  void _openProductForm() {
-    // TODO: showDialog hoặc push màn form thêm product
-  }
-
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery
@@ -51,7 +44,7 @@ class _AdminHomeState extends State<AdminHome> {
     // Danh sách “body” cho từng tab
     final pages = <Widget>[
       const AdminDashboardScreen(),
-      AdminProductScreen(onAddProduct: _openProductForm),
+      AdminProductScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 
@@ -92,15 +85,6 @@ class _AdminHomeState extends State<AdminHome> {
         ],
       ),
 
-      // Nút thêm product chỉ hiện trên mobile và khi đang ở tab Product (index = 1)
-      floatingActionButton: isMobile && _currentIndex == 1
-          ? FloatingActionButton.extended(
-        onPressed: _openProductForm,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
-      )
-          : null,
-
       // Bottom navbar chỉ trên mobile
       bottomNavigationBar: isMobile
           ? AnimatedBottomNavBar(
@@ -110,4 +94,3 @@ class _AdminHomeState extends State<AdminHome> {
     );
   }
 }
-
