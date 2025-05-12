@@ -1,6 +1,3 @@
-enum Role { admin, customer }
-enum Status { active, inactive }
-
 class Address {
   final String id;
   final String receiverName;
@@ -21,6 +18,19 @@ class Address {
     required this.city,
     required this.isDefault,
   });
+
+  static Address empty() => Address(
+    id: '',
+    receiverName: '',
+    phone: '',
+    address: '',
+    commune: '',
+    district: '',
+    city: '',
+    isDefault: false,
+  );
+
+  bool get isEmpty => id.isEmpty;
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
     id: json['id'] as String,
@@ -49,13 +59,15 @@ class Address {
 
 class User {
   final String? id;
-  final String avatar;
-  final String email;
-  final String name;
-  final String password;
+  String avatar;
+  String email;
+  String name;
+  String gender;
+  String birthday;
+  String phone;
   final List<Address> addresses;
-  final Role role;
-  final Status status;
+  final String role;
+  String status;
   final DateTime timeCreate;
 
   User({
@@ -63,7 +75,9 @@ class User {
     required this.avatar,
     required this.email,
     required this.name,
-    required this.password,
+    required this.gender,
+    required this.birthday,
+    required this.phone,
     required this.addresses,
     required this.role,
     required this.status,
@@ -75,13 +89,14 @@ class User {
     avatar: json['avatar'] as String,
     email: json['email'] as String,
     name: json['name'] as String,
-    password: json['password'] as String,
+    gender: json['gender'] as String,
+    birthday: json['birthday'] as String,
+    phone: json['phone'] as String,
     addresses: (json['address'] as List<dynamic>)
         .map((e) => Address.fromJson(e as Map<String, dynamic>))
         .toList(),
-    role: Role.values.firstWhere((e) => e.name == (json['role'] as String)),
-    status:
-    Status.values.firstWhere((e) => e.name == (json['status'] as String)),
+    role: json['role'] as String,
+    status: json['status'] as String,
     timeCreate: DateTime.parse(json['time_create'] as String),
   );
 
@@ -90,10 +105,12 @@ class User {
     'avatar': avatar,
     'email': email,
     'name': name,
-    'password': password,
+    'gender': gender,
+    'birthday': birthday,
+    'phone': phone,
     'address': addresses.map((a) => a.toJson()).toList(),
-    'role': role.name,
-    'status': status.name,
+    'role': role,
+    'status': name,
     'time_create': timeCreate.toIso8601String(),
   };
 }
