@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const userRoutes = require('./routes/user');
+const supportRoutes = require('./routes/customer_support');
 
 const app = express();
 const PORT = 3001;
@@ -18,6 +19,7 @@ connectDB();
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/customer-support', supportRoutes);
 
 // Khởi chạy server
 app.listen(PORT, () => {

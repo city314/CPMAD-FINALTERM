@@ -1,3 +1,4 @@
+import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -5,8 +6,10 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
+import '../screens/admin/admin_chat.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_product.dart';
+import '../screens/admin/admin_support.dart';
 import '../screens/admin/admin_wrapper.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
@@ -16,7 +19,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/dashboard',
+  initialLocation: '/admin/support',
   routes: [
     GoRoute(
       path: '/',
@@ -81,6 +84,11 @@ final GoRouter appRouter = GoRouter(
       name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
+    GoRoute(
+      path: '/products/detail',
+      name: 'product_detail',
+      builder: (context, state) => const ProductDetail(),
+    ),
     ShellRoute(
       // Wrapper duy nhất, quản lý AppBar/Sidebar/BottomNav
       builder: (context, state, child) {
@@ -136,11 +144,16 @@ final GoRouter appRouter = GoRouter(
         //   name: 'admin_coupons',
         //   builder: (c, s) => const AdminCouponScreen(),
         // ),
-        // GoRoute(
-        //   path: '/admin/chat',
-        //   name: 'admin_chat',
-        //   builder: (c, s) => const AdminChatScreen(),
-        // ),
+        GoRoute(
+          path: '/admin/support',
+          name: 'admin_support',
+          builder: (c, s) => const MessengerLikeChatListScreen(),
+        ),
+        GoRoute(
+          path: '/admin/chat',
+          name: 'admin_chat',
+          builder: (c, s) => const CustomerSupportScreen(),
+        ),
       ],
     ),
   ],

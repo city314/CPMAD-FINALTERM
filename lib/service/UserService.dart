@@ -10,6 +10,7 @@ import '../screens/user/home.dart';
 
 class UserService {
   static const String _url = 'http://localhost:3001/api/users';
+  static const String _urlSupport = 'http://localhost:3001/api/customer-support';
 
   static Future<void> registerUser({
     required String email,
@@ -227,5 +228,32 @@ class UserService {
     );
 
     return response.statusCode == 200;
+  }
+
+  static Future<String?> sendMessage({
+    required String userEmail,
+    required String text,
+    String image = '',
+    required bool isUser,
+  }) async {
+    print(userEmail);
+    final response = await http.post(
+      Uri.parse('$_urlSupport/support/sendMessage'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'customer_email': userEmail,
+        'text': text,
+        'image': image,
+        'isUser': isUser,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['chatId'];
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}');
+      return null;
+    }
   }
 }
