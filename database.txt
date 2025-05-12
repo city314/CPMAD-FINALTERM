@@ -150,13 +150,12 @@ Insert into products(name, category_id, brand_id, price, description, img_url, s
 
 
 Insert into products(name, category_id, brand_id, price, description, img_url, series,) values
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
-('', 'C2', 'B11', 0000, '', 'sony1.png', 'sony01'),
+('Tai nghe Bluetooth True Wireless Samsung Galaxy Buds 3 Pro', 'C2', 'B11', 4890000, 'Tai nghe SamSung Galaxy Buds 3 Pro trang bị dải tần âm rộng từ 2.4GHz đến 2.48GHz và phạm vi kết nối lên đến 10-12 mét giúp đảm bảo kết nối ổn định hơn. Sản phẩm trang bị công nghệ Bluetooth 5.0 + EDR kết hợp sạc không dây Qi và tương thích với cả dòng điện thoại thông minh iPhone và Android. Bên cạnh đó, hộp sạc có pin dung lượng là 400mAh , cung cấp thời gian sạc nhanh trong khoảng 1-2 giờ và đủ để sử dụng trong thời gian dài. Các loa được tích hợp bao gồm loa trầm 11mm và loa 6.5mm, mang lại âm thanh rõ ràng. ', 'ss1.png', 'ss01'),
+('Tai nghe Bluetooth True Wireless Samsung Galaxy Buds2 Pro', 'C2', 'B11', 2590000, 'Tai nghe true Wireless của Samsung có sự phát triển khá vượt trội so với những đối thủ khác, và hãng đã phát triển và chuẩn bị cho ra mắt sản phẩm mới mang tên Samsung Galaxy Buds2 Pronày. Nếu bạn quan tâm tới thiết bị này, thì có thể tham khảo thêm thông tin chi tiết ở phía dưới đây nhé.', 'ss2.png', 'ss02'),
+('Tai nghe Bluetooth True Wireless Samsung Galaxy Buds 3', 'C2', 'B11',3590000, 'Samsung Galaxy Buds 3 là mẫu tai nghe không dây sở hữu thiết kế Open-type cùng 2 lựa chọn màu sắc là trắng và bạc sang trọng. Tai nghe với công nghệ  âm thanh Hi-Fi cùng với ANC hỗ trợ mang lại trải nghiệm âm sống động. Cùng với đó, tai nghe còn hỗ trợ AI, hỗ trợ dịch thuật trực tiếp một cách hiệu quả.', 'ss3.png', 'ss03'),
+('Tai nghe Bluetooth True Wireless Samsung Galaxy Buds2 Pro', 'C2', 'B11', 2590000, 'Thiết kế chuẩn công thái học phong cách, khác biệt ôm khít vào tai, Đắm chìm trong không gian âm nhạc riêng với tính năng chống ồn ANC, 360 Audio, Kháng nước iPX7 không ngại mưa rơi hay tập luyện cường độ cao, Đạt chuẩn Bluetooth mới nhất 5.3 cho kết nối ổn định, liền mạnh, Thời lượng pin lên đến 8 giờ (tắt ANC), 5 giờ (mở ANC) và 18 giờ kèm hộp sạc', 'ss4.png', 'ss04'),
+('Tai nghe Bluetooth Samsung U Flex 2', 'C2', 'B11', 2970000, 'Một bản nâng cấp mới của Samsung U Flex vừa được ra đời, và cái tên cũng không xa lạ là tai nghe Bluetooth Samsung U Flex 2. Sản phẩm nổi bật với thiết kế linh động, tính năng thông minh, giúp người dùng thưởng thức âm nhạc trong mọi điều kiện.', 'ss5.png', 'ss05'),
+('Tai nghe Samsung ANC Type C Earphones', 'C2', 'B11', 920000, 'Các flagship trên thị trường hiện tại đều được sản xuất theo xu hướng bỏ jack cắm 3.5mm và thay vào đó là sử dụng cổng Type C làm cổng sạc kiêm luôn nghe nhạc cho thiết bị. Nhận biết được điều này, Samsung đã cho ra mắt sản phẩm tai nghe Samsung Anc Type C Earphones. Tai nghe có dây tận dụng thế mạnh của cổng Type C cho chất lượng âm thanh vượt trội và sống động.', 'ss6.png', 'ss06'),
+
+
+
