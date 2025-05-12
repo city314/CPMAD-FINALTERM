@@ -7,7 +7,6 @@ import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_product.dart';
-import '../screens/admin/admin_user.dart';
 import '../screens/admin/admin_wrapper.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
@@ -17,7 +16,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/users',
+  initialLocation: '/admin/dashboard',
   routes: [
     GoRoute(
       path: '/',
@@ -120,18 +119,18 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/admin/products',
           name: 'admin_products',
-          builder: (c, s) => AdminProductScreen(onAddProduct: () {}),
+          builder: (c, s) => AdminProductScreen(),
         ),
         // GoRoute(
         //   path: '/admin/orders',
         //   name: 'admin_orders',
         //   builder: (c, s) => const AdminOrderScreen(),
         // ),
-        GoRoute(
-          path: '/admin/users',
-          name: 'admin_users',
-          builder: (c, s) => AdminUserScreen(),
-        ),
+        // GoRoute(
+        //   path: '/admin/users',
+        //   name: 'admin_users',
+        //   builder: (c, s) => AdminUserScreen(),
+        // ),
         // GoRoute(
         //   path: '/admin/coupons',
         //   name: 'admin_coupons',
