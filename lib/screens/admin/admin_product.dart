@@ -147,8 +147,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: DataTable(
-                    headingRowColor: MaterialStateProperty.resolveWith((_) => const Color(0xFFF2F4F7)),
-                    dataRowColor: MaterialStateProperty.resolveWith((_) => Colors.white),
+                    headingRowColor: WidgetStateProperty.resolveWith((_) => const Color(0xFFF2F4F7)),
+                    dataRowColor: WidgetStateProperty.resolveWith((_) => Colors.white),
                     columnSpacing: 32,
                     headingRowHeight: 56,
                     dataRowMinHeight: 64,
