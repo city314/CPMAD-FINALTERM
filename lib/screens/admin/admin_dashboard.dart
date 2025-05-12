@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({super.key});
+  const AdminDashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -21,60 +21,66 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   ];
 
   @override
-  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 800;
+        final width = constraints.maxWidth;
+        final isMobile = width < 600;
+        final isTablet = width >= 600 && width < 1200;
+        final isDesktop = width >= 1200;
 
-        return Scaffold(
-          backgroundColor: const Color(0xFFF5F6FA),
-          appBar: AppBar(
-            title: const Text('📊 Admin Dashboard'),
-            backgroundColor: Colors.indigo,
-            elevation: 2,
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: isDesktop
-                ? _buildDesktopLayout()
-                : _buildMobileLayout(),
-          ),
-        );
+        if (isMobile || isTablet) {
+          return Container(
+            color: const Color(0xFFF5F6FA),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 16),
+                _buildOverviewGrid(crossAxisCount: isMobile ? 1 : 2),
+                const SizedBox(height: 32),
+                _buildChartCard('📈 Doanh thu theo thời gian', _buildLineChart()),
+                const SizedBox(height: 32),
+                _buildChartCard('📊 Tỷ lệ loại sản phẩm bán chạy', _buildPieChart()),
+              ],
+            ),
+          );
+        } else {
+          return Container(
+            color: const Color(0xFFF5F6FA),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 16),
+                  _buildOverviewGrid(crossAxisCount: 4),
+                  const SizedBox(height: 32),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildChartCard(
+                          '📈 Doanh thu theo thời gian',
+                          _buildLineChart(),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: _buildChartCard(
+                          '📊 Tỷ lệ loại sản phẩm bán chạy',
+                          _buildPieChart(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
       },
-    );
-  }
-
-  Widget _buildMobileLayout() {
-    return ListView(
-      children: [
-        _buildHeader(),
-        const SizedBox(height: 16),
-        _buildOverviewGrid(crossAxisCount: 2),
-        const SizedBox(height: 32),
-        _buildChartCard('📈 Doanh thu theo thời gian', _buildLineChart()),
-        const SizedBox(height: 32),
-        _buildChartCard('📊 Tỷ lệ loại sản phẩm bán chạy', _buildPieChart()),
-      ],
-    );
-  }
-
-  Widget _buildDesktopLayout() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        const SizedBox(height: 16),
-        _buildOverviewGrid(crossAxisCount: 4),
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            Expanded(child: _buildChartCard('📈 Doanh thu theo thời gian', _buildLineChart())),
-            const SizedBox(width: 24),
-            Expanded(child: _buildChartCard('📊 Tỷ lệ loại sản phẩm bán chạy', _buildPieChart())),
-          ],
-        ),
-      ],
     );
   }
 
@@ -82,10 +88,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Tổng quan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        const Text(
+          'Tổng quan',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         DropdownButton<String>(
           value: selectedRange,
-          items: ranges.map((range) => DropdownMenuItem(value: range, child: Text(range))).toList(),
+          items: ranges
+              .map((range) => DropdownMenuItem(value: range, child: Text(range)))
+              .toList(),
           onChanged: (value) => setState(() => selectedRange = value!),
         ),
       ],
@@ -101,9 +112,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            SizedBox(height: 220, child: chart),
+            SizedBox(
+              height: 220,
+              child: chart,
+            ),
           ],
         ),
       ),
@@ -117,7 +134,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       mainAxisSpacing: 12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.6, // 👈 giới hạn chiều cao, làm card nhỏ gọn
+      childAspectRatio: 1.6,
       children: const [
         _DashboardCard(title: 'Tổng người dùng', value: '1,250', icon: Icons.people),
         _DashboardCard(title: 'Người dùng mới', value: '120', icon: Icons.person_add),
@@ -134,7 +151,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         borderData: FlBorderData(show: false),
         lineBarsData: [
           LineChartBarData(
-            spots: [
+            spots: const [
               FlSpot(0, 5),
               FlSpot(1, 6.2),
               FlSpot(2, 5.5),
@@ -154,14 +171,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildPieChart() {
     return PieChart(
       PieChartData(
+        sectionsSpace: 4,
+        centerSpaceRadius: 30,
         sections: [
           PieChartSectionData(value: 40, color: Colors.blue, title: 'Laptop'),
           PieChartSectionData(value: 25, color: Colors.orange, title: 'Phụ kiện'),
           PieChartSectionData(value: 20, color: Colors.green, title: 'Chuột'),
           PieChartSectionData(value: 15, color: Colors.red, title: 'Khác'),
         ],
-        sectionsSpace: 4,
-        centerSpaceRadius: 30,
       ),
     );
   }
@@ -172,7 +189,8 @@ class _DashboardCard extends StatelessWidget {
   final String value;
   final IconData icon;
 
-  const _DashboardCard({required this.title, required this.value, required this.icon});
+  const _DashboardCard({Key? key, required this.title, required this.value, required this.icon})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +204,10 @@ class _DashboardCard extends StatelessWidget {
           children: [
             Icon(icon, size: 36, color: Colors.blueAccent),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             Text(title, style: const TextStyle(color: Colors.black54)),
           ],
