@@ -285,6 +285,42 @@ class Product {
     required this.isBestSeller,
     required this.createdAt,
   });
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? brand,
+    double? price,
+    double? discount,
+    String? category,
+    String? description,
+    List<String>? images,
+    List<ProductVariant>? variants,
+    DateTime? createdAt,
+    double? rating,
+    List<String>? reviews,
+    bool? isNew,
+    bool? isPromotional,
+    bool? isBestSeller,
+  }) {
+    return Product(
+      id:          id        ?? this.id,
+      name:        name      ?? this.name,
+      brand:       brand     ?? this.brand,
+      price:       price     ?? this.price,
+      discount:    discount  ?? this.discount,
+      category:    category  ?? this.category,
+      description: description ?? this.description,
+      images:      images    ?? this.images,
+      variants:    variants  ?? this.variants,
+      createdAt:   createdAt ?? this.createdAt,
+      rating: 0,
+      reviews: [],
+      isNew: false,
+      isPromotional: false,
+      isBestSeller: false,
+    );
+  }
 }
 
 class ProductVariant {
