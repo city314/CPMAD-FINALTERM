@@ -1,13 +1,13 @@
-class Category {
+class Brand {
   final String? id;
   final String name;
 
-  Category({
+  Brand({
     this.id,
     required this.name,
   });
 
-  factory Category.fromJson(Map<String, dynamic> json) => Category(
+  factory Brand.fromJson(Map<String, dynamic> json) => Brand(
         id: json['_id'] as String?,
         name: json['name'] as String,
       );
@@ -16,4 +16,4 @@ class Category {
         if (id != null) '_id': id,
         'name': name,
       };
-}
+} 
