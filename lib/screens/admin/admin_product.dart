@@ -205,11 +205,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             constraints: BoxConstraints(minWidth: constraints.maxWidth),
             child: SingleChildScrollView(
               child: DataTable(
+                headingRowColor: MaterialStateColor.resolveWith((states) => Colors.grey[200]!),
+                dataRowColor: MaterialStateColor.resolveWith((states) => Colors.white),
                 columnSpacing: 24,
-                headingRowHeight: 48,
-                dataRowHeight: 64,
+                headingRowHeight: 50,
+                dataRowHeight: 70,
                 columns: const [
-                  DataColumn(label: Text('Tên')),
+                  DataColumn(label: Text('Tên', style: TextStyle(fontWeight: FontWeight.bold))),
                   DataColumn(label: Text('Thương hiệu')),
                   DataColumn(label: Text('Danh mục')),
                   DataColumn(label: Text('Biến thể')),
@@ -219,41 +221,49 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ],
                 rows: productList.map((product) {
                   final discountedPrice = product.price * (1 - product.discount / 100);
-                  final tags = [
-                    if (product.isNew) 'Mới',
-                    if (product.isPromotional) 'KM',
-                    if (product.isBestSeller) 'Bán chạy',
-                  ].join(', ');
+                  final tags = <Widget>[
+                    if (product.isNew)
+                      Chip(label: const Text('Mới'), backgroundColor: Colors.green[100]),
+                    if (product.isPromotional)
+                      Chip(label: const Text('KM'), backgroundColor: Colors.orange[100]),
+                    if (product.isBestSeller)
+                      Chip(label: const Text('Bán chạy'), backgroundColor: Colors.purple[100]),
+                  ];
 
                   return DataRow(cells: [
-                    DataCell(Text(product.name)),
+                    DataCell(Text(product.name, style: const TextStyle(fontWeight: FontWeight.w500))),
                     DataCell(Text(product.brand)),
                     DataCell(Text(product.category)),
                     DataCell(Text(product.variants.map((v) => v.name).join(', '))),
                     DataCell(Text(
                       product.discount > 0
-                          ? '₫${discountedPrice.toStringAsFixed(0)} (Giảm ${product.discount.toInt()}%)'
+                          ? '₫${discountedPrice.toStringAsFixed(0)} (↓${product.discount.toInt()}%)'
                           : '₫${product.price.toStringAsFixed(0)}',
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: product.discount > 0 ? Colors.red : Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
                     )),
-                    DataCell(Text(tags)),
-                    DataCell(
-                      PopupMenuButton<String>(
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            _openProductForm(product: product);
-                          } else if (value == 'delete') {
+                    DataCell(Wrap(
+                      spacing: 6,
+                      children: tags,
+                    )),
+                    DataCell(Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
+                          onPressed: () => _openProductForm(product: product),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                          onPressed: () {
                             setState(() {
                               productList.removeWhere((p) => p.id == product.id);
                             });
-                          }
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Sửa')),
-                          PopupMenuItem(value: 'delete', child: Text('Xóa')),
-                        ],
-                      ),
-                    ),
+                          },
+                        ),
+                      ],
+                    )),
                   ]);
                 }).toList(),
               ),
