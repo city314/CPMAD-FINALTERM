@@ -37,9 +37,38 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   ];
 
   void _toggleStatus(User user) {
-    setState(() {
-      user.status = (user.status == 'active') ? 'inactive' : 'active';
-    });
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final isBanning = user.status == 'active';
+        return AlertDialog(
+          title: Text(isBanning ? 'Xác nhận cấm tài khoản' : 'Xác nhận mở khóa'),
+          content: Text(
+            isBanning
+                ? 'Bạn có chắc muốn cấm tài khoản "${user.name}" không? Người dùng sẽ không thể đăng nhập nữa.'
+                : 'Bạn có chắc muốn mở khóa tài khoản "${user.name}" không?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  user.status = isBanning ? 'inactive' : 'active';
+                });
+                Navigator.pop(dialogContext);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isBanning ? Colors.red : Colors.green,
+              ),
+              child: Text(isBanning ? 'Cấm' : 'Mở khóa'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _viewDetail(User user) {
