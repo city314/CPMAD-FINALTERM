@@ -171,4 +171,26 @@ class UserService {
     );
     if (res.statusCode != 200) throw Exception('Lỗi cập nhật địa chỉ mặc định');
   }
+
+  static Future<void> updateUserProfile({
+    required String oldEmail,
+    required String name,
+    required String newEmail,
+  }) async {
+    final url = Uri.parse('$_url/update-profile/$oldEmail');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': name,
+        'newEmail': newEmail,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Lỗi cập nhật thông tin');
+    }
+  }
+
 }

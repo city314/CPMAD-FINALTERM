@@ -264,4 +264,32 @@ router.put('/:email/addresses/:id/set-default', async (req, res) => {
   res.json({ message: 'Default address updated', addressList: user.address });
 });
 
+// Cập nhật tên và email người dùng
+router.put('/update-profile/:email', async (req, res) => {
+  const { email } = req.params;
+  const { name, newEmail } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Kiểm tra nếu email mới khác email cũ và đã tồn tại
+    if (newEmail && newEmail !== email) {
+      const existed = await User.findOne({ email: newEmail });
+      if (existed) {
+        return res.status(409).json({ message: 'Email đã được sử dụng' });
+      }
+    }
+
+    user.name = name;
+    if (newEmail) user.email = newEmail;
+
+    await user.save();
+    res.json({ message: 'Cập nhật thông tin thành công', user });
+  } catch (error) {
+    console.error('Lỗi cập nhật profile:', error);
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+});
+
 module.exports = router;
