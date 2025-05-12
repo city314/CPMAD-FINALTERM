@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../models/address.dart';
+import 'package:cpmad_final/models/user.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 
@@ -133,11 +133,11 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
               final newAddress = Address(
                 id: initial?.id ?? const Uuid().v4(),
                 receiverName: nameController.text.trim(),
-                phoneNumber: phoneController.text.trim(),
-                province: provinceController.text.trim(),
+                phone: phoneController.text.trim(),          // thay phoneNumber → phone
+                address: streetController.text.trim(),       // streetDetail → address
+                commune: wardController.text.trim(),         // ward → commune
                 district: districtController.text.trim(),
-                ward: wardController.text.trim(),
-                streetDetail: streetController.text.trim(),
+                city: provinceController.text.trim(),        // province → city
                 isDefault: initial?.isDefault ?? false,
               );
               Navigator.pop(context, newAddress);
@@ -172,8 +172,8 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('SĐT: ${address.phoneNumber}'),
-                Text('Địa chỉ: ${address.fullAddress}'),
+                Text('SĐT: ${address.phone}'),
+                Text('Địa chỉ: ${address.address}, ${address.commune}, ${address.district}, ${address.city}'),
                 if (isDefault)
                   const Text('Địa chỉ mặc định', style: TextStyle(color: Colors.green)),
               ],

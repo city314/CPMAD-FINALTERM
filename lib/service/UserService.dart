@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/address.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cpmad_final/models/user.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:go_router/go_router.dart';
-
-import '../screens/user/home.dart';
 
 class UserService {
   static const String _url = 'http://localhost:3001/api/users';
