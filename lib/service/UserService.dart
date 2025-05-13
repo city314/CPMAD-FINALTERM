@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/user.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:go_router/go_router.dart';
-
-import '../screens/user/home.dart';
 
 class UserService {
   static const String _url = 'http://localhost:3001/api/users';
@@ -190,10 +187,8 @@ class UserService {
 
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body);
-      throw Exception(data['message'] ?? 'Lỗi cập nhật thông tin');
     }
   }
-
   static Future<List<User>> fetchUsers() async {
     final response = await http.get(Uri.parse('$_url'));
     if (response.statusCode == 200) {
