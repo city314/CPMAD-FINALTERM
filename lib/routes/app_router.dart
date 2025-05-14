@@ -7,6 +7,7 @@ import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
 import '../screens/admin/admin_chat.dart';
+import '../screens/admin/admin_coupon.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_product.dart';
 import '../screens/admin/admin_support.dart';
@@ -19,7 +20,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/support',
+  initialLocation: '/admin/coupons',
   routes: [
     GoRoute(
       path: '/',
@@ -139,11 +140,11 @@ final GoRouter appRouter = GoRouter(
         //   name: 'admin_users',
         //   builder: (c, s) => AdminUserScreen(),
         // ),
-        // GoRoute(
-        //   path: '/admin/coupons',
-        //   name: 'admin_coupons',
-        //   builder: (c, s) => const AdminCouponScreen(),
-        // ),
+        GoRoute(
+          path: '/admin/coupons',
+          name: 'admin_coupons',
+          builder: (c, s) => const AdminCouponScreen(),
+        ),
         GoRoute(
           path: '/admin/support',
           name: 'admin_support',
