@@ -44,6 +44,8 @@ router.post('/login', async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ message: 'Mật khẩu không đúng' });
 
+  user.isActive = true; // cập nhật trạng thái isActive
+  await user.save();
 //   const token = jwt.sign(
 //     { userId: user._id, role: user.role },
 //     'your_secret_key_here',

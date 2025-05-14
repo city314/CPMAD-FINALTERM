@@ -147,7 +147,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/admin/support',
           name: 'admin_support',
-          builder: (c, s) => const MessengerLikeChatListScreen(),
+          builder: (c, s) => const SupportScreen(),
         ),
         GoRoute(
           path: '/admin/chat',

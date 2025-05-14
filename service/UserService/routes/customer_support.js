@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CustomerSupport = require('../models/CustomerSupport');
+const User = require('../models/User');
 
 // Tạo mới phiên chat hoặc thêm tin nhắn vào phiên chat đã có
 router.post('/support/sendMessage', async (req, res) => {
@@ -31,6 +32,32 @@ router.post('/support/sendMessage', async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Lấy danh sách các cuộc trò chuyện
+router.get('/', async (req, res) => {
+  try {
+    const chats = await CustomerSupport.find();
+
+    const chatList = await Promise.all(
+      chats.map(async (chat) => {
+        const user = await User.findOne({ email: chat.customer_email });
+        const lastMessage = chat.messages[chat.messages.length - 1];
+
+        return {
+          customerEmail: user.email,
+          avatarUrl: user.avatar,
+          isActive: user.isActive,
+          lastMessage: lastMessage.text,
+          lastMessageTime: lastMessage.time,
+        };
+      })
+    );
+
+    res.status(200).json(chatList);
+  } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
