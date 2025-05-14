@@ -1,5 +1,6 @@
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/chatoverview.dart';
@@ -86,6 +87,7 @@ class _MessengerLikeChatListScreenState extends State<SupportScreen> {
                   ),
                   onTap: () {
                     // Điều hướng tới chi tiết chat
+                    context.goNamed('admin_chat', extra: chat.customerEmail);
                   },
                 );
               },

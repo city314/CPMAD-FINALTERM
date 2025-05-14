@@ -4,58 +4,99 @@ import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class CustomerSupportScreen extends StatefulWidget {
-  const CustomerSupportScreen({super.key});
+  final String email;
+  const CustomerSupportScreen({super.key, required this.email});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<CustomerSupportScreen> {
+  late IO.Socket socket;
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   final _picker = ImagePicker();
   final FocusNode _inputFocusNode = FocusNode();
   final currentUserRole = CurrentUser().role ?? 'admin';
-  final userEmail = CurrentUser().email ?? 'admin@gmail.com';
   String? chatId;
 
   List<Map<String, dynamic>> _messages = [];
 
-  void _sendMessage({String? text, String? imageBase64}) async {
-    if ((text == null || text.trim().isEmpty) && imageBase64 == null) return;
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+    _connectSocket();
+  }
 
-    final messageData = {
-      'text': text ?? '',
-      'isUser': currentUserRole == 'user',
-      'time': DateTime.now(),
-      'image': imageBase64 ?? '',
-    };
-
-    setState(() {
-      _messages.add(messageData);
+  void _connectSocket() {
+    socket = IO.io('http://localhost:3001', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': true,
     });
 
+    socket.onConnect((_) {
+      print('🟢 Connected to socket');
+    });
+
+    socket.on('receive_message', (data) {
+      final currentEmail = CurrentUser().email ?? '';
+
+      // Chỉ nhận tin nhắn nếu là cuộc trò chuyện của user đó
+      if (data['customer_email'] == (currentUserRole == 'customer' ? currentEmail : widget.email)) {
+        setState(() {
+          _messages.add({
+            'text': data['text'],
+            'image': data['image'],
+            'isUser': data['isUser'],
+            'senderEmail': data['senderEmail'], // <- mới thêm
+            'time': DateTime.parse(data['time']),
+          });
+        });
+
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 100);
+      }
+    });
+
+    socket.onDisconnect((_) => print('🔴 Disconnected from socket'));
+  }
+
+  void _loadMessages() async {
+    final String email = currentUserRole == 'customer'
+        ? (CurrentUser().email ?? '')
+        : widget.email;
+
+    final messages = await UserService.getMessages(email);
+    setState(() {
+      _messages = messages;
+    });
+
+    await Future.delayed(Duration(milliseconds: 100));
+    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  }
+
+  void _sendMessage({String? text, String? imageBase64}) {
+    if ((text == null || text.trim().isEmpty) && imageBase64 == null) return;
+
+    final String senderEmail = CurrentUser().email ?? '';
+
+    final msg = {
+      'text': text ?? '',
+      'image': imageBase64 ?? '',
+      'isUser': currentUserRole == 'customer',
+      'senderEmail': senderEmail,
+      'customer_email': currentUserRole == 'customer'
+          ? senderEmail
+          : widget.email,
+    };
+
+    socket.emit('send_message', msg);
+
     _controller.clear();
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent + 100,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-
-    chatId = await UserService.sendMessage(
-      userEmail: userEmail!,
-      text: text ?? '',
-      image: imageBase64 ?? '',
-      isUser: currentUserRole == 'user',
-    );
-
-    if (chatId != null) {
-      print("Chat ID: $chatId");
-    } else {
-      print("Error sending message");
-    }
+    _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 100);
   }
 
   Future<void> _pickImage() async {
@@ -84,7 +125,7 @@ class _ChatScreenState extends State<CustomerSupportScreen> {
             ),
             SizedBox(width: 10),
             Expanded(
-              child: Text(userEmail!),
+              child: Text(widget.email),
             ),
           ],
         ),
@@ -97,7 +138,7 @@ class _ChatScreenState extends State<CustomerSupportScreen> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final data = _messages[index];
-                final isMe = (data['isUser'] && currentUserRole == 'user') ||
+                final isMe = (data['isUser'] && currentUserRole == 'customer') ||
                     (!data['isUser'] && currentUserRole == 'admin');
                 return Align(
                   alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

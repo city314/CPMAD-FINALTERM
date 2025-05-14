@@ -28,7 +28,6 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       stock: 12,
       imgUrl: '',
       timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
       variants: [], // nếu chưa cần biến thể cụ thể
     ),
     Product(
@@ -41,7 +40,6 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       stock: 20,
       imgUrl: '',
       timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
       variants: [],
     ),
     // … thêm sản phẩm test khác nếu muốn …

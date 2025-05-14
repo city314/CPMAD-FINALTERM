@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'productList.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -129,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
         cartItemCount: 0,
         onHomeTap: () {
           // TODO: Chuyển tới trang chủ
+          context.go('/home');
         },
         onCategoriesTap: () {
           // TODO: Chuyển tới trang categories
@@ -141,6 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onLoginTap: () {
           // TODO: Chuyển tới trang đăng nhập
+          context.go('/');
+        },
+        onSupportTap: () {
+          context.goNamed('admin_chat', extra: 'admin@gmail.com');
         },
         onSearch: (value) {
           setState(() {
@@ -1264,6 +1270,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCartTap;
   final VoidCallback onRegisterTap;
   final VoidCallback onLoginTap;
+  final VoidCallback onSupportTap;
   final ValueChanged<String> onSearch;
 
   const CustomNavbar({
@@ -1275,6 +1282,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
     required this.onRegisterTap,
     required this.onLoginTap,
     required this.onSearch,
+    required this.onSupportTap,
   }) : super(key: key);
 
   @override
@@ -1349,6 +1357,17 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                   onTap: () {
                     Navigator.pop(context);
                     onLoginTap();
+                  },
+                ),
+              ),
+              PopupMenuItem(
+                value: 3,
+                child: ListTile(
+                  leading: const Icon(Icons.login),
+                  title: const Text('Support'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onSupportTap();
                   },
                 ),
               ),

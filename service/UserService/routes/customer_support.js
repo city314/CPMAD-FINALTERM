@@ -62,4 +62,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Lấy toàn bộ tin nhắn của một cuộc trò chuyện theo email
+router.get('/getMessages/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const chat = await CustomerSupport.findOne({ customer_email: email });
+
+    if (!chat) {
+      return res.status(404).json({ message: 'No conversation found for this user.' });
+    }
+
+    res.status(200).json({
+      chatId: chat._id,
+      messages: chat.messages
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;
