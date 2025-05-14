@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/order.dart';
+import 'component/SectionHeader.dart';
 
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({Key? key}) : super(key: key);
@@ -129,32 +130,44 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quản lý Đơn hàng')),
-      body: ListView.separated(
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: _orders.length,
-        separatorBuilder: (_, __) => const Divider(height: 32),
-        itemBuilder: (_, i) {
-          final o = _orders[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            title: Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Trạng thái: ${o.status.name}'),
-                Text('Tổng thanh toán: ₫${o.finalPrice.toStringAsFixed(0)}'),
-                Text('Ngày: ${o.timeCreate.toLocal().toString().split('.')[0]}'),
-              ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SectionHeader dùng chung
+            const SectionHeader('Quản lý Đơn hàng'),
+            const SizedBox(height: 16),
+            // Danh sách đơn hàng
+            Expanded(
+              child: ListView.separated(
+                itemCount: _orders.length,
+                separatorBuilder: (_, __) => const Divider(height: 32),
+                itemBuilder: (_, i) {
+                  final o = _orders[i];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    title: Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                       Text('Trạng thái: ${o.status.name}'),
+                        Text('Tổng thanh toán: ₫${o.finalPrice.toStringAsFixed(0)}'),
+                        Text('Ngày: ${o.timeCreate.toLocal().toString().split('.')[0]}'),
+                      ],
+                    ),
+                    isThreeLine: true,
+                    trailing: IconButton(
+                      icon: const Icon(Icons.visibility, color: Colors.blue),
+                      tooltip: 'Chi tiết',
+                    onPressed: () => _showOrderDetail(o),
+                  ),
+                );
+               },
+              ),
             ),
-            isThreeLine: true,
-            trailing: IconButton(
-              icon: const Icon(Icons.visibility, color: Colors.blue),
-              tooltip: 'Chi tiết',
-              onPressed: () => _showOrderDetail(o),
-            ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

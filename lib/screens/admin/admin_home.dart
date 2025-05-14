@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
+import 'admin_brand.dart';
+import 'admin_category.dart';
+import 'admin_chat.dart';
 import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_discount.dart';
+import 'admin_order.dart';
 import 'admin_product.dart';
 import 'admin_top_navbar.dart';
 import 'admin_user.dart';
 
 class AdminHome extends StatefulWidget {
-  // final Widget child;
-  // final int selectedIndex;
   final String userName;
   final String userRole;
   final String userAvatarUrl;
 
   const AdminHome({
     Key? key,
-    // required this.child,
-    // required this.selectedIndex,
     required this.userName,
     required this.userRole,
     required this.userAvatarUrl,
@@ -34,6 +34,8 @@ class _AdminHomeState extends State<AdminHome> {
   final List<String> _titles = [
     'Dashboard',
     'Product Management',
+    'Category Management'
+    'Brand Management'
     'User Management',
     'Order Management',
     'Coupon Management',
@@ -51,10 +53,14 @@ class _AdminHomeState extends State<AdminHome> {
     // Danh sách “body” cho từng tab
     final pages = <Widget>[
       const AdminDashboardScreen(),
-      AdminProductScreen(),
-      const AdminCouponScreen(),
+      const AdminProductScreen(),
+      const AdminCategoryScreen(),
+      const AdminBrandScreen(),
       const AdminUserScreen(),
+      const AdminOrderScreen(),
+      const AdminCouponScreen(),
       const AdminDiscountScreen(),
+      const CustomerSupportScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 

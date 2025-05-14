@@ -23,6 +23,8 @@ class AdminTopNavbar extends StatelessWidget {
     final items = <_NavItem>[
       _NavItem(icon: Icons.dashboard, label: 'Dashboard'),
       _NavItem(icon: Icons.inventory_2_outlined, label: 'Product Management'),
+      _NavItem(icon: Icons.category, label: 'Category Management'),
+      _NavItem(icon: Icons.business, label: 'Brand Management'),
       _NavItem(icon: Icons.people_outline, label: 'User Management'),
       _NavItem(icon: Icons.receipt_long, label: 'Order Management'),
       _NavItem(icon: Icons.local_offer_outlined, label: 'Coupon Management'),
