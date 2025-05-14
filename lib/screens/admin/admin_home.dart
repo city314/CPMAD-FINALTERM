@@ -4,6 +4,7 @@ import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_product.dart';
 import 'admin_top_navbar.dart';
+import 'admin_user.dart';
 
 class AdminHome extends StatefulWidget {
   // final Widget child;
@@ -50,6 +51,7 @@ class _AdminHomeState extends State<AdminHome> {
       const AdminDashboardScreen(),
       AdminProductScreen(),
       const AdminCouponScreen(),
+      const AdminUserScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 
