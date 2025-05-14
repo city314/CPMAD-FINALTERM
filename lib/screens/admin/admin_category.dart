@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/category.dart'; // Model Category :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+import '../../models/category.dart';
+import 'component/SectionHeader.dart';
 
 class AdminCategoryScreen extends StatefulWidget {
   const AdminCategoryScreen({Key? key}) : super(key: key);
@@ -82,39 +83,51 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Category Management'),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showEditDialog(),
         child: const Icon(Icons.add),
         tooltip: 'Tạo danh mục mới',
       ),
-      body: ListView.separated(
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: _categories.length,
-        separatorBuilder: (_, __) => const Divider(height: 32),
-        itemBuilder: (context, i) {
-          final cat = _categories[i];
-          return ListTile(
-            title: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  tooltip: 'Chỉnh sửa',
-                  onPressed: () => _showEditDialog(category: cat),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  tooltip: 'Xoá',
-                  onPressed: () => _deleteCategory(cat),
-                ),
-              ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SectionHeader mới
+            const SectionHeader('Quản lý Danh mục'),
+            const SizedBox(height: 16),
+
+            // ListView bọc trong Expanded để tránh overflow
+            Expanded(
+              child: ListView.separated(
+                itemCount: _categories.length,
+                separatorBuilder: (_, __) => const Divider(height: 32),
+                itemBuilder: (context, i) {
+                  final cat = _categories[i];
+                  return ListTile(
+                    title: Text(cat.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          tooltip: 'Chỉnh sửa',
+                          onPressed: () => _showEditDialog(category: cat),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'Xoá',
+                          onPressed: () => _deleteCategory(cat),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
