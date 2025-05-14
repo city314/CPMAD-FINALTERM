@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
 import 'admin_brand.dart';
 import 'admin_category.dart';
-import 'admin_chat.dart';
 import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_discount.dart';
 import 'admin_order.dart';
 import 'admin_product.dart';
+import 'admin_support.dart';
 import 'admin_top_navbar.dart';
 import 'admin_user.dart';
 
@@ -60,7 +60,7 @@ class _AdminHomeState extends State<AdminHome> {
       const AdminOrderScreen(),
       const AdminCouponScreen(),
       const AdminDiscountScreen(),
-      const CustomerSupportScreen(),
+      const SupportScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 

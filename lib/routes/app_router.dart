@@ -8,7 +8,6 @@ import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
 import '../screens/admin/admin_brand.dart';
 import '../screens/admin/admin_category.dart';
-import '../screens/admin/admin_chat.dart';
 import '../screens/admin/admin_coupon.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_discount.dart';
@@ -179,7 +178,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/admin/chat',
           name: 'admin_chat',
-          builder: (c, s) => const CustomerSupportScreen(),
+          builder: (c, s) => const SupportScreen(),
         ),
       ],
     ),
