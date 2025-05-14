@@ -44,6 +44,8 @@ router.post('/login', async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ message: 'Mật khẩu không đúng' });
 
+  user.isActive = true; // cập nhật trạng thái isActive
+  await user.save();
 //   const token = jwt.sign(
 //     { userId: user._id, role: user.role },
 //     'your_secret_key_here',
@@ -289,6 +291,50 @@ router.put('/update-profile/:email', async (req, res) => {
   } catch (error) {
     console.error('Lỗi cập nhật profile:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+});
+
+router.get('/', async (req, res) => {
+  try {
+    const role = req.query.role || 'customer'; // mặc định là customer nếu không có query
+    const users = await User.find({ role });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server khi tải danh sách người dùng' });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        email: req.body.email,
+        gender: req.body.gender,
+        birthday: req.body.birthday,
+        phone: req.body.phone,
+      },
+      { new: true }
+    );
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(400).json({ error: 'Không thể cập nhật người dùng' });
+  }
+});
+
+router.patch('/status/:email', async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+
+    user.status = req.body.status; // 'active' hoặc 'inactive'
+    await user.save();
+
+    res.json({ message: 'Cập nhật trạng thái thành công', status: user.status });
+  } catch (err) {
+    console.error('Lỗi cập nhật trạng thái:', err);
+    res.status(400).json({ error: 'Không thể cập nhật trạng thái', detail: err.message });
   }
 });
 

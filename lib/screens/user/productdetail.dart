@@ -63,6 +63,7 @@ class _ProductDetailState extends State<ProductDetail> {
         onCartTap: () {},
         onRegisterTap: () {},
         onLoginTap: () {},
+        onSupportTap: () {},
         onSearch: (value) {},
       ),
       body: Row(

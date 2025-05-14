@@ -14,9 +14,12 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar> {
   final List<IconData> _icons = [
     Icons.dashboard,
     Icons.inventory_2_outlined,
+    Icons.category,
+    Icons.business,
     Icons.people_outline,
     Icons.receipt_long,
     Icons.local_offer_outlined,
+    Icons.percent,
     Icons.chat_bubble_outline,
   ];
 

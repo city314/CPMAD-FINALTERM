@@ -1,3 +1,5 @@
+import 'variant.dart';
+
 class Product {
   final String? id;
   final String name;
@@ -8,7 +10,7 @@ class Product {
   final int stock;
   final String imgUrl;
   final DateTime timeAdd;
-  final String series;
+  final List<Variant> variants;      // ← thêm trường này
 
   Product({
     this.id,
@@ -20,7 +22,7 @@ class Product {
     required this.stock,
     required this.imgUrl,
     required this.timeAdd,
-    required this.series,
+    this.variants = const [],         // ← khởi mặc định là danh sách rỗng
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -33,19 +35,51 @@ class Product {
     stock: json['stock'] as int,
     imgUrl: json['img_url'] as String,
     timeAdd: DateTime.parse(json['time_add'] as String),
-    series: json['series'] as String,
+    variants: (json['variants'] as List<dynamic>?)
+        ?.map((e) => Variant.fromJson(e as Map<String, dynamic>))
+        .toList() ?? [],
   );
 
-  Map<String, dynamic> toJson() => {
-    if (id != null) '_id': id,
-    'name': name,
-    'category_id': categoryId,
-    'brand_id': brandId,
-    'price': price,
-    'description': description,
-    'stock': stock,
-    'img_url': imgUrl,
-    'time_add': timeAdd.toIso8601String(),
-    'series': series,
-  };
+  Map<String, dynamic> toJson() {
+    final m = <String, dynamic>{
+      'name': name,
+      'category_id': categoryId,
+      'brand_id': brandId,
+      'price': price,
+      'description': description,
+      'stock': stock,
+      'img_url': imgUrl,
+      'time_add': timeAdd.toIso8601String(),
+      'variants': variants.map((v) => v.toJson()).toList(),
+    };
+    if (id != null) m['_id'] = id;
+    return m;
+  }
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? categoryId,
+    String? brandId,
+    double? price,
+    String? description,
+    int? stock,
+    String? imgUrl,
+    DateTime? timeAdd,
+    String? series,
+    List<Variant>? variants,       // ← thêm param cho copyWith
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      categoryId: categoryId ?? this.categoryId,
+      brandId: brandId ?? this.brandId,
+      price: price ?? this.price,
+      description: description ?? this.description,
+      stock: stock ?? this.stock,
+      imgUrl: imgUrl ?? this.imgUrl,
+      timeAdd: timeAdd ?? this.timeAdd,
+      variants: variants ?? this.variants,
+    );
+  }
 }

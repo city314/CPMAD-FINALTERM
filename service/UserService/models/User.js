@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   email: { type: String, required: true },
   name: { type: String, required: true },
-  gender: { type: String, enum: ['female', 'male'], default: ''},
+  gender: { type: String, enum: ['Female', 'Male', ''], default: ''},
   birthday: { type: String },
   phone: { type: String },
   password: { type: String, required: true },
@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
   address: [addressSchema], // <== đổi từ String sang mảng đối tượng address
   role: { type: String, enum: ['admin', 'customer'], default: 'customer' },
   status: { type: String, enum: ['active', 'inactive'], default: 'active'},
+  isActive: { type: Boolean, default: false },
   time_create: { type: Date, default: Date.now },
 });
 

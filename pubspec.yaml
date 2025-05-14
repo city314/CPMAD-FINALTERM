@@ -37,9 +37,11 @@ dependencies:
   uuid: ^4.0.0
   fl_chart: ^0.63.0
   image_picker: ^1.0.4
+  cupertino_icons: ^1.0.8
+  file_picker:
+  socket_io_client: ^2.0.3+1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
@@ -71,9 +73,16 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/logo/
-    - assets/images/product/
     - assets/images/slider/
     - assets/images/brand/
+    - assets/images/product/laptop/acer/
+    - assets/images/product/laptop/asus/
+    - assets/images/product/laptop/dell/
+    - assets/images/product/laptop/hp/
+    - assets/images/product/laptop/lenovo/
+    - assets/images/product/laptop/lg/
+    - assets/images/product/laptop/mac/
+    - assets/images/product/laptop/msi/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

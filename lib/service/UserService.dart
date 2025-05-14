@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../models/chatoverview.dart';
 import '../models/user.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:go_router/go_router.dart';
 
-import '../screens/user/home.dart';
-
 class UserService {
   static const String _url = 'http://localhost:3001/api/users';
+  static const String _urlSupport = 'http://localhost:3001/api/customer-support';
 
   static Future<void> registerUser({
     required String email,
@@ -29,12 +28,14 @@ class UserService {
     );
 
     if (response.statusCode == 201) {
-      // Đăng ký thành công
-      print('Đăng ký thành công!');
+      print('✅ Đăng ký thành công!');
     } else {
-      // Lỗi đăng ký
-      final error = jsonDecode(response.body)['message'];
-      print('Lỗi: $error');
+      try {
+        final error = jsonDecode(response.body)['message'];
+        throw Exception(error);
+      } catch (e) {
+        throw Exception('Lỗi không xác định từ server (${response.statusCode})');
+      }
     }
   }
 
@@ -69,7 +70,11 @@ class UserService {
           const SnackBar(content: Text('Đăng nhập thành công!')),
         );
 
-        context.go('/home');
+        if (data['user']['role'] == 'admin') {
+          context.go('/admin/dashboard');
+        } else {
+          context.go('/home');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Đăng nhập thất bại')),
@@ -189,8 +194,104 @@ class UserService {
 
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body);
-      throw Exception(data['message'] ?? 'Lỗi cập nhật thông tin');
+    }
+  }
+  static Future<List<User>> fetchUsers() async {
+    final response = await http.get(Uri.parse('$_url'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => User.fromJson(e)).toList();
+    } else {
+      throw Exception('Không thể tải danh sách người dùng');
     }
   }
 
+  static Future<bool> updateUser(User user) async {
+    final response = await http.put(
+      Uri.parse('$_url/${user.id}'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': user.name,
+        'email': user.email,
+        'gender': user.gender,
+        'birthday': user.birthday,
+        'phone': user.phone,
+      }),
+    );
+
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> updateUserStatus(String email, String newStatus) async {
+    final response = await http.patch(
+      Uri.parse('$_url/status/$email'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'status': newStatus}),
+    );
+
+    return response.statusCode == 200;
+  }
+
+  static Future<String?> sendMessage({
+    required String userEmail,
+    required String text,
+    String image = '',
+    required bool isUser,
+  }) async {
+    print(userEmail);
+    final response = await http.post(
+      Uri.parse('$_urlSupport/support/sendMessage'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'customer_email': userEmail,
+        'text': text,
+        'image': image,
+        'isUser': isUser,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['chatId'];
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}');
+      return null;
+    }
+  }
+
+  static Future<List<ChatOverview>> fetchChats() async {
+    final response = await http.get(Uri.parse(_urlSupport));
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => ChatOverview.fromJson(e)).toList();
+    } else {
+      throw Exception('Lỗi tải dữ liệu chat');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getMessages(String email) async {
+    try {
+      final res = await http.get(Uri.parse('$_urlSupport/getMessages/$email'));
+
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        List<dynamic> rawMessages = data['messages'];
+        return rawMessages.map<Map<String, dynamic>>((msg) {
+          return {
+            'text': msg['text'],
+            'isUser': msg['isUser'],
+            'image': msg['image'],
+            'time': DateTime.parse(msg['time']),
+          };
+        }).toList();
+      } else {
+        print('Error loading messages: ${res.body}');
+        return [];
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return [];
+    }
+  }
 }

@@ -33,14 +33,14 @@ class Address {
   bool get isEmpty => id.isEmpty;
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
-    id: json['id'] as String,
-    receiverName: json['receiver_name'] as String,
-    phone: json['phone'] as String,
-    address: json['address'] as String,
-    commune: json['commune'] as String,
-    district: json['district'] as String,
-    city: json['city'] as String,
-    isDefault: json['default'] as bool,
+    id: json['id'] ?? '',
+    receiverName: json['receiver_name'] ?? '',
+    phone: json['phone'] ?? '',
+    address: json['address'] ?? '',
+    commune: json['commune'] ?? '',
+    district: json['district'] ?? '',
+    city: json['city'] ?? '',
+    isDefault: json['default'] ?? false,
   );
 
   get fullAddress => '$address, $commune, $district, $city';
@@ -86,18 +86,18 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) => User(
     id: json['_id'] as String?,
-    avatar: json['avatar'] as String,
-    email: json['email'] as String,
-    name: json['name'] as String,
-    gender: json['gender'] as String,
-    birthday: json['birthday'] as String,
-    phone: json['phone'] as String,
-    addresses: (json['address'] as List<dynamic>)
+    avatar: json['avatar'] ?? '',
+    email: json['email'] ?? '',
+    name: json['name'] ?? '',
+    gender: json['gender'] ?? '',
+    birthday: json['birthday'] ?? '',
+    phone: json['phone'] ?? '',
+    addresses: (json['address'] as List<dynamic>? ?? [])
         .map((e) => Address.fromJson(e as Map<String, dynamic>))
         .toList(),
-    role: json['role'] as String,
-    status: json['status'] as String,
-    timeCreate: DateTime.parse(json['time_create'] as String),
+    role: json['role'] ?? 'customer',
+    status: json['status'] ?? 'active',
+    timeCreate: DateTime.tryParse(json['time_create'] ?? '') ?? DateTime.now(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -110,7 +110,7 @@ class User {
     'phone': phone,
     'address': addresses.map((a) => a.toJson()).toList(),
     'role': role,
-    'status': name,
+    'status': status,
     'time_create': timeCreate.toIso8601String(),
   };
 }
