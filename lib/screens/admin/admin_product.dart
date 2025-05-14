@@ -106,7 +106,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   void _openDetail({Product? product}) {
     final isNew = product == null;
     final p = product ?? Product(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: null,
       name: '',
       categoryId: categories.first.id!,
       brandId: brands.first.id!,
@@ -123,6 +123,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         MaterialPageRoute(
           builder: (_) => AdminProductDetail(
             product: p,
+            isNew: isNew,
             onEdit: (updated) {
               setState(() {
                 if (isNew) {
