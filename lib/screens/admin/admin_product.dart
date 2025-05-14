@@ -13,8 +13,8 @@ final List<Category> categories = [
   Category(id: 'ssd', name: 'SSD'),
 ];
 final List<Brand> brands = [
-  Brand(id: 'asus', name: 'ASUS', imgUrl: ''),
-  Brand(id: 'samsung', name: 'Samsung', imgUrl: ''),
+  Brand(id: 'asus', name: 'ASUS'),
+  Brand(id: 'samsung', name: 'Samsung'),
 ];
 
 class AdminProductScreen extends StatefulWidget {

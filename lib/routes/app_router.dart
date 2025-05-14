@@ -179,7 +179,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/admin/chat',
           name: 'admin_chat',
-          builder: (c, s) => const CustomerSupportScreen(),
+          builder: (context, state) {
+            final email = state.extra as String;
+            return CustomerSupportScreen(email: email);
+          },
         ),
       ],
     ),

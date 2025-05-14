@@ -1,3 +1,4 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
 import 'admin_brand.dart';
@@ -45,6 +46,7 @@ class _AdminHomeState extends State<AdminHome> {
 
   @override
   Widget build(BuildContext context) {
+    final email = CurrentUser().email ?? '';
     final isMobile = MediaQuery
         .of(context)
         .size
@@ -60,7 +62,7 @@ class _AdminHomeState extends State<AdminHome> {
       const AdminOrderScreen(),
       const AdminCouponScreen(),
       const AdminDiscountScreen(),
-      const CustomerSupportScreen(),
+      CustomerSupportScreen(email: email,),
       // TODO: thêm các màn khác ở đây
     ];
 

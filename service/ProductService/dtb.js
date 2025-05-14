@@ -10,7 +10,7 @@ const connectShiftDB = async () => {
         }
 
         await mongoose.connect(uri);
-        console.log("✅ Kết nối ShiftService MongoDB thành công!");
+        console.log("✅ Kết nối ProductService MongoDB thành công!");
     } catch (error) {
         console.error("❌ Lỗi kết nối MongoDB:", error.message);
         process.exit(1);

@@ -8,10 +8,11 @@ const productImageSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   name: String,
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  brand: { type: String },
+  brand_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
   price: Number,
   description: String,
   stock: Number,
+  discount_percent: Number,
   images: [productImageSchema],
 });
 

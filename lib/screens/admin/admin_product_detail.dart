@@ -10,7 +10,7 @@ import '../../models/variant.dart';
 
 // TODO: replace with dynamic data sources
 final List<Category> categories = [Category(id: 'laptop', name: 'Laptop'), Category(id: 'ssd', name: 'SSD')];
-final List<Brand> brands = [Brand(id: 'asus', name: 'ASUS', imgUrl: ''), Brand(id: 'samsung', name: 'Samsung', imgUrl: '')];
+final List<Brand> brands = [Brand(id: 'asus', name: 'ASUS'), Brand(id: 'samsung', name: 'Samsung')];
 
 class AdminProductDetail extends StatefulWidget {
   final Product product;
