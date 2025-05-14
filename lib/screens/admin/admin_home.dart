@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
+import 'admin_brand.dart';
+import 'admin_category.dart';
 import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_discount.dart';
 import 'admin_product.dart';
+import 'admin_support.dart';
 import 'admin_top_navbar.dart';
 import 'admin_user.dart';
 
@@ -34,6 +37,8 @@ class _AdminHomeState extends State<AdminHome> {
   final List<String> _titles = [
     'Dashboard',
     'Product Management',
+    'Category Management'
+    'Brand Management'
     'User Management',
     'Order Management',
     'Coupon Management',
@@ -52,9 +57,12 @@ class _AdminHomeState extends State<AdminHome> {
     final pages = <Widget>[
       const AdminDashboardScreen(),
       AdminProductScreen(),
-      const AdminCouponScreen(),
+      const AdminCategoryScreen(),
+      const AdminBrandScreen(),
       const AdminUserScreen(),
+      const AdminCouponScreen(),
       const AdminDiscountScreen(),
+      const SupportScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 
