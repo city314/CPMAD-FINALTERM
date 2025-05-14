@@ -24,7 +24,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/products',
+  initialLocation: '/products',
   routes: [
     GoRoute(
       path: '/',
