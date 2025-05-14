@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/productDiscount.dart';
+import 'component/SectionHeader.dart';
 
 class AdminDiscountScreen extends StatefulWidget {
   const AdminDiscountScreen({Key? key}) : super(key: key);
@@ -109,84 +110,84 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      AppBar(title: const Text('Quản lý giảm giá sản phẩm')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          // ── Nhập % giảm giá + chọn ngày ─────────────────────
-          Row(children: [
-            Expanded(
-              child: TextField(
-                controller: _discountCtrl,
-                decoration: const InputDecoration(
-                  labelText: '% Giảm giá',
-                  suffixText: '%',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: _pickStartDate,
-              child: Text(
-                  'Từ: ${_startDate.toLocal().toString().split(' ')[0]}'),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: _pickEndDate,
-              child: Text(
-                  'Đến: ${_endDate.toLocal().toString().split(' ')[0]}'),
-            ),
-          ]),
-          const SizedBox(height: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SectionHeader dùng chung :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+            const SectionHeader('Quản lý Giảm giá sản phẩm'),
+            const SizedBox(height: 16),
 
-          // ── Danh sách sản phẩm với Checkbox ────────────────
-          Expanded(
-            child: ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (_, i) {
-                final p = _products[i];
-                final checked = _selectedIds.contains(p.id);
-                return CheckboxListTile(
-                  value: checked,
-                  onChanged: (v) {
-                    setState(() {
-                      if (v == true)
-                        _selectedIds.add(p.id!);
-                      else
-                        _selectedIds.remove(p.id!);
-                    });
-                  },
-                  title: Text(p.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  subtitle: Text(
-                    'Giá: ₫${p.price.toStringAsFixed(0)}  •  Biến thể: ${p.variants.length}',
-                    style: const TextStyle(fontSize: 12),
+            // Nhập % giảm và chọn khoảng thời gian
+            Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _discountCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '% Giảm giá',
+                    suffixText: '%',
+                    border: OutlineInputBorder(),
                   ),
-                  controlAffinity:
-                  ListTileControlAffinity.leading,
-                );
-              },
-            ),
-          ),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: _pickStartDate,
+                child: Text(
+                    'Từ: ${_startDate.toLocal().toString().split(' ')[0]}'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _pickEndDate,
+                child: Text(
+                    'Đến: ${_endDate.toLocal().toString().split(' ')[0]}'),
+              ),
+            ]),
 
-          // ── Nút “Xác nhận” ─────────────────────────────────
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _apply,
-              child:
-              const Text('Xác nhận áp dụng giảm giá'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                const EdgeInsets.symmetric(vertical: 16),
+            const SizedBox(height: 24),
+
+            // Danh sách sản phẩm với Checkbox
+            Expanded(
+              child: ListView.builder(
+                itemCount: _products.length,
+                itemBuilder: (_, i) {
+                  final p = _products[i];
+                  final checked = _selectedIds.contains(p.id);
+                  return CheckboxListTile(
+                    value: checked,
+                    onChanged: (v) {
+                      setState(() {
+                        if (v == true) _selectedIds.add(p.id!);
+                        else _selectedIds.remove(p.id!);
+                      });
+                    },
+                    title: Text(p.name,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      'Giá: ₫${p.price.toStringAsFixed(0)}  •  Biến thể: ${p.variants.length}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                },
               ),
             ),
-          ),
-        ]),
+
+            // Nút xác nhận
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _apply,
+                child: const Text('Xác nhận áp dụng giảm giá'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

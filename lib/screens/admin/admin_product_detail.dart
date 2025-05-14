@@ -5,8 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
-
-import '../../models/variant.dart';
+import 'package:cpmad_final/models/variant.dart';
+import 'component/variant_detail.dart';
 
 // TODO: replace with dynamic data sources
 final List<Category> categories = [Category(id: 'laptop', name: 'Laptop'), Category(id: 'ssd', name: 'SSD')];
@@ -16,12 +16,13 @@ class AdminProductDetail extends StatefulWidget {
   final Product product;
   final ValueChanged<Product> onEdit;
   final VoidCallback onDelete;
-
+  final bool isNew;
   const AdminProductDetail({
     Key? key,
     required this.product,
     required this.onEdit,
     required this.onDelete,
+    this.isNew = false,
   }) : super(key: key);
 
   @override
@@ -93,6 +94,24 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
     }
   }
 
+  void _navigateToEditVariantPage(int index) async {
+    final old = _variants[index];
+    final result = await Navigator.push<Variant>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VariantDetailScreen(
+          productId: widget.product.id ?? '',
+          initialVariant: old,        // truyền biến thể cũ
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        _variants[index] = result;  // cập nhật lại list
+      });
+    }
+  }
+
   void _removeImage(int index) {
     setState(() {
       _images.removeAt(index);
@@ -125,28 +144,34 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     const SizedBox(height: 8),
                     Text('Tồn kho: ${variant.stock}'),
                     const SizedBox(height: 16),
-                    const Text('Ảnh biến thể', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Ảnh sản phẩm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: variant.images.length,
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        childAspectRatio: 1.2,
+                        childAspectRatio: 1,
                       ),
+                      itemCount: _images.length + 1,
                       itemBuilder: (context, index) {
-                        final img = variant.images[index];
-                        if (img.imageUrl.isEmpty) return const Icon(Icons.broken_image);
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: !kIsWeb && File(img.imageUrl).existsSync()
-                              ? Image.file(File(img.imageUrl), fit: BoxFit.cover)
-                              : Image.network(img.imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) {
-                            return const Icon(Icons.image_not_supported);
-                          }),
+                        if (index < _images.length) {
+                          // hiện thumbnail ảnh đã chọn
+                          return _buildImageTile(index);
+                        }
+                        // nút thêm ảnh
+                        return GestureDetector(
+                          onTap: _pickImages,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey),
+                            ),
+                            child: const Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                          ),
                         );
                       },
                     ),
@@ -225,177 +250,31 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
     Navigator.of(context).pop();
   }
 
-  void _showAddVariantDialog() async {
-    final nameCtrl = TextEditingController();
-    final colorCtrl = TextEditingController(text: 'black');
-    final attrCtrl = TextEditingController();
-    final priceCtrl = TextEditingController();
-    final stockCtrl = TextEditingController();
-
-    final variant = await showDialog<Variant>(
-      context: context,
-      builder: (context) {
-        List<PlatformFile> variantImages = [];
-        return AlertDialog(
-          title: const Text('Thêm Variant'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Tên biến thể'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: colorCtrl,
-                  decoration: const InputDecoration(labelText: 'Màu sắc'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: attrCtrl,
-                  decoration: const InputDecoration(labelText: 'Thuộc tính'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: priceCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Giá'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: stockCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Số lượng tồn kho'),
-                ),
-                const SizedBox(height: 12),
-                const Text('Ảnh biến thể', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                GridView.builder(
-                  itemCount: variantImages.length + 1,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 1.2,
-                  ),
-                  itemBuilder: (context, i) {
-                    if (i < variantImages.length) {
-                      final file = variantImages[i];
-                      Widget img;
-                      if (!kIsWeb && file.path != null) {
-                        img = Image.file(File(file.path!), fit: BoxFit.cover);
-                      } else if (file.bytes != null) {
-                        img = Image.memory(file.bytes!, fit: BoxFit.cover);
-                      } else {
-                        img = const Icon(Icons.broken_image, size: 40);
-                      }
-
-                      return Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              color: Colors.grey[200],
-                              child: AspectRatio(aspectRatio: 1, child: img),
-                            ),
-                          ),
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: GestureDetector(
-                              onTap: () => setState(() => variantImages.removeAt(i)),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.black54,
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                child: const Icon(Icons.close, size: 16, color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return GestureDetector(
-                      onTap: () async {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.image,
-                          allowMultiple: true,
-                          withData: kIsWeb,
-                        );
-                        if (result != null) {
-                          setState(() => variantImages.addAll(result.files));
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: const Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                try {
-                  final images = variantImages.map((f) {
-                    return VariantImage(imageUrl: f.path ?? '');
-                  }).toList();
-
-                  final newVariant = Variant(
-                    id: null,
-                    productId: widget.product.id ?? '',
-                    variantName: nameCtrl.text.trim(),
-                    color: colorCtrl.text.trim(),
-                    attributes: attrCtrl.text.trim(),
-                    price: double.tryParse(priceCtrl.text.trim()) ?? 0,
-                    stock: int.tryParse(stockCtrl.text.trim()) ?? 0,
-                    images: images,
-                  );
-                  Navigator.pop(context, newVariant);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: ${e.toString()}')),
-                  );
-                }
-              },
-              child: const Text('Thêm'),
-            ),
-          ],
-        );
-      },
+  void _navigateToAddVariantPage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => VariantDetailScreen(productId: widget.product.id ?? '')),
     );
 
-    if (variant != null) {
-      setState(() => _variants.add(variant));
+    if (result != null && result is Variant) {
+      setState(() => _variants.add(result));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final titleText = widget.isNew || widget.product.id == null
+        ? 'Thêm sản phẩm'
+        : 'Chỉnh sửa sản phẩm';
     return Scaffold(
       appBar: AppBar(
         title: Text((widget.product.id?.isEmpty ?? true) ? 'Thêm sản phẩm' : 'Chỉnh sửa sản phẩm'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: widget.onDelete,
-          ),
+          if (!widget.isNew) // chỉ hiện nút Delete khi không phải add mới
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: widget.onDelete,
+            ),
         ],
       ),
       body: Padding(
@@ -486,19 +365,20 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     const Text('Ảnh sản phẩm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _images.length + 1,     // +1 để hiển thị nút “thêm ảnh”
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
+                        crossAxisCount: 4,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        childAspectRatio: 1.2,
+                        childAspectRatio: 1,
                       ),
-                      itemCount: _images.length + 1,
-                      itemBuilder: (context, i) {
-                        if (i < _images.length) {
-                          return _buildImageTile(i);
+                      itemBuilder: (context, index) {
+                        if (index < _images.length) {
+                          return _buildImageTile(index);
                         }
+                        // nút thêm ảnh
                         return GestureDetector(
                           onTap: _pickImages,
                           child: Container(
@@ -512,9 +392,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                         );
                       },
                     ),
-
                     const SizedBox(height: 20),
-
                     // Description
                     const Text('Mô tả chi tiết', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
@@ -591,125 +469,91 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                         ),
                                       ),
                                     ]),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 8),
                                     const Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text('Ảnh biến thể', style: TextStyle(fontWeight: FontWeight.bold))),
                                     const SizedBox(height: 8),
-                                    GridView.builder(
-                                      itemCount: _editingVariantImages.length + 1,
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 5,
-                                        crossAxisSpacing: 8,
-                                        mainAxisSpacing: 8,
-                                        childAspectRatio: 1.2,
-                                      ),
-                                      itemBuilder: (context, i) {
-                                        if (i < _editingVariantImages.length) {
-                                          final file = _editingVariantImages[i];
-                                          Widget img;
-                                          if (!kIsWeb && file.path != null) {
-                                            img = Image.file(File(file.path!), fit: BoxFit.cover);
-                                          } else if (file.bytes != null) {
-                                            img = Image.memory(file.bytes!, fit: BoxFit.cover);
-                                          } else {
-                                            img = const Icon(Icons.broken_image, size: 40);
-                                          }
+                                    SizedBox(
+                                      height: 120,  // hoặc tuỳ nhu cầu
+                                      child: GridView.builder(
+                                        itemCount: _editingVariantImages.length + 1,
+                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 5,
+                                          crossAxisSpacing: 8,
+                                          mainAxisSpacing: 8,
+                                          childAspectRatio: 1,
+                                        ),
+                                        physics: const BouncingScrollPhysics(),
+                                        itemBuilder: (context, i) {
+                                          if (i < _editingVariantImages.length) {
+                                            final file = _editingVariantImages[i];
+                                            Widget img;
+                                            if (!kIsWeb && file.path != null) {
+                                              img = Image.file(File(file.path!), fit: BoxFit.cover);
+                                            } else if (file.bytes != null) {
+                                              img = Image.memory(file.bytes!, fit: BoxFit.cover);
+                                            } else {
+                                              img = const Icon(Icons.broken_image, size: 40);
+                                            }
 
-                                          return Stack(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: Container(
-                                                  color: Colors.grey[200],
-                                                  child: AspectRatio(aspectRatio: 1, child: img),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                top: 4,
-                                                right: 4,
-                                                child: GestureDetector(
-                                                  onTap: () => setState(() => _editingVariantImages.removeAt(i)),
+                                            return Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
                                                   child: Container(
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.black54,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    padding: const EdgeInsets.all(4),
-                                                    child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                                    color: Colors.grey[200],
+                                                    child: AspectRatio(aspectRatio: 1, child: img),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          );
-                                        }
+                                                Positioned(
+                                                  top: 4,
+                                                  right: 4,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                        setState(() => _editingVariantImages.removeAt(i));
+                                                      });
+                                                    },
+                                                    child: Container(
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.black54,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      padding: const EdgeInsets.all(4),
+                                                      child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }
 
-                                        // Add button
-                                        return GestureDetector(
-                                          onTap: () async {
-                                            final result = await FilePicker.platform.pickFiles(
-                                              type: FileType.image,
-                                              allowMultiple: true,
-                                              withData: kIsWeb,
-                                            );
-                                            if (result != null) {
-                                              setState(() => _editingVariantImages.addAll(result.files));
-                                            }
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[200],
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.grey),
+                                          // Add button
+                                          return GestureDetector(
+                                            onTap: () async {
+                                              final result = await FilePicker.platform.pickFiles(
+                                                type: FileType.image,
+                                                allowMultiple: true,
+                                                withData: kIsWeb,
+                                              );
+                                              if (result != null && result.files.isNotEmpty) {
+                                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                  setState(() => _editingVariantImages.addAll(result.files));
+                                                });
+                                              }
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[200],
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: Colors.grey),
+                                              ),
+                                              child: const Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
                                             ),
-                                            child: const Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        TextButton(
-                                          onPressed: () => setState(() => _editingIndex = null),
-                                          child: const Text('Hủy'),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            final updated = v.copyWith(
-                                              variantName: nameCtrl.text.trim(),
-                                              color: colorCtrl.text.trim(),
-                                              attributes: attrCtrl.text.trim(),
-                                              price: double.tryParse(priceCtrl.text.trim()) ?? v.price,
-                                              stock: int.tryParse(stockCtrl.text.trim()) ?? v.stock,
-                                              images: _editingVariantImages
-                                                  .map((f) => VariantImage(imageUrl: f.path ?? ''))
-                                                  .toList(),
-                                            );
-                                            setState(() {
-                                              _variants[index] = updated;
-                                              _editingIndex = null;
-                                              _editingVariantImages.clear();
-                                            });
-                                          },
-                                          child: const Text('Lưu'),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
-                                          tooltip: 'Xoá biến thể',
-                                          onPressed: () {
-                                            setState(() {
-                                              _variants.removeAt(index);
-                                              _editingIndex = null;
-                                              _editingVariantImages.clear();
-                                            });
-                                          },
-                                        ),
-                                      ],
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -731,9 +575,9 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                   onPressed: () => _showVariantDetails(v),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.edit),
+                                  icon: const Icon(Icons.edit, color: Colors.blue),
                                   tooltip: 'Chỉnh sửa',
-                                  onPressed: () => setState(() => _editingIndex = index),
+                                  onPressed: () => _navigateToEditVariantPage(index),  // ← dùng navigator
                                 ),
                               ],
                             ),
@@ -746,7 +590,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                       child: TextButton.icon(
                         icon: const Icon(Icons.add),
                         label: const Text('Thêm variant'),
-                        onPressed: _showAddVariantDialog,
+                        onPressed: _navigateToAddVariantPage,
                       ),
                     ),
                     const SizedBox(height: 32),
