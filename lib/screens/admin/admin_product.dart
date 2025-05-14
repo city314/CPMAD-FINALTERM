@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import '../../models/variant.dart';
 import 'admin_product_detail.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
@@ -34,7 +37,26 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       imgUrl: 'assets/images/product/laptop/acer/acer1.png',
       timeAdd: DateTime.now().subtract(const Duration(days: 3)),
       series: 'Strix',
+      variants: [
+        Variant(
+          id: 'v001',
+          productId: '1',
+          variantName: '16GB RAM',
+          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
+          price: 30000000,
+          stock: 10,
+        ),
+        Variant(
+          id: 'v002',
+          productId: '1',
+          variantName: '32GB RAM',
+          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
+          price: 35000000,
+          stock: 5,
+        ),
+      ],
     ),
+    // 2) SSD chỉ có 1 variant
     Product(
       id: '2',
       name: 'SSD Samsung 980 Pro 1TB',
@@ -46,102 +68,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       imgUrl: 'assets/images/product/laptop/acer/acer1.png',
       timeAdd: DateTime.now().subtract(const Duration(days: 10)),
       series: '980 Pro',
-    ),
-    Product(
-      id: '1',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandId: 'asus',
-      price: 30000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
-    ),
-    Product(
-      id: '2',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      price: 4500000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
-    ),
-    Product(
-      id: '1',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandId: 'asus',
-      price: 30000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
-    ),
-    Product(
-      id: '2',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      price: 4500000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
-    ),
-    Product(
-      id: '1',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandId: 'asus',
-      price: 30000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
-    ),
-    Product(
-      id: '2',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      price: 4500000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
-    ),
-    Product(
-      id: '1',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandId: 'asus',
-      price: 30000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
-    ),
-    Product(
-      id: '2',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      price: 4500000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
+      variants: [
+        Variant(
+          id: 'v003',
+          productId: '2',
+          variantName: '1TB',
+          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
+          price: 4500000,
+          stock: 20,
+        ),
+      ],
     ),
   ];
   List<Product> _filteredProducts = [];
@@ -181,6 +117,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       imgUrl: '',
       timeAdd: DateTime.now(),
       series: '',
+      variants:  [],
     );
     Future.microtask(() {
       Navigator.push(
@@ -319,9 +256,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ),
               ),
               const SizedBox(height: 12),  // cách trước ButtonBar
-              ButtonBar(
+              Text('Biến thể: ${p.variants.length}',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+              const SizedBox(height: 12),
+              OverflowBar(
                 alignment: MainAxisAlignment.end,
-                buttonPadding: EdgeInsets.zero,
+                spacing: 0,         // khoảng cách giữa các button
+                overflowSpacing: 0, // khi overflow thì khoảng cách
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blue),

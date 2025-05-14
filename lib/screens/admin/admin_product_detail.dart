@@ -6,6 +6,8 @@ import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 
+import '../../models/variant.dart';
+
 // TODO: replace with dynamic data sources
 final List<Category> categories = [Category(id: 'laptop', name: 'Laptop'), Category(id: 'ssd', name: 'SSD')];
 final List<Brand> brands = [Brand(id: 'asus', name: 'ASUS', imgUrl: ''), Brand(id: 'samsung', name: 'Samsung', imgUrl: '')];
@@ -37,6 +39,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
 
   late Category _selectedCategory;
   late Brand _selectedBrand;
+  late List<Variant> _variants;
   List<PlatformFile> _images = [];
 
   @override
@@ -48,7 +51,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
     _stockCtrl = TextEditingController(text: p.stock.toString());
     _seriesCtrl = TextEditingController(text: p.series);
     _descCtrl = TextEditingController(text: p.description);
-
+    _variants = List<Variant>.from(p.variants);
     _selectedCategory = categories.firstWhere(
           (c) => c.id == p.categoryId,
       orElse: () => categories.first,
@@ -147,6 +150,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
       stock: int.tryParse(_stockCtrl.text) ?? widget.product.stock,
       series: _seriesCtrl.text.trim(),
       description: _descCtrl.text.trim(),
+      variants:    _variants,
       imgUrl: firstPath,
       timeAdd: widget.product.timeAdd,
     );
@@ -302,6 +306,34 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                       maxLines: 5,
                     ),
                     const SizedBox(height: 40),
+                    const Text('Variants', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Column(
+                      children: [
+                        for (var i = 0; i < _variants.length; i++)
+                          _buildVariantRow(i),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text('Thêm variant'),
+                            onPressed: () => setState(() {
+                              _variants.add(Variant(
+                                id:           '',                          // tạm để rỗng
+                                productId:    widget.product.id ?? '',     // hoặc chắc chắn non-null
+                                variantName:  '',                          // tên biến thể
+                                color:        'black',                     // hoặc màu khác bạn muốn
+                                attributes:   '',                          // **chuỗi**, không phải Map
+                                price:        0,
+                                stock:        0, // danh sách ảnh (nếu cần)
+                                // createdAt/updatedAt tự set mặc định nếu không truyền
+                              ));
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -320,6 +352,51 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVariantRow(int idx) {
+    final v = _variants[idx];
+    final nameCtrl  = TextEditingController(text: v.variantName);
+    final priceCtrl = TextEditingController(text: v.price.toString());
+    final stockCtrl = TextEditingController(text: v.stock.toString());
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(children: [
+        Expanded(
+          flex: 4,
+          child: TextField(
+            controller: nameCtrl,
+            decoration: const InputDecoration(labelText: 'Tên variant'),
+            onChanged: (t) => setState(() => _variants[idx] =
+                v.copyWith(variantName: t)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: priceCtrl,
+            decoration: const InputDecoration(labelText: 'Giá'),
+            keyboardType: TextInputType.number,
+            onChanged: (t) => setState(() => _variants[idx] =
+                v.copyWith(price: double.tryParse(t) ?? v.price)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: stockCtrl,
+            decoration: const InputDecoration(labelText: 'Stock'),
+            keyboardType: TextInputType.number,
+            onChanged: (t) => setState(() => _variants[idx] =
+                v.copyWith(stock: int.tryParse(t) ?? v.stock)),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () => setState(() => _variants.removeAt(idx)),
+        ),
+      ]),
     );
   }
 }
