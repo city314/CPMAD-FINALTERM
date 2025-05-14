@@ -19,7 +19,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/products',
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
@@ -113,7 +113,7 @@ final GoRouter appRouter = GoRouter(
               case 2: context.go('/admin/orders');    break;
               case 3: context.go('/admin/users');     break;
               case 4: context.go('/admin/coupons');   break;
-              case 5: context.go('/admin/chat');      break;
+              case 5: context.go('/admin/support');      break;
             }
           },
         );
@@ -152,7 +152,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/admin/chat',
           name: 'admin_chat',
-          builder: (c, s) => const CustomerSupportScreen(),
+          builder: (context, state) {
+            final email = state.extra as String;
+            return CustomerSupportScreen(email: email);
+          },
         ),
       ],
     ),

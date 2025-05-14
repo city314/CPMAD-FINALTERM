@@ -72,6 +72,7 @@ class _ProductListState extends State<ProductList> {
         onCartTap: () {},
         onRegisterTap: () {},
         onLoginTap: () {},
+        onSupportTap: () {},
         onSearch: (value) {},
       ),
       body: Row(

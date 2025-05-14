@@ -28,12 +28,14 @@ class UserService {
     );
 
     if (response.statusCode == 201) {
-      // Đăng ký thành công
-      print('Đăng ký thành công!');
+      print('✅ Đăng ký thành công!');
     } else {
-      // Lỗi đăng ký
-      final error = jsonDecode(response.body)['message'];
-      print('Lỗi: $error');
+      try {
+        final error = jsonDecode(response.body)['message'];
+        throw Exception(error);
+      } catch (e) {
+        throw Exception('Lỗi không xác định từ server (${response.statusCode})');
+      }
     }
   }
 
@@ -68,7 +70,11 @@ class UserService {
           const SnackBar(content: Text('Đăng nhập thành công!')),
         );
 
-        context.go('/home');
+        if (data['user']['role'] == 'admin') {
+          context.go('/admin/dashboard');
+        } else {
+          context.go('/home');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Đăng nhập thất bại')),
@@ -261,6 +267,31 @@ class UserService {
       return data.map((e) => ChatOverview.fromJson(e)).toList();
     } else {
       throw Exception('Lỗi tải dữ liệu chat');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getMessages(String email) async {
+    try {
+      final res = await http.get(Uri.parse('$_urlSupport/getMessages/$email'));
+
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        List<dynamic> rawMessages = data['messages'];
+        return rawMessages.map<Map<String, dynamic>>((msg) {
+          return {
+            'text': msg['text'],
+            'isUser': msg['isUser'],
+            'image': msg['image'],
+            'time': DateTime.parse(msg['time']),
+          };
+        }).toList();
+      } else {
+        print('Error loading messages: ${res.body}');
+        return [];
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return [];
     }
   }
 }
