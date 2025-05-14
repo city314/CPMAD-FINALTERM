@@ -26,6 +26,7 @@ class AdminTopNavbar extends StatelessWidget {
       _NavItem(icon: Icons.people_outline, label: 'User Management'),
       _NavItem(icon: Icons.receipt_long, label: 'Order Management'),
       _NavItem(icon: Icons.local_offer_outlined, label: 'Coupon Management'),
+      _NavItem(icon: Icons.percent, label: 'Discount Management'),
       _NavItem(icon: Icons.chat_bubble_outline, label: 'Customer Support'),
     ];
 

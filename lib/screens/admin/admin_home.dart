@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
 import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
+import 'admin_discount.dart';
 import 'admin_product.dart';
 import 'admin_top_navbar.dart';
+import 'admin_user.dart';
 
 class AdminHome extends StatefulWidget {
   // final Widget child;
@@ -35,6 +37,7 @@ class _AdminHomeState extends State<AdminHome> {
     'User Management',
     'Order Management',
     'Coupon Management',
+    'Discount Management',
     'Customer Support',
   ];
 
@@ -50,6 +53,8 @@ class _AdminHomeState extends State<AdminHome> {
       const AdminDashboardScreen(),
       AdminProductScreen(),
       const AdminCouponScreen(),
+      const AdminUserScreen(),
+      const AdminDiscountScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 

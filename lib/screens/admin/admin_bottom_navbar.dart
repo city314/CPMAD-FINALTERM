@@ -17,6 +17,7 @@ class _AnimatedBottomNavBarState extends State<AnimatedBottomNavBar> {
     Icons.people_outline,
     Icons.receipt_long,
     Icons.local_offer_outlined,
+    Icons.percent,
     Icons.chat_bubble_outline,
   ];
 

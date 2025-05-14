@@ -7,9 +7,13 @@ import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
 import '../screens/admin/admin_chat.dart';
+import '../screens/admin/admin_coupon.dart';
 import '../screens/admin/admin_dashboard.dart';
+import '../screens/admin/admin_discount.dart';
+import '../screens/admin/admin_order.dart';
 import '../screens/admin/admin_product.dart';
 import '../screens/admin/admin_support.dart';
+import '../screens/admin/admin_user.dart';
 import '../screens/admin/admin_wrapper.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
@@ -19,7 +23,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/admin/products',
   routes: [
     GoRoute(
       path: '/',
@@ -96,10 +100,11 @@ final GoRouter appRouter = GoRouter(
         int _tabIndexFromLoc(String loc) {
           if (loc.startsWith('/admin/dashboard')) return 0;
           if (loc.startsWith('/admin/products'))  return 1;
-          if (loc.startsWith('/admin/orders'))    return 2;
-          if (loc.startsWith('/admin/users'))     return 3;
+          if (loc.startsWith('/admin/users'))     return 2;
+          if (loc.startsWith('/admin/orders'))    return 3;
           if (loc.startsWith('/admin/coupons'))   return 4;
-          if (loc.startsWith('/admin/chat'))      return 5;
+          if (loc.startsWith('/admin/discount'))  return 5;
+          if (loc.startsWith('/admin/chat'))      return 6;
           return 0;
         }
 
@@ -110,10 +115,12 @@ final GoRouter appRouter = GoRouter(
             switch (i) {
               case 0: context.go('/admin/dashboard'); break;
               case 1: context.go('/admin/products');  break;
-              case 2: context.go('/admin/orders');    break;
-              case 3: context.go('/admin/users');     break;
+              case 2: context.go('/admin/users');     break;
+              case 3: context.go('/admin/orders');    break;
               case 4: context.go('/admin/coupons');   break;
               case 5: context.go('/admin/support');      break;
+              case 5: context.go('/admin/discount');  break;
+              case 6: context.go('/admin/chat');      break;
             }
           },
         );
@@ -129,25 +136,30 @@ final GoRouter appRouter = GoRouter(
           name: 'admin_products',
           builder: (c, s) => AdminProductScreen(),
         ),
-        // GoRoute(
-        //   path: '/admin/orders',
-        //   name: 'admin_orders',
-        //   builder: (c, s) => const AdminOrderScreen(),
-        // ),
-        // GoRoute(
-        //   path: '/admin/users',
-        //   name: 'admin_users',
-        //   builder: (c, s) => AdminUserScreen(),
-        // ),
-        // GoRoute(
-        //   path: '/admin/coupons',
-        //   name: 'admin_coupons',
-        //   builder: (c, s) => const AdminCouponScreen(),
-        // ),
+        GoRoute(
+          path: '/admin/orders',
+          name: 'admin_orders',
+          builder: (c, s) => const AdminOrderScreen(),
+        ),
+        GoRoute(
+          path: '/admin/users',
+          name: 'admin_users',
+          builder: (c, s) => AdminUserScreen(),
+        ),
+        GoRoute(
+          path: '/admin/coupons',
+          name: 'admin_coupons',
+          builder: (c, s) => const AdminCouponScreen(),
+        ),
         GoRoute(
           path: '/admin/support',
           name: 'admin_support',
           builder: (c, s) => const SupportScreen(),
+        ),
+        GoRoute(
+          path: '/admin/discount',
+          name: 'admin_discount',
+          builder: (c, s) => const AdminDiscountScreen(),
         ),
         GoRoute(
           path: '/admin/chat',
