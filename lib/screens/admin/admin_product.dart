@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
-import 'admin_product_detail.dart';  // import the detail page
+import 'admin_product_detail.dart';
+import 'package:cpmad_final/models/product.dart';
+import 'package:cpmad_final/models/category.dart';
+import 'package:cpmad_final/models/brand.dart';
+
+// TODO: Replace with real data sources
+final List<Category> categories = [
+  Category(id: 'laptop', name: 'Laptop'),
+  Category(id: 'ssd', name: 'SSD'),
+];
+final List<Brand> brands = [
+  Brand(id: 'asus', name: 'ASUS', imgUrl: ''),
+  Brand(id: 'samsung', name: 'Samsung', imgUrl: ''),
+];
 
 class AdminProductScreen extends StatefulWidget {
   const AdminProductScreen({Key? key}) : super(key: key);
@@ -9,235 +22,243 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
-  final List<Product> productList = [
+  final List<Product> _allProducts = [
     Product(
-      id: 'p001',
+      id: '1',
       name: 'Gaming Laptop ROG Strix',
-      brand: 'ASUS',
+      categoryId: 'laptop',
+      brandId: 'asus',
       price: 30000000,
-      discount: 10,
-      description:
-      'Laptop gaming hiệu năng cao, chip Intel Gen 13, card RTX 4060, phù hợp cho cả học tập và giải trí.',
-      category: 'Laptop',
-      images: ['laptop1.png', 'laptop2.png', 'laptop3.png'],
-      variants: [
-        ProductVariant(id: 'v001', name: '16GB RAM', stock: 10),
-        ProductVariant(id: 'v002', name: '32GB RAM', stock: 5),
-      ],
-      rating: 4.8,
-      reviews: ['Sản phẩm rất tốt', 'Hiệu năng ổn định'],
-      isPromotional: true,
-      isNew: true,
-      isBestSeller: true,
-      createdAt: DateTime.now(),
+      description: 'Laptop gaming hiệu năng cao.',
+      stock: 12,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
+      series: 'Strix',
     ),
     Product(
-      id: 'p002',
-      name: 'SSD Samsung 980 Pro',
-      brand: 'Samsung',
+      id: '2',
+      name: 'SSD Samsung 980 Pro 1TB',
+      categoryId: 'ssd',
+      brandId: 'samsung',
       price: 4500000,
-      discount: 0,
-      description:
-      'SSD tốc độ cao chuẩn PCIe Gen4, dung lượng 1TB, phù hợp cho nhu cầu chơi game và làm việc chuyên sâu.',
-      category: 'SSD',
-      images: ['ssd1.png', 'ssd2.png', 'ssd3.png'],
-      variants: [
-        ProductVariant(id: 'v003', name: '500GB', stock: 12),
-        ProductVariant(id: 'v004', name: '1TB', stock: 20),
-      ],
-      rating: 4.5,
-      reviews: ['Tốc độ cực nhanh', 'Đáng tiền'],
-      isPromotional: false,
-      isNew: false,
-      isBestSeller: true,
-      createdAt: DateTime.now(),
+      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
+      stock: 20,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
+      series: '980 Pro',
+    ),
+    Product(
+      id: '1',
+      name: 'Gaming Laptop ROG Strix',
+      categoryId: 'laptop',
+      brandId: 'asus',
+      price: 30000000,
+      description: 'Laptop gaming hiệu năng cao.',
+      stock: 12,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
+      series: 'Strix',
+    ),
+    Product(
+      id: '2',
+      name: 'SSD Samsung 980 Pro 1TB',
+      categoryId: 'ssd',
+      brandId: 'samsung',
+      price: 4500000,
+      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
+      stock: 20,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
+      series: '980 Pro',
+    ),
+    Product(
+      id: '1',
+      name: 'Gaming Laptop ROG Strix',
+      categoryId: 'laptop',
+      brandId: 'asus',
+      price: 30000000,
+      description: 'Laptop gaming hiệu năng cao.',
+      stock: 12,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
+      series: 'Strix',
+    ),
+    Product(
+      id: '2',
+      name: 'SSD Samsung 980 Pro 1TB',
+      categoryId: 'ssd',
+      brandId: 'samsung',
+      price: 4500000,
+      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
+      stock: 20,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
+      series: '980 Pro',
+    ),
+    Product(
+      id: '1',
+      name: 'Gaming Laptop ROG Strix',
+      categoryId: 'laptop',
+      brandId: 'asus',
+      price: 30000000,
+      description: 'Laptop gaming hiệu năng cao.',
+      stock: 12,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
+      series: 'Strix',
+    ),
+    Product(
+      id: '2',
+      name: 'SSD Samsung 980 Pro 1TB',
+      categoryId: 'ssd',
+      brandId: 'samsung',
+      price: 4500000,
+      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
+      stock: 20,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
+      series: '980 Pro',
+    ),
+    Product(
+      id: '1',
+      name: 'Gaming Laptop ROG Strix',
+      categoryId: 'laptop',
+      brandId: 'asus',
+      price: 30000000,
+      description: 'Laptop gaming hiệu năng cao.',
+      stock: 12,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
+      series: 'Strix',
+    ),
+    Product(
+      id: '2',
+      name: 'SSD Samsung 980 Pro 1TB',
+      categoryId: 'ssd',
+      brandId: 'samsung',
+      price: 4500000,
+      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
+      stock: 20,
+      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
+      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
+      series: '980 Pro',
     ),
   ];
+  List<Product> _filteredProducts = [];
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredProducts = List.from(_allProducts);
+    _searchCtrl.addListener(_onSearch);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.removeListener(_onSearch);
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onSearch() {
+    final query = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filteredProducts = _allProducts.where((p) => p.name.toLowerCase().contains(query)).toList();
+    });
+  }
 
   void _openDetail({Product? product}) {
     final isNew = product == null;
-    final p = product ??
-        Product(
-          id: '',
-          name: '',
-          brand: '',
-          price: 0,
-          discount: 0,
-          category: '',
-          variants: [],
-          rating: 0,
-          reviews: [],
-          images: [],
-          description: '',
-          isNew: false,
-          isPromotional: false,
-          isBestSeller: false,
-          createdAt: DateTime.now(),
-        );
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AdminProductDetail(
-          product: p,
-          onEdit: (updated) {
-            setState(() {
-              if (isNew) {
-                // generate a real id, then:
-                productList.add(updated);
-              } else {
-                final idx = productList.indexWhere((e) => e.id == updated.id);
-                productList[idx] = updated;
-              }
-            });
-          },
-          onDelete: () {
-            if (!isNew) {
-              setState(() => productList.removeWhere((e) => e.id == p.id));
-            }
-            Navigator.pop(context);
-          },
-        ),
-      ),
+    final p = product ?? Product(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: '',
+      categoryId: categories.first.id!,
+      brandId: brands.first.id!,
+      price: 0,
+      description: '',
+      stock: 0,
+      imgUrl: '',
+      timeAdd: DateTime.now(),
+      series: '',
     );
+    Future.microtask(() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdminProductDetail(
+            product: p,
+            onEdit: (updated) {
+              setState(() {
+                if (isNew) {
+                  _allProducts.add(updated);
+                } else {
+                  final idx = _allProducts.indexWhere((e) => e.id == updated.id);
+                  if (idx != -1) _allProducts[idx] = updated;
+                }
+                _onSearch();
+              });
+            },
+            onDelete: () {
+              if (!isNew) {
+                setState(() {
+                  _allProducts.removeWhere((e) => e.id == p.id);
+                  _onSearch();
+                });
+              }
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Add Product button
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () => _openDetail(),
-              icon: const Icon(Icons.add),
-              label: const Text('Thêm sản phẩm'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Responsive content
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                if (width < 800) {
-                  return ListView.builder(
-                    itemCount: productList.length,
-                    itemBuilder: (_, i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _productCard(productList[i]),
-                    ),
-                  );
-                } else if (width < 1200) {
-                  return GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 3 / 2,
-                    ),
-                    itemCount: productList.length,
-                    itemBuilder: (_, i) => _productCard(productList[i]),
-                  );
-                } else {
-                  final ctrl = ScrollController();
-                  return Scrollbar(
-                    controller: ctrl,
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      controller: ctrl,
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.resolveWith((_) => const Color(0xFFF2F4F7)),
-                          dataRowColor: WidgetStateProperty.resolveWith((_) => Colors.white),
-                          columnSpacing: 32,
-                          columns: const [
-                            DataColumn(label: Text('Tên', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Thương hiệu')),
-                            DataColumn(label: Text('Danh mục')),
-                            DataColumn(label: Text('Giá')),
-                            DataColumn(label: Text('Hành động')),
-                          ],
-                          rows: productList.map((p) {
-                            return DataRow(cells: [
-                              DataCell(Text(p.name)),
-                              DataCell(Text(p.brand)),
-                              DataCell(Text(p.category)),
-                              DataCell(Text(p.discount > 0
-                                  ? '₫${(p.price * (1 - p.discount/100)).toStringAsFixed(0)}'
-                                  : '₫${p.price.toStringAsFixed(0)}')),
-                              DataCell(Row(children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () => _openDetail(product: p),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => setState(() => productList.remove(p)),
-                                ),
-                              ])),
-                            ]);
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quản lý sản phẩm'),
+        centerTitle: true,
       ),
-    );
-  }
+      // Thay đổi trong build() của AdminProductScreen:
 
-  Widget _productCard(Product p) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      body: Padding(
+        padding: const EdgeInsets.all(20),           // tăng từ 16
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(p.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('${p.brand} • ${p.category}', style: const TextStyle(color: Colors.black54)),
-            const SizedBox(height: 8),
-            Text(
-              p.discount > 0
-                  ? '₫${(p.price * (1 - p.discount / 100)).toStringAsFixed(0)} (↓${p.discount.toInt()}%)'
-                  : '₫${p.price.toStringAsFixed(0)}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: p.discount > 0 ? Colors.red : Colors.black87,
+            // Search bar
+            TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm sản phẩm...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(Icons.visibility, color: Colors.grey),
-                tooltip: 'Chi tiết',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AdminProductDetail(
-                        product: p,
-                        onEdit: (updated) => _openDetail(product: updated),
-                        onDelete: () {
-                          setState(() => productList.remove(p));
-                          Navigator.pop(context);
-                        },
-                      ),
+            const SizedBox(height: 20),               // tăng từ 16
+
+            // Product grid
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  // Mỗi card tối đa rộng 250px
+                  int crossCount = (totalWidth / 250).floor().clamp(1, 6);
+                  // Tính chiều rộng thực của mỗi card
+                  final itemWidth = (totalWidth - (crossCount - 1) * 16) / crossCount;
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: _filteredProducts.map((p) {
+                        return SizedBox(
+                          width: itemWidth,
+                          child: _buildProductCard(p),
+                        );
+                      }).toList(),
                     ),
                   );
                 },
@@ -246,87 +267,83 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openDetail(),
+        child: const Icon(Icons.add),
+      ),
     );
   }
-}
 
-// Dummy Product and ProductVariant definitions
-class Product {
-  final String id;
-  final String name;
-  final String brand;
-  final double price;
-  final double discount;
-  final String category;
-  final List<String> images;
-  final List<ProductVariant> variants;
-  final double rating;
-  final List<String> reviews;
-  final String description;
-  final bool isNew;
-  final bool isPromotional;
-  final bool isBestSeller;
-  final DateTime createdAt;
+  // Trong class _AdminProductScreenState:
+  Widget _buildProductCard(Product p) {
+    // Lấy tên category/brand từ list đã khai báo
+    final catName   = categories.firstWhere((c) => c.id == p.categoryId).name;
+    final brandName = brands.firstWhere((b) => b.id == p.brandId).name;
 
-  Product({
-    required this.id,
-    required this.name,
-    required this.brand,
-    required this.price,
-    required this.discount,
-    required this.category,
-    required this.images,
-    required this.variants,
-    required this.rating,
-    required this.reviews,
-    required this.description,
-    required this.isNew,
-    required this.isPromotional,
-    required this.isBestSeller,
-    required this.createdAt,
-  });
-
-  Product copyWith({
-    String? id,
-    String? name,
-    String? brand,
-    double? price,
-    double? discount,
-    String? category,
-    String? description,
-    List<String>? images,
-    List<ProductVariant>? variants,
-    DateTime? createdAt,
-    double? rating,
-    List<String>? reviews,
-    bool? isNew,
-    bool? isPromotional,
-    bool? isBestSeller,
-  }) {
-    return Product(
-      id:          id        ?? this.id,
-      name:        name      ?? this.name,
-      brand:       brand     ?? this.brand,
-      price:       price     ?? this.price,
-      discount:    discount  ?? this.discount,
-      category:    category  ?? this.category,
-      description: description ?? this.description,
-      images:      images    ?? this.images,
-      variants:    variants  ?? this.variants,
-      createdAt:   createdAt ?? this.createdAt,
-      rating: 0,
-      reviews: [],
-      isNew: false,
-      isPromotional: false,
-      isBestSeller: false,
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _openDetail(product: p),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,            // cao vừa đủ nội dung
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                p.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text('Danh mục: $catName',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+              const SizedBox(height: 8),
+              Text('Thương hiệu: $brandName',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+              const SizedBox(height: 8),
+              Text('₫${p.price.toStringAsFixed(0)}',
+                  style: const TextStyle(fontSize: 14, color: Colors.green)),
+              const SizedBox(height: 8),
+              Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  p.series.isNotEmpty ? 'Series: ${p.series}' : '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              const SizedBox(height: 12),  // cách trước ButtonBar
+              ButtonBar(
+                alignment: MainAxisAlignment.end,
+                buttonPadding: EdgeInsets.zero,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => _openDetail(product: p),
+                    tooltip: 'Chỉnh sửa',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        _allProducts.remove(p);
+                        _onSearch();
+                      });
+                    },
+                    tooltip: 'Xóa',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-}
-
-class ProductVariant {
-  final String id;
-  final String name;
-  final int stock;
-
-  ProductVariant({required this.id, required this.name, required this.stock});
 }
