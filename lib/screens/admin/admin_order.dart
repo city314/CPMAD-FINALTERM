@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import '../../models/order.dart';
 
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({Key? key}) : super(key: key);
@@ -9,209 +9,152 @@ class AdminOrderScreen extends StatefulWidget {
 }
 
 class _AdminOrderScreenState extends State<AdminOrderScreen> {
-  String selectedRange = 'Tháng này';
-
-  final List<String> ranges = [
-    'Hôm nay',
-    'Tuần này',
-    'Tháng này',
-    'Quý này',
-    'Năm nay',
-    'Tuỳ chỉnh'
+  final List<Order> _orders = [
+    Order(
+      id: 'o1001',
+      userId: 'u01',
+      sessionId: 'sess_abc',
+      totalPrice: 500000,
+      loyaltyPointUsed: 10000,
+      discount: 20000,
+      tax: 30000,
+      shippingFee: 15000,
+      finalPrice: 515000,
+      status: OrderStatus.pending,
+      timeCreate: DateTime.now().subtract(const Duration(days: 2)),
+    ),
+    Order(
+      id: 'o1002',
+      userId: 'u02',
+      sessionId: 'sess_def',
+      totalPrice: 1200000,
+      loyaltyPointUsed: 0,
+      discount: 0,
+      tax: 60000,
+      shippingFee: 20000,
+      finalPrice: 1280000,
+      status: OrderStatus.shipped,
+      timeCreate: DateTime.now().subtract(const Duration(days: 1, hours: 5)),
+    ),
+    Order(
+      id: 'o1003',
+      userId: 'u03',
+      sessionId: 'sess_xyz',
+      totalPrice: 750000,
+      loyaltyPointUsed: 50000,
+      discount: 50000,
+      tax: 45000,
+      shippingFee: 10000,
+      finalPrice: 800000,
+      status: OrderStatus.complete,
+      timeCreate: DateTime.now().subtract(const Duration(hours: 10)),
+    ),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final isMobile = width < 600;
-        final isTablet = width >= 600 && width < 1200;
-        final isDesktop = width >= 1200;
-
-        if (isMobile || isTablet) {
-          return Container(
-            color: const Color(0xFFF5F6FA),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 16),
-                _buildOverviewGrid(crossAxisCount: isMobile ? 1 : 2),
-                const SizedBox(height: 32),
-                _buildChartCard('📈 Doanh thu theo thời gian', _buildLineChart()),
-                const SizedBox(height: 32),
-                _buildChartCard('📊 Tỷ lệ loại sản phẩm bán chạy', _buildPieChart()),
-              ],
-            ),
-          );
-        } else {
-          return Container(
-            color: const Color(0xFFF5F6FA),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 16),
-                  _buildOverviewGrid(crossAxisCount: 4),
-                  const SizedBox(height: 32),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildChartCard(
-                          '📈 Doanh thu theo thời gian',
-                          _buildLineChart(),
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: _buildChartCard(
-                          '📊 Tỷ lệ loại sản phẩm bán chạy',
-                          _buildPieChart(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+  void _showOrderDetail(Order order) {
+    OrderStatus selectedStatus = order.status;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Đơn hàng #${order.id}'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('User ID: ${order.userId ?? "-"}'),
+              const SizedBox(height: 8),
+              Text('Tổng tiền: ₫${order.totalPrice.toStringAsFixed(0)}'),
+              Text('Điểm dùng: ₫${order.loyaltyPointUsed.toStringAsFixed(0)}'),
+              Text('Giảm giá: ₫${order.discount.toStringAsFixed(0)}'),
+              Text('Thuế: ₫${order.tax.toStringAsFixed(0)}'),
+              Text('Phí vận chuyển: ₫${order.shippingFee.toStringAsFixed(0)}'),
+              Text(
+                'Tổng thanh toán: ₫${order.finalPrice.toStringAsFixed(0)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Tổng quan',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        DropdownButton<String>(
-          value: selectedRange,
-          items: ranges
-              .map((range) => DropdownMenuItem(value: range, child: Text(range)))
-              .toList(),
-          onChanged: (value) => setState(() => selectedRange = value!),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChartCard(String title, Widget chart) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 220,
-              child: chart,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverviewGrid({required int crossAxisCount}) {
-    return GridView.count(
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.6,
-      children: const [
-        _DashboardCard(title: 'Tổng người dùng', value: '1,250', icon: Icons.people),
-        _DashboardCard(title: 'Người dùng mới', value: '120', icon: Icons.person_add),
-        _DashboardCard(title: 'Đơn hàng', value: '3,400', icon: Icons.shopping_cart),
-        _DashboardCard(title: 'Doanh thu', value: '₫850,000,000', icon: Icons.bar_chart),
-      ],
-    );
-  }
-
-  Widget _buildLineChart() {
-    return LineChart(
-      LineChartData(
-        titlesData: FlTitlesData(show: true),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: const [
-              FlSpot(0, 5),
-              FlSpot(1, 6.2),
-              FlSpot(2, 5.5),
-              FlSpot(3, 8),
-              FlSpot(4, 6.5),
-              FlSpot(5, 7),
+              const SizedBox(height: 12),
+              Text('Ngày tạo: ${order.timeCreate.toLocal()}'),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<OrderStatus>(
+                value: selectedStatus,
+                decoration: const InputDecoration(labelText: 'Trạng thái'),
+                items: OrderStatus.values.map((st) {
+                  return DropdownMenuItem(
+                    value: st,
+                    child: Text(st.name),
+                  );
+                }).toList(),
+                onChanged: (st) {
+                  if (st != null) selectedStatus = st;
+                },
+              ),
             ],
-            isCurved: true,
-            barWidth: 3,
-            gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent]),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                // cập nhật trạng thái
+                final idx = _orders.indexWhere((o) => o.id == order.id);
+                if (idx != -1) {
+                  _orders[idx] = Order(
+                    id: order.id,
+                    userId: order.userId,
+                    sessionId: order.sessionId,
+                    totalPrice: order.totalPrice,
+                    loyaltyPointUsed: order.loyaltyPointUsed,
+                    discount: order.discount,
+                    tax: order.tax,
+                    shippingFee: order.shippingFee,
+                    finalPrice: order.finalPrice,
+                    status: selectedStatus,
+                    timeCreate: order.timeCreate,
+                  );
+                }
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Lưu'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPieChart() {
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 4,
-        centerSpaceRadius: 30,
-        sections: [
-          PieChartSectionData(value: 40, color: Colors.blue, title: 'Laptop'),
-          PieChartSectionData(value: 25, color: Colors.orange, title: 'Phụ kiện'),
-          PieChartSectionData(value: 20, color: Colors.green, title: 'Chuột'),
-          PieChartSectionData(value: 15, color: Colors.red, title: 'Khác'),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  const _DashboardCard({Key? key, required this.title, required this.value, required this.icon})
-      : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Padding(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Quản lý Đơn hàng')),
+      body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 36, color: Colors.blueAccent),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        itemCount: _orders.length,
+        separatorBuilder: (_, __) => const Divider(height: 32),
+        itemBuilder: (_, i) {
+          final o = _orders[i];
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            title: Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Trạng thái: ${o.status.name}'),
+                Text('Tổng thanh toán: ₫${o.finalPrice.toStringAsFixed(0)}'),
+                Text('Ngày: ${o.timeCreate.toLocal().toString().split('.')[0]}'),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(title, style: const TextStyle(color: Colors.black54)),
-          ],
-        ),
+            isThreeLine: true,
+            trailing: IconButton(
+              icon: const Icon(Icons.visibility, color: Colors.blue),
+              tooltip: 'Chi tiết',
+              onPressed: () => _showOrderDetail(o),
+            ),
+          );
+        },
       ),
     );
   }
