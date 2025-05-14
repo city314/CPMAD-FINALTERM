@@ -83,7 +83,7 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quản lý Danh mục'),
+        title: const Text('Category Management'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showEditDialog(),

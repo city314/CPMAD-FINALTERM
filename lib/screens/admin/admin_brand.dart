@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/brand.dart';
+import 'component/SectionHeader.dart';
 
 class AdminBrandScreen extends StatefulWidget {
   const AdminBrandScreen({Key? key}) : super(key: key);
@@ -92,40 +93,59 @@ class _AdminBrandScreenState extends State<AdminBrandScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quản lý Thương hiệu')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showEditDialog(),
         child: const Icon(Icons.add),
         tooltip: 'Tạo mới brand',
       ),
-      body: ListView.separated(
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: _brands.length,
-        separatorBuilder: (_, __) => const Divider(height: 32),
-        itemBuilder: (context, i) {
-          final b = _brands[i];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: b.imgUrl.isNotEmpty
-                  ? NetworkImage(b.imgUrl)
-                  : null,
-              child: b.imgUrl.isEmpty ? const Icon(Icons.branding_watermark) : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ← Dùng SectionHeader để thay cho Text thường
+            const SectionHeader('Quản lý Thương hiệu'),
+            const SizedBox(height: 16),
+            // ListView bên dưới được bọc Expanded
+            Expanded(
+              child: ListView.separated(
+                itemCount: _brands.length,
+                separatorBuilder: (_, __) => const Divider(height: 32),
+                itemBuilder: (context, i) {
+                  final b = _brands[i];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage:
+                      b.imgUrl.isNotEmpty ? NetworkImage(b.imgUrl) : null,
+                      child: b.imgUrl.isEmpty
+                          ? const Icon(Icons.branding_watermark)
+                          : null,
+                    ),
+                    title: Text(
+                      b.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          tooltip: 'Chỉnh sửa',
+                          onPressed: () => _showEditDialog(brand: b),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'Xoá',
+                          onPressed: () => _deleteBrand(b),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-            title: Text(b.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                tooltip: 'Chỉnh sửa',
-                onPressed: () => _showEditDialog(brand: b),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                tooltip: 'Xoá',
-                onPressed: () => _deleteBrand(b),
-              ),
-            ]),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

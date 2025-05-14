@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import 'component/SectionHeader.dart';
+
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
 
@@ -85,21 +87,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Tổng quan',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        DropdownButton<String>(
-          value: selectedRange,
-          items: ranges
-              .map((range) => DropdownMenuItem(value: range, child: Text(range)))
-              .toList(),
-          onChanged: (value) => setState(() => selectedRange = value!),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Row(
+        children: [
+          const SectionHeader('Tổng quan'),
+          const Spacer(),     // Dropdown hộp viền bo tròn
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DropdownButton<String>(
+                value: selectedRange,
+                underline: const SizedBox(),
+                items: ranges
+                    .map((range) => DropdownMenuItem(
+                        value: range, child: Text(range)))
+                    .toList(),
+                onChanged: (value) => setState(() => selectedRange = value!),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

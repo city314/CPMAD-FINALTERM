@@ -26,11 +26,6 @@ class AdminHomeWrapper extends StatelessWidget {
     final isMobile = MediaQuery.of(context).size.width < 800;
 
     return Scaffold(
-      // Mobile: show AppBar with dynamic title; Web: hide AppBar
-      appBar: isMobile
-          ? AppBar(title: Text(_getTitle(selectedIndex)))
-          : null,
-
       // Body: mobile shows the child directly; web shows sidebar + child
       body: isMobile
           ? child
@@ -52,25 +47,5 @@ class AdminHomeWrapper extends StatelessWidget {
           ? AnimatedBottomNavBar(onItemSelected: onTabChanged)
           : null,
     );
-  }
-
-  /// Returns the AppBar title for each index (mobile view).
-  String _getTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'Dashboard';
-      case 1:
-        return 'Product Management';
-      case 2:
-        return 'User Management';
-      case 3:
-        return 'Order Management';
-      case 4:
-        return 'Coupon Management';
-      case 5:
-        return 'Customer Support';
-      default:
-        return '';
-    }
   }
 }
