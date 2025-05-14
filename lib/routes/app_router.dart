@@ -1,3 +1,4 @@
+import 'package:cpmad_final/screens/user/account/user_cart.dart';
 import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,7 +25,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/products',
+  initialLocation: '/account/cart',
   routes: [
     GoRoute(
       path: '/',
@@ -83,6 +84,11 @@ final GoRouter appRouter = GoRouter(
       path: '/account/change-password-after-login',
       name: 'change_password_after_login',
       builder: (context, state) => const ChangePasswordAfterLoginScreen(),
+    ),
+    GoRoute(
+      path: '/account/cart',
+      name: 'cart',
+      builder: (context, state) => CartScreen(),
     ),
     GoRoute(
       path: '/forgot-password',
