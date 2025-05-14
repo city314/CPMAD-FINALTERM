@@ -6,6 +6,7 @@ import 'admin_product_detail.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
+import 'component/SectionHeader.dart';
 
 // TODO: Replace with real data sources
 final List<Category> categories = [
@@ -151,39 +152,40 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quản lý sản phẩm'),
-        centerTitle: true,
-      ),
-      // Thay đổi trong build() của AdminProductScreen:
-
       body: Padding(
-        padding: const EdgeInsets.all(20),           // tăng từ 16
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SectionHeader('Quản lý sản phẩm'), // thêm SectionHeader :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+            const SizedBox(height: 16),
+
             // Search bar
             TextField(
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'Tìm kiếm sản phẩm...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            const SizedBox(height: 20),               // tăng từ 16
+            const SizedBox(height: 20),
 
             // Product grid
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final totalWidth = constraints.maxWidth;
-                  // Mỗi card tối đa rộng 250px
-                  int crossCount = (totalWidth / 250).floor().clamp(1, 6);
-                  // Tính chiều rộng thực của mỗi card
-                  final itemWidth = (totalWidth - (crossCount - 1) * 16) / crossCount;
+                  int crossCount =
+                  (totalWidth / 250).floor().clamp(1, 6);
+                  final itemWidth =
+                      (totalWidth - (crossCount - 1) * 16) /
+                          crossCount;
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding:
+                    const EdgeInsets.symmetric(vertical: 20),
                     child: Wrap(
                       spacing: 16,
                       runSpacing: 16,
