@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
+import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_product.dart';
 import 'admin_top_navbar.dart';
@@ -31,7 +32,10 @@ class _AdminHomeState extends State<AdminHome> {
   final List<String> _titles = [
     'Dashboard',
     'Product Management',
-    // nếu có thêm: 'User Management', ...
+    'User Management',
+    'Order Management',
+    'Coupon Management',
+    'Customer Support',
   ];
 
   @override
@@ -45,6 +49,7 @@ class _AdminHomeState extends State<AdminHome> {
     final pages = <Widget>[
       const AdminDashboardScreen(),
       AdminProductScreen(),
+      const AdminCouponScreen(),
       // TODO: thêm các màn khác ở đây
     ];
 
