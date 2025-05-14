@@ -10,7 +10,6 @@ class Product {
   final int stock;
   final String imgUrl;
   final DateTime timeAdd;
-  final String series;
   final List<Variant> variants;      // ← thêm trường này
 
   Product({
@@ -23,7 +22,6 @@ class Product {
     required this.stock,
     required this.imgUrl,
     required this.timeAdd,
-    required this.series,
     this.variants = const [],         // ← khởi mặc định là danh sách rỗng
   });
 
@@ -37,7 +35,6 @@ class Product {
     stock: json['stock'] as int,
     imgUrl: json['img_url'] as String,
     timeAdd: DateTime.parse(json['time_add'] as String),
-    series: json['series'] as String,
     variants: (json['variants'] as List<dynamic>?)
         ?.map((e) => Variant.fromJson(e as Map<String, dynamic>))
         .toList() ?? [],
@@ -53,7 +50,6 @@ class Product {
       'stock': stock,
       'img_url': imgUrl,
       'time_add': timeAdd.toIso8601String(),
-      'series': series,
       'variants': variants.map((v) => v.toJson()).toList(),
     };
     if (id != null) m['_id'] = id;
@@ -83,7 +79,6 @@ class Product {
       stock: stock ?? this.stock,
       imgUrl: imgUrl ?? this.imgUrl,
       timeAdd: timeAdd ?? this.timeAdd,
-      series: series ?? this.series,
       variants: variants ?? this.variants,
     );
   }

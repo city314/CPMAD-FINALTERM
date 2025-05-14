@@ -36,7 +36,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       stock: 12,
       imgUrl: 'assets/images/product/laptop/acer/acer1.png',
       timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      series: 'Strix',
       variants: [
         Variant(
           id: 'v001',
@@ -67,7 +66,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       stock: 20,
       imgUrl: 'assets/images/product/laptop/acer/acer1.png',
       timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      series: '980 Pro',
       variants: [
         Variant(
           id: 'v003',
@@ -116,7 +114,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       stock: 0,
       imgUrl: '',
       timeAdd: DateTime.now(),
-      series: '',
       variants:  [],
     );
     Future.microtask(() {
@@ -246,15 +243,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                   style: const TextStyle(fontSize: 14, color: Colors.green)),
               const SizedBox(height: 8),
               Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 8),
-              Flexible(
-                child: Text(
-                  p.series.isNotEmpty ? 'Series: ${p.series}' : '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ),
               const SizedBox(height: 12),  // cách trước ButtonBar
               Text('Biến thể: ${p.variants.length}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
