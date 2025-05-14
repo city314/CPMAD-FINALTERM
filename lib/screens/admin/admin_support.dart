@@ -1,8 +1,24 @@
+import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class MessengerLikeChatListScreen extends StatelessWidget {
-  const MessengerLikeChatListScreen({super.key});
+import '../../models/chatoverview.dart';
+
+class SupportScreen extends StatefulWidget {
+  const SupportScreen({super.key});
+
+  @override
+  State<SupportScreen> createState() => _MessengerLikeChatListScreenState();
+}
+
+class _MessengerLikeChatListScreenState extends State<SupportScreen> {
+  late Future<List<ChatOverview>> futureChats;
+
+  @override
+  void initState() {
+    super.initState();
+    futureChats = UserService.fetchChats();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,78 +26,73 @@ class MessengerLikeChatListScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        title: const Text('Đoạn chat', style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Đoạn chat',
+          style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(icon: const Icon(Icons.more_horiz, color: Colors.black54), onPressed: () {}),
           const SizedBox(width: 8),
         ],
       ),
-      body: ListView.builder(
-        itemCount: chatList.length,
-        itemBuilder: (context, index) {
-          final chat = chatList[index];
-          return ListTile(
-            leading: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: NetworkImage(chat.avatarUrl),
-                ),
-              ],
-            ),
-            title: Text(chat.customerEmail, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(
-              chat.lastMessage,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            trailing: Text(
-              DateFormat('HH:mm').format(chat.lastMessageTime),
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-            onTap: () {
-              // Điều hướng tới chi tiết chat
-            },
-          );
+      body: FutureBuilder<List<ChatOverview>>(
+        future: futureChats,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Lỗi: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Không có cuộc trò chuyện nào.'));
+          } else {
+            final chatList = snapshot.data!;
+            return ListView.builder(
+              itemCount: chatList.length,
+              itemBuilder: (context, index) {
+                final chat = chatList[index];
+                return ListTile(
+                  leading: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundImage: NetworkImage(chat.avatarUrl),
+                      ),
+                      if (chat.isActive)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  title: Text(chat.customerEmail, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    chat.lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Text(
+                    DateFormat('HH:mm').format(chat.lastMessageTime),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  onTap: () {
+                    // Điều hướng tới chi tiết chat
+                  },
+                );
+              },
+            );
+          }
         },
       ),
     );
   }
 }
-
-class ChatOverview {
-  final String customerEmail;
-  final String lastMessage;
-  final DateTime lastMessageTime;
-  final String avatarUrl;
-
-  ChatOverview({
-    required this.customerEmail,
-    required this.lastMessage,
-    required this.lastMessageTime,
-    required this.avatarUrl,
-  });
-}
-
-// Mock data
-final chatList = [
-  ChatOverview(
-    customerEmail: 'tram123@gmail.com',
-    lastMessage: 'Đưa sách cho em',
-    lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-    avatarUrl: 'https://example.com/avatar1.jpg',
-  ),
-  ChatOverview(
-    customerEmail: 'vietphat@gmail.com',
-    lastMessage: 'Kinh tế ổn định chưa?',
-    lastMessageTime: DateTime.now().subtract(const Duration(hours: 2)),
-    avatarUrl: 'https://example.com/avatar2.jpg',
-  ),
-  ChatOverview(
-    customerEmail: 'loc123@gmail.com',
-    lastMessage: 'Bạn: Okok',
-    lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
-    avatarUrl: 'https://example.com/avatar3.jpg',
-  ),
-];

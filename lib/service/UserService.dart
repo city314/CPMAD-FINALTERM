@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../models/chatoverview.dart';
 import '../models/user.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:go_router/go_router.dart';
@@ -249,6 +250,17 @@ class UserService {
     } else {
       print('Error: ${response.statusCode} - ${response.body}');
       return null;
+    }
+  }
+
+  static Future<List<ChatOverview>> fetchChats() async {
+    final response = await http.get(Uri.parse(_urlSupport));
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => ChatOverview.fromJson(e)).toList();
+    } else {
+      throw Exception('Lỗi tải dữ liệu chat');
     }
   }
 }

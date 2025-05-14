@@ -11,7 +11,6 @@ const productSchema = new mongoose.Schema({
   price: Number,
   description: String,
   stock: Number,
-
   images: [productImageSchema],
 });
 

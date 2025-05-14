@@ -4,6 +4,7 @@ const MessageSchema = new mongoose.Schema({
   text: String,
   isUser: Boolean,
   image: String,
+  isSeen: { type: Boolean, default: false },
   time: { type: Date, default: Date.now }
 });
 
