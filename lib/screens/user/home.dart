@@ -109,6 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
+  bool isLoggedIn = true; // Mặc định đã đăng nhập để test
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -124,6 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 600;
+    final isMobile = screenSize.width < 400;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+
     return Scaffold(
       appBar: CustomNavbar(
         cartItemCount: 0,
@@ -142,6 +149,19 @@ class _HomeScreenState extends State<HomeScreen> {
         onLoginTap: () {
           // TODO: Chuyển tới trang đăng nhập
         },
+        onProfileTap: isAndroid ? () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đi tới trang Profile')),
+          );
+        } : null,
+        onLogoutTap: isAndroid ? () {
+          setState(() {
+            isLoggedIn = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đã đăng xuất')),
+          );
+        } : null,
         onSearch: (value) {
           setState(() {
             _searchKeyword = value.toLowerCase();
@@ -150,12 +170,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 .toList();
           });
         },
+        isLoggedIn: isAndroid ? isLoggedIn : false,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            if (isAndroid)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24, vertical: 8),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _searchKeyword = value.toLowerCase();
+                      _filteredLaptops = _allLaptops
+                          .where((laptop) => laptop.toLowerCase().contains(_searchKeyword))
+                          .toList();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Tìm kiếm sản phẩm...',
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                    suffixIcon: const Icon(Icons.search, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+              ),
             SizedBox(
-              height: 450,
+              height: isMobile ? 200 : (isSmallScreen ? 300 : 450),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -169,7 +214,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 8 : 16,
+                          vertical: isMobile ? 8 : 16,
+                        ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: Image.asset(
@@ -245,15 +293,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 16),
               child: SizedBox(
-                height: 120,
+                height: isMobile ? 60 : (isSmallScreen ? 80 : 120),
                 child: Center(
                   child: ListView.separated(
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 18),
+                    separatorBuilder: (context, index) => SizedBox(width: isMobile ? 8 : 18),
                     itemBuilder: (context, index) {
                       return Card(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -263,17 +311,28 @@ class _HomeScreenState extends State<HomeScreen> {
                             // TODO: Xử lý khi bấm vào danh mục
                           },
                           child: Container(
-                            width: 100,
-                            padding: const EdgeInsets.all(12),
+                            width: isMobile ? 60 : (isSmallScreen ? 80 : 100),
+                            padding: EdgeInsets.all(isMobile ? 8 : 12),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(categories[index]['icon'], size: 36, color: Colors.blueAccent),
-                                const SizedBox(height: 8),
-                                Text(
-                                  categories[index]['name'],
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                Icon(
+                                  categories[index]['icon'],
+                                  size: isMobile ? 20 : (isSmallScreen ? 24 : 36),
+                                  color: Colors.blueAccent
+                                ),
+                                SizedBox(height: isMobile ? 4 : 8),
+                                Flexible(
+                                  child: Text(
+                                    categories[index]['name'],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: isMobile ? 10 : 12,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
@@ -286,19 +345,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             // Hot Sale
-            SizedBox(height: 32),
+            SizedBox(height: isMobile ? 16 : 32),
             Padding(
-              padding: const EdgeInsets.only(left: 32),
+              padding: EdgeInsets.only(left: isMobile ? 16 : 32),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.local_fire_department, color: Colors.red, size: 28),
-                    const SizedBox(width: 13),
-                    const Text(
+                    Icon(
+                      Icons.local_fire_department,
+                      color: Colors.red,
+                      size: isMobile ? 24 : 28
+                    ),
+                    SizedBox(width: isMobile ? 8 : 13),
+                    Text(
                       'Hot Sale',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
+                      style: TextStyle(
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red
+                      ),
                     ),
                   ],
                 ),
@@ -306,15 +373,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(width: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12),
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: hotSaleProducts.length,
                 itemBuilder: (context, index) {
@@ -323,44 +390,63 @@ class _HomeScreenState extends State<HomeScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
                     child: Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(isMobile ? 16 : 12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 product['image'],
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             product['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: isMobile ? 18 : 14
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             product['price'],
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                              fontSize: isMobile ? 16 : 13
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: Icon(Icons.add_shopping_cart, size: isMobile ? 20 : 16),
+                              label: Text(
+                                'Thêm',
+                                style: TextStyle(fontSize: isMobile ? 16 : 12)
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 16 : 8,
+                                  vertical: isMobile ? 10 : 6
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -416,11 +502,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: newProducts.length,
                 itemBuilder: (context, index) {
@@ -434,39 +520,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 product['image'],
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             product['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             product['price'],
-                            style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -522,11 +614,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: promotionProducts.length,
                 itemBuilder: (context, index) {
@@ -540,39 +632,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 product['image'],
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             product['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             product['price'],
-                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -628,11 +726,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: 5,
                 itemBuilder: (context, index) {
@@ -645,39 +743,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 'assets/images/product/laptop${index + 1}.png',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             'Laptop Gaming ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${(index + 1) * 5}.990.000₫',
-                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -733,11 +837,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: 5,
                 itemBuilder: (context, index) {
@@ -750,39 +854,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 'assets/images/product/pc${index + 1}.jpg',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             'PC Gaming ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${(index + 1) * 7}.990.000₫',
-                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -837,11 +947,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: 5,
                 itemBuilder: (context, index) {
@@ -854,39 +964,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 'assets/images/product/headphone${index + 1}.jpg',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             'Tai nghe Gaming ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${(index + 1) * 1}.990.000₫',
-                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -940,11 +1056,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: 5,
                 itemBuilder: (context, index) {
@@ -957,39 +1073,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 'assets/images/product/monitor${index + 1}.jpg',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             'Màn hình Gaming ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${(index + 1) * 3}.990.000₫',
-                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -1043,11 +1165,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isAndroid ? 1 : (isSmallScreen ? 2 : 5),
                   childAspectRatio: 1.1,
-                  crossAxisSpacing: 6,
-                  mainAxisSpacing: 6,
+                  crossAxisSpacing: isAndroid ? 16 : 6,
+                  mainAxisSpacing: isAndroid ? 16 : 6,
                 ),
                 itemCount: 5,
                 itemBuilder: (context, index) {
@@ -1060,39 +1182,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
+                            flex: 5,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
                               child: Image.asset(
                                 'assets/images/product/keyboard${index + 1}.jpg',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             'Bàn phím Gaming ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             '${(index + 1) * 2}.990.000₫',
-                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 15),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 16),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 12)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // TODO: Thêm vào giỏ hàng
+                              },
+                              icon: const Icon(Icons.add_shopping_cart, size: 20),
+                              label: const Text('Thêm', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -1264,7 +1392,10 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCartTap;
   final VoidCallback onRegisterTap;
   final VoidCallback onLoginTap;
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onLogoutTap;
   final ValueChanged<String> onSearch;
+  final bool isLoggedIn;
 
   const CustomNavbar({
     Key? key,
@@ -1274,7 +1405,10 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
     required this.onCartTap,
     required this.onRegisterTap,
     required this.onLoginTap,
+    this.onProfileTap,
+    this.onLogoutTap,
     required this.onSearch,
+    this.isLoggedIn = false,
   }) : super(key: key);
 
   @override
@@ -1282,76 +1416,143 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 400;
+    final isSmallScreen = screenWidth < 600;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     return AppBar(
       backgroundColor: const Color(0xFF43A7C6),
       elevation: 0,
       title: Row(
         children: [
           Image.asset(
-            'assets/images/logo/logo_with_title-removebg-preview.png', // Đổi thành đường dẫn logo của bạn
-            height: 70,
+            'assets/images/logo/logo_with_title-removebg-preview.png',
+            height: isMobile ? 36 : (isSmallScreen ? 48 : 70),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              onChanged: onSearch,
-              decoration: InputDecoration(
-                hintText: 'search',
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                suffixIcon: const Icon(Icons.search, size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+          SizedBox(width: isMobile ? 4 : 10),
+          if (!isMobile && !isAndroid)
+            Expanded(
+              child: TextField(
+                onChanged: onSearch,
+                decoration: InputDecoration(
+                  hintText: 'search',
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                  suffixIcon: const Icon(Icons.search, size: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
-                filled: true,
-                fillColor: Colors.white,
               ),
             ),
-          ),
-          const SizedBox(width: 20),
-          TextButton(
-            onPressed: onHomeTap,
-            child: const Text('HOME', style: TextStyle(color: Colors.black)),
-          ),
-          TextButton(
-            onPressed: onCategoriesTap,
-            child: const Text('CATEGORIES', style: TextStyle(color: Colors.black)),
-          ),
-          TextButton(
-            onPressed: onCartTap,
-            child: Row(
-              children: [
-                const Text('CART', style: TextStyle(color: Colors.black)),
-                const SizedBox(width: 4),
-                Text('$cartItemCount', style: const TextStyle(color: Colors.black)),
-              ],
+          if (!isMobile) ...[
+            SizedBox(width: isSmallScreen ? 8 : 20),
+            TextButton(
+              onPressed: onHomeTap,
+              child: const Text('HOME', style: TextStyle(color: Colors.black)),
             ),
-          ),
-          const SizedBox(width: 10),
+            TextButton(
+              onPressed: onCategoriesTap,
+              child: const Text('CATEGORIES', style: TextStyle(color: Colors.black)),
+            ),
+            TextButton(
+              onPressed: onCartTap,
+              child: Row(
+                children: [
+                  const Text('CART', style: TextStyle(color: Colors.black)),
+                  const SizedBox(width: 4),
+                  Text('$cartItemCount', style: const TextStyle(color: Colors.black)),
+                ],
+              ),
+            ),
+            SizedBox(width: isSmallScreen ? 4 : 10),
+          ],
           PopupMenuButton<int>(
-            icon: const Icon(Icons.account_circle, color: Colors.white, size: 32),
+            icon: Icon(Icons.account_circle, color: Colors.white, size: isMobile ? 24 : 32),
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 1,
-                child: ListTile(
-                  leading: const Icon(Icons.app_registration),
-                  title: const Text('Register'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRegisterTap();
-                  },
+              if (isMobile) ...[
+                PopupMenuItem(
+                  value: 10,
+                  child: ListTile(
+                    leading: const Icon(Icons.home),
+                    title: const Text('Home'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onHomeTap();
+                    },
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Login'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onLoginTap();
-                  },
+                PopupMenuItem(
+                  value: 11,
+                  child: ListTile(
+                    leading: const Icon(Icons.category),
+                    title: const Text('Categories'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onCategoriesTap();
+                    },
+                  ),
                 ),
-              ),
+                PopupMenuItem(
+                  value: 12,
+                  child: ListTile(
+                    leading: const Icon(Icons.shopping_cart),
+                    title: const Text('Cart'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onCartTap();
+                    },
+                  ),
+                ),
+              ],
+              if (isLoggedIn) ...[
+                PopupMenuItem(
+                  value: 100,
+                  child: ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Xem profile'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (onProfileTap != null) onProfileTap!();
+                    },
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 101,
+                  child: ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Đăng xuất'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (onLogoutTap != null) onLogoutTap!();
+                    },
+                  ),
+                ),
+              ] else ...[
+                PopupMenuItem(
+                  value: 1,
+                  child: ListTile(
+                    leading: const Icon(Icons.app_registration),
+                    title: const Text('Register'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onRegisterTap();
+                    },
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: ListTile(
+                    leading: const Icon(Icons.login),
+                    title: const Text('Login'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onLoginTap();
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ],

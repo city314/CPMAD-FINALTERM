@@ -217,18 +217,31 @@ class _ProductListState extends State<ProductList> {
   }
 
   Widget _buildProductCard(int index) {
+    // Danh sách ảnh mẫu cho mỗi sản phẩm
+    final List<String> images = [
+      'assets/laptop.png',
+      'assets/laptop2.png',
+      'assets/laptop3.png',
+    ];
+
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
+          SizedBox(
+            height: 120, // Có thể điều chỉnh chiều cao nếu muốn
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(
-                'assets/laptop.png',
-                fit: BoxFit.cover,
+              child: PageView.builder(
+                itemCount: images.length,
+                itemBuilder: (context, imgIndex) {
+                  return Image.asset(
+                    images[imgIndex],
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
             ),
           ),
@@ -241,7 +254,7 @@ class _ProductListState extends State<ProductList> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
-                const Text('999', style: TextStyle(color: Colors.blueAccent)),
+                const Text('₫999', style: TextStyle(color: Colors.blueAccent)),
               ],
             ),
           ),

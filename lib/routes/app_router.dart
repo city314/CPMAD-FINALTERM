@@ -1,3 +1,4 @@
+import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -16,7 +17,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/dashboard',
+  initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/',
@@ -32,6 +33,11 @@ final GoRouter appRouter = GoRouter(
       path: '/home',
       name: 'home',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/product',
+      name: 'product',
+      builder: (context, state) => const ProductDetail(),
     ),
     GoRoute(
       path: '/forgot-password/otp',
