@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/coupon.dart'; // chỉnh path tuỳ project của bạn
+import '../../models/coupon.dart';
+import 'component/SectionHeader.dart';
 
 class AdminCouponScreen extends StatefulWidget {
   const AdminCouponScreen({Key? key}) : super(key: key);
@@ -166,39 +167,50 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quản lý Coupon')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCouponDialog(),
         child: const Icon(Icons.add),
         tooltip: 'Tạo Coupon',
       ),
-      body: ListView.separated(
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: _coupons.length,
-        separatorBuilder: (_, __) => const Divider(height: 32),
-        itemBuilder: (_, i) {
-          final c = _coupons[i];
-          return ListTile(
-            title: Text(c.code, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(
-              'Giảm ${c.discountAmount}đ • ${c.usageTimes}/${c.usageMax} lượt\n'
-                  'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionHeader('Quản lý Coupon'),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: _coupons.length,
+                separatorBuilder: (_, __) => const Divider(height: 32),
+                itemBuilder: (_, i) {
+                  final c = _coupons[i];
+                  return ListTile(
+                    title: Text(c.code, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(
+                      'Giảm ${c.discountAmount}đ • ${c.usageTimes}/${c.usageMax} lượt\n'
+                          'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}',
+                    ),
+                    isThreeLine: true,
+                    trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _showCouponDialog(coupon: c),
+                        tooltip: 'Chỉnh sửa',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteCoupon(c),
+                        tooltip: 'Xoá',
+                      ),
+                    ]),
+                  );
+                },
+              ),
             ),
-            isThreeLine: true,
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () => _showCouponDialog(coupon: c),
-                tooltip: 'Chỉnh sửa',
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteCoupon(c),
-                tooltip: 'Xoá',
-              ),
-            ]),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
