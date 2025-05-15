@@ -10,11 +10,9 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category_id: { type: String, required: true },
   brand_id: { type: String, required: true },
-  import_price: { type: Number, required: true },
-  selling_price: { type: Number, required: true },
   description: { type: String, required: true },
   stock: { type: Number, required: true },
-  discount_percent: { type: Number },
+  discount_percent: { type: Number, default: 0 },
   images: [productImageSchema],
   time_create: { type: Date, default: Date.now },
 });

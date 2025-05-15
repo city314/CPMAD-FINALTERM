@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/productDiscount.dart';
+import '../../service/ProductService.dart';
 import 'component/SectionHeader.dart';
 
 class AdminDiscountScreen extends StatefulWidget {
@@ -12,8 +13,6 @@ class AdminDiscountScreen extends StatefulWidget {
 
 class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
   final _discountCtrl = TextEditingController();
-  DateTime _startDate = DateTime.now();
-  DateTime _endDate   = DateTime.now().add(const Duration(days: 7));
   final Set<String> _selectedIds = {};
   // Searching
   String _searchQuery = '';
@@ -22,57 +21,34 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
   String? _selectedBrand;
   final _minPriceCtrl = TextEditingController();
   final _maxPriceCtrl = TextEditingController();
+  String _selectedDiscountStatus = 'Tất cả';
+  final List<String> _discountStatuses = ['Tất cả', 'Đang khuyến mãi', 'Chưa khuyến mãi'];
 
-  // ── Test data (thay thế bằng fetch từ API sau này) ───────────────────
-  final List<Product> _products = [
-    Product(
-      id: 'p001',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandName: '',
-      categoryName: '',
-      brandId: 'asus',
-      importPrice: 30000000,
-      sellingPrice: 5000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      images: [],
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      variants: [], // nếu chưa cần biến thể cụ thể
-    ),
-    Product(
-      id: 'p002',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      categoryName: '',
-      brandName: '',
-      importPrice: 4500000,
-      sellingPrice: 5000000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      images: [],
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      variants: [],
-    ),
-    // … thêm sản phẩm test khác nếu muốn …
-  ];
-  // Tạo danh sách category/brand từ _products (có thể thay bằng fetch API)
-  late final List<String> _allCategories = [
-    'Tất cả',
-    ...{for (var p in _products) p.categoryId}
-  ];
-  late final List<String> _allBrands = [
-    'Tất cả',
-    ...{for (var p in _products) p.brandId}
-  ];
-  // ─────────────────────────────────────────────────────────────────
+  List<Product> _products = [];
+  bool _isLoading = true;
+
+  List<String> get _allCategories => ['Tất cả', ...{for (var p in _products) p.categoryName!}];
+  List<String> get _allBrands => ['Tất cả', ...{for (var p in _products) p.brandName!}];
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = 'Tất cả';
     _selectedBrand    = 'Tất cả';
+    _loadProducts();
+  }
+
+  void _loadProducts() async {
+    try {
+      final fetched = await ProductService.fetchAllProducts();
+      setState(() {
+        _products = fetched;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Lỗi khi load sản phẩm: $e');
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -83,31 +59,11 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
     super.dispose();
   }
 
-  Future<void> _pickStartDate() async {
-    final d = await showDatePicker(
-      context: context,
-      initialDate: _startDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (d != null) setState(() => _startDate = d);
-  }
-
-  Future<void> _pickEndDate() async {
-    final d = await showDatePicker(
-      context: context,
-      initialDate: _endDate,
-      firstDate: _startDate,
-      lastDate: DateTime(2100),
-    );
-    if (d != null) setState(() => _endDate = d);
-  }
-
-  void _apply() {
-    final perc = double.tryParse(_discountCtrl.text.trim());
-    if (perc == null || perc < 0 || perc > 100) {
+  Future<void> _apply() async {
+    final perc = int.tryParse(_discountCtrl.text.trim());
+    if (perc == null || perc < 0 || perc > 50) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập % giảm hợp lệ (0–100)')),
+        const SnackBar(content: Text('Vui lòng nhập % giảm hợp lệ (0–50)')),
       );
       return;
     }
@@ -124,33 +80,52 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
         .map((p) => ProductDiscount(
       productId:       p.id!,
       discountPercent: perc,
-      startDate:       _startDate,
-      endDate:         _endDate,
     ))
         .toList();
 
-    // TODO: gọi API hoặc xử lý tiếp với `discounts`
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Áp dụng giảm $perc% cho ${discounts.length} sản phẩm'),
-      ),
-    );
+    final success = await ProductService.updateDiscounts(discounts);
+    if (success) {
+      setState(() {
+        for (var p in _products) {
+          if (_selectedIds.contains(p.id)) {
+            p.discountPercent = perc; // Cập nhật trong UI luôn
+          }
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã cập nhật giảm giá thành công')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Có lỗi xảy ra khi cập nhật')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // if (_isLoading) {
+    //   return const Scaffold(
+    //     body: Center(child: CircularProgressIndicator()),
+    //   );
+    // }
+
     // Lọc theo tất cả điều kiện
     final filtered = _products.where((p) {
       final matchesSearch = p.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCat    = _selectedCategory == 'Tất cả' || p.categoryId == _selectedCategory;
-      final matchesBrand  = _selectedBrand    == 'Tất cả' || p.brandId    == _selectedBrand;
+      final matchesCat    = _selectedCategory == 'Tất cả' || p.categoryName == _selectedCategory;
+      final matchesBrand  = _selectedBrand    == 'Tất cả' || p.brandName    == _selectedBrand;
       final minPrice = double.tryParse(_minPriceCtrl.text) ?? 0;
       final maxPrice = double.tryParse(_maxPriceCtrl.text) ?? double.infinity;
-      final matchesPrice = p.sellingPrice >= minPrice && p.sellingPrice <= maxPrice;
+      final matchesPrice = p.lowestPrice! >= minPrice && p.lowestPrice! <= maxPrice;
 
-      return matchesSearch && matchesCat && matchesBrand && matchesPrice;
+      final matchesDiscountStatus = _selectedDiscountStatus == 'Tất cả' ||
+          (_selectedDiscountStatus == 'Đang khuyến mãi' && p.discountPercent != null && p.discountPercent! > 0) ||
+          (_selectedDiscountStatus == 'Chưa khuyến mãi' && (p.discountPercent == null || p.discountPercent == 0));
+
+      return matchesSearch && matchesCat && matchesBrand && matchesPrice && matchesDiscountStatus;
     }).toList();
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -173,20 +148,19 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: _pickStartDate,
-                child: Text(
-                    'Từ: ${_startDate.toLocal().toString().split(' ')[0]}'),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _pickEndDate,
-                child: Text(
-                    'Đến: ${_endDate.toLocal().toString().split(' ')[0]}'),
-              ),
             ]),
-
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedDiscountStatus,
+              decoration: const InputDecoration(
+                labelText: 'Trạng thái khuyến mãi',
+                border: OutlineInputBorder(),
+              ),
+              items: _discountStatuses
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedDiscountStatus = v!),
+            ),
             const SizedBox(height: 24),
             // ————— Bộ lọc —————
             Row(
@@ -278,11 +252,36 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
                         else _selectedIds.remove(p.id!);
                       });
                     },
-                    title: Text(p.name,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(
-                      'Giá: ₫${p.sellingPrice.toStringAsFixed(0)}  •  Biến thể: ${p.variants.length}',
-                      style: const TextStyle(fontSize: 12),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              'Giá: ₫${p.lowestPrice?.toStringAsFixed(0)}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Biến thể: ${p.variantCount}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            if ((p.discountPercent ?? 0) > 0) ...[
+                              const SizedBox(width: 12),
+                              Text(
+                                'Giảm ${p.discountPercent!.toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
                     controlAffinity: ListTileControlAffinity.leading,
                   );

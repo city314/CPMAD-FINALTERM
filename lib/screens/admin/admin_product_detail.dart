@@ -37,8 +37,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
   List<Variant> _variants = [];
 
   late TextEditingController _nameCtrl;
-  late TextEditingController _importPriceCtrl;
-  late TextEditingController _sellingPriceCtrl;
   late TextEditingController _stockCtrl;
   late TextEditingController _descCtrl;
 
@@ -61,7 +59,9 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
       final brs = await ProductService.fetchAllBrand();
       final p = widget.product;
 
-      final fetchedVariants = await ProductService.fetchVariantsByProduct(p.id!);
+      final fetchedVariants = p.id != null
+          ? await ProductService.fetchVariantsByProduct(p.id!)
+          : <Variant>[];
 
       setState(() {
         categories
@@ -72,8 +72,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
           ..addAll(brs);
 
         _nameCtrl = TextEditingController(text: p.name);
-        _importPriceCtrl = TextEditingController(text: p.importPrice.toString());
-        _sellingPriceCtrl = TextEditingController(text: p.sellingPrice.toString());
         _stockCtrl = TextEditingController(text: p.stock.toString());
         _descCtrl = TextEditingController(text: p.description);
 
@@ -104,8 +102,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _importPriceCtrl.dispose();
-    _sellingPriceCtrl.dispose();
     _stockCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
@@ -290,8 +286,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
       name: _nameCtrl.text.trim(),
       categoryId: _selectedCategory.id!,
       brandId: _selectedBrand.id!,
-      importPrice: double.tryParse(_importPriceCtrl.text) ?? widget.product.importPrice,
-      sellingPrice: double.tryParse(_sellingPriceCtrl.text) ?? widget.product.sellingPrice,
       stock: int.tryParse(_stockCtrl.text) ?? widget.product.stock,
       description: _descCtrl.text.trim(),
       images: imageBase64List,
@@ -431,29 +425,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _importPriceCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Giá nhập',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => double.tryParse(v!) == null ? 'Giá không hợp lệ' : null,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _sellingPriceCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Giá bán',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                            validator: (v) => double.tryParse(v!) == null ? 'Giá không hợp lệ' : null,
-                          ),
-                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextFormField(
@@ -528,8 +499,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                           final nameCtrl = TextEditingController(text: v.variantName);
                           final colorCtrl = TextEditingController(text: v.color);
                           final attrCtrl = TextEditingController(text: v.attributes);
-                          final importCtrl = TextEditingController(text: v.importPrice.toString());
-                          final sellingCtrl = TextEditingController(text: v.sellingPrice.toString());
                           final stockCtrl = TextEditingController(text: v.stock.toString());
 
                           _editingVariantImages = v.images.map((img) {
@@ -569,21 +538,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: importCtrl,
-                                          decoration: const InputDecoration(labelText: 'Giá nhập'),
-                                          keyboardType: TextInputType.number,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: sellingCtrl,
-                                          decoration: const InputDecoration(labelText: 'Giá bán'),
-                                          keyboardType: TextInputType.number,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
                                       Expanded(
                                         child: TextField(
                                           controller: stockCtrl,

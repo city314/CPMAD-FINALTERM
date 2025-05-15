@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const tableRoutes = require('./routes/table');
-const userRoutes = require('./routes/user');
+const couponRoutes = require('./routes/coupon');
 
 const app = express();
 const PORT = 3003;
@@ -18,10 +17,9 @@ app.use(bodyParser.json());
 connectDB();
 
 // Routes
-app.use('/api/table', tableRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/coupons', couponRoutes);
 
 // Khởi chạy server
 app.listen(PORT, () => {
-    console.log(`🚀 OrderingService chạy trên cổng ${PORT}`);
+    console.log(`🚀 OrderService chạy trên cổng ${PORT}`);
 });

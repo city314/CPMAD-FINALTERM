@@ -15,13 +15,20 @@ router.get('/', async (req, res) => {
     const result = await Promise.all(products.map(async (p) => {
       const brand = await Brand.findById(p.brand_id);
       const category = await Category.findById(p.category_id);
-      const variantCount = await Variant.countDocuments({ product_id: p._id });
+
+      const variants = await Variant.find({ product_id: p._id });
+
+      // Tìm giá thấp nhất trong các biến thể (giá bán)
+      const lowestPrice = variants.length > 0
+        ? Math.min(...variants.map(v => v.sellingPrice || Infinity))
+        : 0;
 
       return {
         ...p.toObject(),
         brandName: brand?.name || '',
         categoryName: category?.name || '',
-        variantCount,
+        variantCount: variants.length,
+        lowestPrice,
       };
     }));
 
@@ -30,7 +37,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy danh sách sản phẩm', error: err });
   }
 });
-
 
 // POST create product
 router.post('/', async (req, res) => {
@@ -68,6 +74,30 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Xóa sản phẩm và biến thể thành công' });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi xóa sản phẩm', error: err });
+  }
+});
+
+// PUT: Cập nhật discount_percent cho danh sách sản phẩm
+router.put('/discounts/update', async (req, res) => {
+  try {
+    const { discounts } = req.body; // [{ productId: 'p001', discountPercent: 20 }, ...]
+
+    if (!Array.isArray(discounts)) {
+      return res.status(400).json({ message: 'Invalid data format' });
+    }
+
+    const updatePromises = discounts.map(item =>
+      Product.updateOne(
+        { _id: item.productId },
+        { $set: { discount_percent: item.discountPercent } }
+      )
+    );
+
+    await Promise.all(updatePromises);
+    res.json({ message: 'Cập nhật giảm giá thành công' });
+  } catch (error) {
+    console.error('Update discounts error:', error);
+    res.status(500).json({ message: 'Lỗi server' });
   }
 });
 

@@ -75,7 +75,9 @@ flutter:
     - assets/images/logo/
     - assets/images/slider/
     - assets/images/brand/
-    - assets/images/product/laptop/acer/
+    - assets/images/product/laptop/acer/acer1.png
+    - assets/images/product/laptop/acer/acer2.png
+    - assets/images/product/laptop/acer/acer3.png
     - assets/images/product/laptop/asus/
     - assets/images/product/laptop/dell/
     - assets/images/product/laptop/hp/

@@ -10,7 +10,7 @@ const connectWelcomingDB = async () => {
         }
 
         await mongoose.connect(uri);
-        console.log("✅ Kết nối WelcomingService MongoDB thành công!");
+        console.log("✅ Kết nối OrderService MongoDB thành công!");
     } catch (error) {
         console.error("❌ Lỗi kết nối MongoDB:", error.message);
         process.exit(1);

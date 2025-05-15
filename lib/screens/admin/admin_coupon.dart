@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/coupon.dart';
+import '../../service/OrderService.dart';
 import 'component/SectionHeader.dart';
 
 class AdminCouponScreen extends StatefulWidget {
@@ -10,30 +12,16 @@ class AdminCouponScreen extends StatefulWidget {
 }
 
 class _AdminCouponScreenState extends State<AdminCouponScreen> {
-  final List<Coupon> _coupons = [
-    // ví dụ khởi tạo vài coupon để test
-    Coupon(
-      id: 'c001',
-      code: 'AB123',
-      discountAmount: 10000,
-      usageMax: 5,
-      usageTimes: 2,
-      timeCreate: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    Coupon(
-      id: 'c002',
-      code: 'XYZ99',
-      discountAmount: 50000,
-      usageMax: 10,
-      usageTimes: 0,
-      timeCreate: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-  ];
+  List<Coupon> _coupons = [];
+  bool _isLoading = true;
 
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _codeCtrl;
   late TextEditingController _discountCtrl;
   late TextEditingController _maxUsesCtrl;
+
+  int? _selectedDiscount;
+  final List<int> _fixedDiscounts = [10000, 20000, 50000, 100000];
 
   @override
   void initState() {
@@ -41,6 +29,7 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
     _codeCtrl = TextEditingController();
     _discountCtrl = TextEditingController();
     _maxUsesCtrl = TextEditingController(text: '1');
+    _loadCoupons();
   }
 
   @override
@@ -51,15 +40,28 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
     super.dispose();
   }
 
+  Future<void> _loadCoupons() async {
+    try {
+      final data = await OrderService.fetchAllCoupons();
+      setState(() {
+        _coupons = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Lỗi khi tải coupon: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
   void _showCouponDialog({Coupon? coupon}) {
     final isNew = coupon == null;
     if (!isNew) {
       _codeCtrl.text = coupon.code;
-      _discountCtrl.text = coupon.discountAmount.toString();
+      _selectedDiscount = coupon.discountAmount as int?;
       _maxUsesCtrl.text = coupon.usageMax.toString();
     } else {
       _codeCtrl.clear();
-      _discountCtrl.clear();
+      _selectedDiscount = null;
       _maxUsesCtrl.text = '1';
     }
 
@@ -84,17 +86,15 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
                 return null;
               },
             ),
-            TextFormField(
-              controller: _discountCtrl,
-              decoration: const InputDecoration(labelText: 'Giá trị giảm (đ)'),
-              keyboardType: TextInputType.number,
-              validator: (v) {
-                final n = num.tryParse(v ?? '');
-                if (n == null || n <= 0) {
-                  return 'Giá trị phải > 0';
-                }
-                return null;
-              },
+            DropdownButtonFormField<int>(
+              value: _selectedDiscount,
+              decoration: const InputDecoration(labelText: 'Giá trị giảm'),
+              items: _fixedDiscounts.map((d) => DropdownMenuItem(
+                value: d,
+                child: Text('₫$d'),
+              )).toList(),
+              validator: (v) => v == null ? 'Vui lòng chọn giá trị giảm' : null,
+              onChanged: (v) => setState(() => _selectedDiscount = v),
             ),
             TextFormField(
               controller: _maxUsesCtrl,
@@ -112,29 +112,36 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Huỷ'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                final newCoupon = Coupon(
-                  id: isNew ? DateTime.now().millisecondsSinceEpoch.toString() : coupon.id,
-                  code: _codeCtrl.text.trim(),
-                  discountAmount: num.parse(_discountCtrl.text),
-                  usageMax: int.parse(_maxUsesCtrl.text),
-                  usageTimes: isNew ? 0 : coupon.usageTimes,
-                  timeCreate: isNew ? DateTime.now() : coupon.timeCreate,
+            onPressed: () async {
+              if (!_formKey.currentState!.validate()) return;
+
+              final newCoupon = Coupon(
+                id: isNew ? '' : coupon!.id,
+                code: _codeCtrl.text.trim(),
+                discountAmount: _selectedDiscount!,
+                usageMax: int.parse(_maxUsesCtrl.text),
+                usageTimes: isNew ? 0 : coupon!.usageTimes,
+                timeCreate: isNew ? DateTime.now() : coupon!.timeCreate,
+              );
+
+              final success = isNew
+                  ? await OrderService.createCoupon(newCoupon)
+                  : await OrderService.updateCoupon(newCoupon);
+
+              if (success) {
+              context.pop();
+                _loadCoupons();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(isNew ? 'Đã tạo coupon' : 'Đã cập nhật coupon')),
                 );
-                setState(() {
-                  if (isNew) {
-                    _coupons.add(newCoupon);
-                  } else {
-                    final idx = _coupons.indexWhere((c) => c.id == coupon.id);
-                    if (idx != -1) _coupons[idx] = newCoupon;
-                  }
-                });
-                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Thao tác thất bại')),
+                );
               }
             },
             child: Text(isNew ? 'Tạo' : 'Lưu'),
@@ -151,11 +158,17 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
         title: const Text('Xác nhận xoá'),
         content: Text('Bạn có chắc muốn xoá coupon "${c.code}" không?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+          TextButton(onPressed: () => context.pop(), child: const Text('Huỷ')),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _coupons.removeWhere((e) => e.id == c.id));
-              Navigator.pop(context);
+            onPressed: () async {
+              final success = await OrderService.deleteCoupon(c.id!);
+              if (success) {
+                context.pop();
+                _loadCoupons();
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xoá')));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Xoá thất bại')));
+              }
             },
             child: const Text('Xoá'),
           ),
@@ -174,7 +187,9 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SectionHeader('Quản lý Coupon'),
@@ -190,21 +205,29 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
                     title: Text(c.code, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
                       'Giảm ${c.discountAmount}đ • ${c.usageTimes}/${c.usageMax} lượt\n'
-                          'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}',
+                          'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}\n'
+                          'Đơn hàng đã dùng: (giả lập...)',
+                      style: const TextStyle(height: 1.4),
                     ),
                     isThreeLine: true,
-                    trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _showCouponDialog(coupon: c),
-                        tooltip: 'Chỉnh sửa',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteCoupon(c),
-                        tooltip: 'Xoá',
-                      ),
-                    ]),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (c.usageTimes == 0)
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _showCouponDialog(coupon: c),
+                            tooltip: 'Chỉnh sửa',
+                          )
+                        else
+                          const Icon(Icons.lock_outline, color: Colors.grey),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteCoupon(c),
+                          tooltip: 'Xoá',
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),

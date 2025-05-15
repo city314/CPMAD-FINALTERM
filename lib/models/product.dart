@@ -10,10 +10,10 @@ class Product {
   final String? categoryName;
   final String? brandName;
   int? variantCount;
-  final double importPrice;
-  final double sellingPrice;
+  final int? lowestPrice;
   final String description;
   final int stock;
+  int? discountPercent;
   final List<Map<String, String>> images;
   final DateTime timeAdd;
   final List<Variant> variants;      // ← thêm trường này
@@ -26,10 +26,10 @@ class Product {
     this.categoryName,
     this.brandName,
     this.variantCount,
-    required this.importPrice,
-    required this.sellingPrice,
+    this.lowestPrice,
     required this.description,
     required this.stock,
+    this.discountPercent,
     required this.images,
     required this.timeAdd,
     this.variants = const [],         // ← khởi mặc định là danh sách rỗng
@@ -43,10 +43,10 @@ class Product {
     categoryName: json['categoryName'] ?? '',
     brandName: json['brandName'] ?? '',
     variantCount: json['variantCount'] ?? 0,
-    importPrice: (json['import_price'] as num).toDouble(),
-    sellingPrice: (json['selling_price'] as num).toDouble(),
+    lowestPrice: json['lowestPrice'] ?? 0,
     description: json['description'] as String,
     stock: json['stock'] as int,
+    discountPercent: json['discount_percent'] as int,
     images: List<Map<String, String>>.from(
         (json['images'] as List).map((e) => Map<String, String>.from(e))),
     timeAdd: DateTime.parse(json['time_create'] as String),
@@ -60,8 +60,6 @@ class Product {
       'name': name,
       'category_id': categoryId,
       'brand_id': brandId,
-      'import_price': importPrice,
-      'selling_price': sellingPrice,
       'description': description,
       'stock': stock,
       'images': images,
@@ -78,10 +76,10 @@ class Product {
     String? brandId,
     String? brandName,
     String? categoryName,
-    double? importPrice,
-    double? sellingPrice,
+    int? lowestPrice,
     String? description,
     int? stock,
+    int? discountPercent,
     List<Map<String, String>>? images,
     DateTime? timeAdd,
     String? series,
@@ -94,10 +92,10 @@ class Product {
       brandId: brandId ?? this.brandId,
       categoryName: categoryName ?? this.categoryName,
       brandName: brandName ?? this.brandName,
-      importPrice: importPrice ?? this.importPrice,
-      sellingPrice: sellingPrice ?? this.sellingPrice,
+      lowestPrice: lowestPrice ?? this.lowestPrice,
       description: description ?? this.description,
       stock: stock ?? this.stock,
+      discountPercent: discountPercent ?? this.discountPercent,
       images: images ?? this.images,
       timeAdd: timeAdd ?? this.timeAdd,
       variants: variants ?? this.variants,

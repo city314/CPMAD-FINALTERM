@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const couponSchema = new mongoose.Schema({
-  code: String,
-  discount_amount: Number,
-  usage_max: Number,
-  usage_times: Number,
+  code: { type: String, required: true },
+  discount_amount: { type: Number, required: true },
+  usage_max: { type: Number, required: true },
+  usage_times: { type: Number, default: 0 },
   time_create: { type: Date, default: Date.now },
 });
 

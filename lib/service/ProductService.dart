@@ -7,6 +7,7 @@ import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/product.dart';
+import '../models/productDiscount.dart';
 import '../models/variant.dart';
 
 class ProductService {
@@ -179,5 +180,26 @@ class ProductService {
     if (res.statusCode != 200) {
       throw Exception('Xoá thất bại');
     }
+  }
+
+  static Future<bool> updateDiscounts(List<ProductDiscount> discounts) async {
+    final url = Uri.parse('$_urlProduct/discounts/update');
+
+    final body = jsonEncode({
+      'discounts': discounts.map((e) => {
+        'productId': e.productId,
+        'discountPercent': e.discountPercent,
+      }).toList()
+    });
+
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) return true;
+    print('Update failed: ${response.body}');
+    return false;
   }
 }

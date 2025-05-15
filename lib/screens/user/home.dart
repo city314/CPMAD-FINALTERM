@@ -1,3 +1,4 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'productList.dart';
@@ -15,9 +16,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 0;
   String _searchKeyword = '';
   final List<String> _sliderImages = [
-    'assets/images/slider/slider1.png',
-    'assets/images/slider/slider2.png',
-    'assets/images/slider/slider3.jpg',
+    'assets/images/product/laptop/acer/acer1.png',
+    'assets/images/product/laptop/acer/acer2.png',
+    'assets/images/product/laptop/acer/acer3.png',
   ];
   final List<Map<String, dynamic>> categories = [
     {'name': 'Laptop', 'icon': Icons.laptop},
@@ -110,8 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  bool isLoggedIn = true; // Mặc định đã đăng nhập để test
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -162,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } : null,
         onLogoutTap: isAndroid ? () {
           setState(() {
-            isLoggedIn = false;
+            CurrentUser().isLogin = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Đã đăng xuất')),
@@ -176,7 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 .toList();
           });
         },
-        isLoggedIn: isAndroid ? isLoggedIn : false,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -1402,7 +1400,6 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onLogoutTap;
   final VoidCallback onSupportTap;
   final ValueChanged<String> onSearch;
-  final bool isLoggedIn;
 
   const CustomNavbar({
     Key? key,
@@ -1415,7 +1412,6 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
     this.onProfileTap,
     this.onLogoutTap,
     required this.onSearch,
-    this.isLoggedIn = false,
     required this.onSupportTap,
   }) : super(key: key);
 
@@ -1514,7 +1510,18 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ],
-              if (isLoggedIn) ...[
+              if (CurrentUser().isLogin) ...[
+                PopupMenuItem(
+                  value: 3,
+                  child: ListTile(
+                    leading: const Icon(Icons.login),
+                    title: const Text('Support'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onSupportTap();
+                    },
+                  ),
+                ),
                 PopupMenuItem(
                   value: 100,
                   child: ListTile(
@@ -1541,17 +1548,6 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                 PopupMenuItem(
                   value: 1,
                   child: ListTile(
-                    leading: const Icon(Icons.app_registration),
-                    title: const Text('Register'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onRegisterTap();
-                    },
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: ListTile(
                     leading: const Icon(Icons.login),
                     title: const Text('Login'),
                     onTap: () {
@@ -1561,39 +1557,6 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ],
-              PopupMenuItem(
-                value: 1,
-                child: ListTile(
-                  leading: const Icon(Icons.app_registration),
-                  title: const Text('Register'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRegisterTap();
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Login'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onLoginTap();
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                value: 3,
-                child: ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Support'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onSupportTap();
-                  },
-                ),
-              ),
             ],
           ),
         ],
