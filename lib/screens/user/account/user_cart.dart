@@ -292,7 +292,7 @@ class _UserCartPageState extends State<UserCartPage> {
         children: [
           // Checkbox item
           Checkbox(
-            fillColor: MaterialStateProperty.all(const Color(0xFF4C9FC3)),
+            fillColor: WidgetStateProperty.all(const Color(0xFF4C9FC3)),
             checkColor: Colors.white,
             value: _selected.contains(cart.id),
             onChanged: (sel) => setState(() {
