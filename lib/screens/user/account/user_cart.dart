@@ -27,11 +27,10 @@ final List<Product> testProducts = [
     name: 'Gaming Laptop ROG Strix',
     categoryId: 'laptop',
     brandId: 'asus',
-    price: 0, // không dùng
     description: '',
     stock: 0,
-    imgUrl: '',
     timeAdd: DateTime.now(),
+    images: [],
     variants: [
       Variant(
         id: 'v001',
@@ -39,9 +38,10 @@ final List<Product> testProducts = [
         variantName: '16GB RAM',
         color: 'Red',
         attributes: '{}',
-        price: 30000000,
+        importPrice: 100,
+        sellingPrice: 100,
         stock: 10,
-        images: [VariantImage(imageUrl: 'assets/images/product/laptop/acer/acer1.png')],
+        images: [],
       ),
       Variant(
         id: 'v002',
@@ -49,9 +49,10 @@ final List<Product> testProducts = [
         variantName: '32GB RAM',
         color: 'Red',
         attributes: '{}',
-        price: 35000000,
-        stock:  5,
-        images: [VariantImage(imageUrl: 'assets/images/product/laptop/acer/acer1.png')],
+        importPrice: 100,
+        sellingPrice: 100,
+        stock: 10,
+        images: [],
       ),
     ],
   ),
@@ -60,11 +61,10 @@ final List<Product> testProducts = [
     name: 'SSD Samsung 980 Pro 1TB',
     categoryId: 'ssd',
     brandId: 'samsung',
-    price: 0,
     description: '',
     stock: 0,
-    imgUrl: '',
     timeAdd: DateTime.now(),
+    images: [],
     variants: [
       Variant(
         id: 'v003',
@@ -72,9 +72,10 @@ final List<Product> testProducts = [
         variantName: '1TB',
         color: 'Black',
         attributes: '{}',
-        price: 4500000,
-        stock: 20,
-        images: [VariantImage(imageUrl: 'assets/images/product/laptop/acer/acer1.png')],
+        importPrice: 100,
+        sellingPrice: 100,
+        stock: 10,
+        images: [],
       ),
     ],
   ),
@@ -129,7 +130,7 @@ class _UserCartPageState extends State<UserCartPage> {
     final c = testCarts.firstWhere((c) => c.id == id);
     final p = testProducts.firstWhere((p) => p.id == c.productId);
     final v = p.variants.firstWhere((v) => v.id == c.variantId);
-    return sum + v.price * c.quantity;
+    return sum + v.sellingPrice * c.quantity;
   });
 
   @override
@@ -283,8 +284,8 @@ class _UserCartPageState extends State<UserCartPage> {
     final cat = testCategories
         .firstWhere((c) => c.id == prod.categoryId, orElse: () => Category(id: '', name: ''));
     final brd = testBrands
-        .firstWhere((b) => b.id == prod.brandId,    orElse: () => Brand(id: '', name: '', imgUrl: ''));
-    final imgUrl = varnt.images.isNotEmpty ? varnt.images.first.imageUrl : null;
+        .firstWhere((b) => b.id == prod.brandId,    orElse: () => Brand(id: '', name: ''));
+    final imgUrl = varnt.images.isNotEmpty ? varnt.images.first : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -305,7 +306,7 @@ class _UserCartPageState extends State<UserCartPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: imgUrl != null
-                ? Image.network(imgUrl,
+                ? Image.network(imgUrl as String,
                 width: 64, height: 64, fit: BoxFit.cover)
                 : const SizedBox(
                 width: 64,
@@ -342,7 +343,7 @@ class _UserCartPageState extends State<UserCartPage> {
           ),
 
           // Price
-          Text('\$${varnt.price.toStringAsFixed(2)}',
+          Text('\$${varnt.sellingPrice.toStringAsFixed(2)}',
               style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

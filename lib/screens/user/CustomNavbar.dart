@@ -1,4 +1,6 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
   final int cartItemCount;
@@ -95,7 +97,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                     leading: const Icon(Icons.home),
                     title: const Text('Home'),
                     onTap: () {
-                      Navigator.pop(context);
+                      context.go('');
                       onHomeTap();
                     },
                   ),
@@ -123,7 +125,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ],
-              if (isLoggedIn) ...[
+              if (CurrentUser().isLogin) ...[
                 PopupMenuItem(
                   value: 100,
                   child: ListTile(
@@ -169,40 +171,18 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                     },
                   ),
                 ),
+                PopupMenuItem(
+                  value: 3,
+                  child: ListTile(
+                    leading: const Icon(Icons.login),
+                    title: const Text('Support'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onSupportTap();
+                    },
+                  ),
+                ),
               ],
-              PopupMenuItem(
-                value: 1,
-                child: ListTile(
-                  leading: const Icon(Icons.app_registration),
-                  title: const Text('Register'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRegisterTap();
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Login'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onLoginTap();
-                  },
-                ),
-              ),
-              PopupMenuItem(
-                value: 3,
-                child: ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Support'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onSupportTap();
-                  },
-                ),
-              ),
             ],
           ),
         ],
