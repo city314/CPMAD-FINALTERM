@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
-import 'home.dart';
+import 'CustomNavbar.dart';
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({super.key});

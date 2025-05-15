@@ -17,8 +17,8 @@ final List<Category> testCategories = [
 ];
 
 final List<Brand> testBrands = [
-  Brand(id: 'asus',    name: 'ASUS',    imgUrl: ''),
-  Brand(id: 'samsung', name: 'Samsung', imgUrl: ''),
+  Brand(id: 'asus',    name: 'ASUS'),
+  Brand(id: 'samsung', name: 'Samsung'),
 ];
 
 final List<Product> testProducts = [
