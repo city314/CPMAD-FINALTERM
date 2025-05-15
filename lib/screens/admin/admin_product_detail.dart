@@ -1,16 +1,16 @@
+import 'dart:convert';
 import 'dart:io' show File;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 import 'package:cpmad_final/models/variant.dart';
+import '../../service/ProductService.dart';
 import 'component/variant_detail.dart';
 
 // TODO: replace with dynamic data sources
-final List<Category> categories = [Category(id: 'laptop', name: 'Laptop'), Category(id: 'ssd', name: 'SSD')];
-final List<Brand> brands = [Brand(id: 'asus', name: 'ASUS'), Brand(id: 'samsung', name: 'Samsung')];
 
 class AdminProductDetail extends StatefulWidget {
   final Product product;
@@ -31,9 +31,12 @@ class AdminProductDetail extends StatefulWidget {
 
 class _AdminProductDetailState extends State<AdminProductDetail> {
   final _formKey = GlobalKey<FormState>();
+  final List<Category> categories = [];
+  final List<Brand> brands = [];
 
   late TextEditingController _nameCtrl;
-  late TextEditingController _priceCtrl;
+  late TextEditingController _importPriceCtrl;
+  late TextEditingController _sellingPriceCtrl;
   late TextEditingController _stockCtrl;
   late TextEditingController _descCtrl;
 
@@ -45,40 +48,71 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
   int? _editingIndex;
 
   @override
+  @override
   void initState() {
     super.initState();
-    final p = widget.product;
-    _nameCtrl = TextEditingController(text: p.name);
-    _priceCtrl = TextEditingController(text: p.price.toString());
-    _stockCtrl = TextEditingController(text: p.stock.toString());
-    _descCtrl = TextEditingController(text: p.description);
-    _variants = List<Variant>.from(p.variants);
-    _selectedCategory = categories.firstWhere(
-          (c) => c.id == p.categoryId,
-      orElse: () => categories.first,
-    );
-    _selectedBrand = brands.firstWhere(
-          (b) => b.id == p.brandId,
-      orElse: () => brands.first,
-    );
+    _initData();
+  }
 
-    if (p.imgUrl.isNotEmpty) {
-      _images.add(PlatformFile(
-        name: p.imgUrl.split('/').last,
-        path: p.imgUrl,
-        bytes: null,
-        size: 0,
-      ));
+  Future<void> _initData() async {
+    try {
+      final cats = await ProductService.fetchAllCategory();
+      final brs = await ProductService.fetchAllBrand();
+
+      final p = widget.product;
+
+      setState(() {
+        categories
+          ..clear()
+          ..addAll(cats);
+        brands
+          ..clear()
+          ..addAll(brs);
+
+        _nameCtrl = TextEditingController(text: p.name);
+        _importPriceCtrl = TextEditingController(text: p.importPrice.toString());
+        _sellingPriceCtrl = TextEditingController(text: p.sellingPrice.toString());
+        _stockCtrl = TextEditingController(text: p.stock.toString());
+        _descCtrl = TextEditingController(text: p.description);
+        _variants = List<Variant>.from(p.variants);
+
+        _selectedCategory = categories.firstWhere(
+              (c) => c.id == p.categoryId,
+          orElse: () => categories.first,
+        );
+        _selectedBrand = brands.firstWhere(
+              (b) => b.id == p.brandId,
+          orElse: () => brands.first,
+        );
+
+        if (p.images != null && p.images.isNotEmpty) {
+          for (final image in p.images) {
+            _images.add(PlatformFile(
+              name: image['name'] ?? 'image.png',
+              bytes: base64Decode(image['base64'] ?? ''),
+              size: 0,
+            ));
+          }
+        }
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Lỗi tải dữ liệu: $e')));
     }
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _priceCtrl.dispose();
+    _importPriceCtrl.dispose();
+    _sellingPriceCtrl.dispose();
     _stockCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
+  }
+
+  List<String> _getImageUrls() {
+    return _images.map((f) => f.path ?? '').where((path) => path.isNotEmpty).toList();
   }
 
   Future<void> _pickImages() async {
@@ -140,7 +174,9 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     const SizedBox(height: 8),
                     Text('Thuộc tính: ${variant.attributes}'),
                     const SizedBox(height: 8),
-                    Text('Giá: ₫${variant.price.toStringAsFixed(0)}'),
+                    Text('Giá nhập: ₫${variant.importPrice.toStringAsFixed(0)}'),
+                    const SizedBox(height: 8),
+                    Text('Giá bán: ₫${variant.sellingPrice.toStringAsFixed(0)}'),
                     const SizedBox(height: 8),
                     Text('Tồn kho: ${variant.stock}'),
                     const SizedBox(height: 16),
@@ -231,23 +267,71 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
     );
   }
 
-  void _save() {
+  Future<List<Map<String, String>>> _convertImagesToBase64(List<PlatformFile> images) async {
+    List<Map<String, String>> encoded = [];
+    for (var file in images) {
+      Uint8List? bytes;
+      if (file.bytes != null) {
+        bytes = file.bytes!;
+      } else if (file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+
+      if (bytes != null) {
+        String base64Image = base64Encode(bytes);
+        encoded.add({'name': file.name, 'base64': base64Image});
+      }
+    }
+    return encoded;
+  }
+
+
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final firstPath = _images.isNotEmpty ? (_images.first.path ?? '') : '';
+    final imageBase64List = await _convertImagesToBase64(_images);
+    print("Total images: ${_images.length}");
+    print("Total base64 size: ${imageBase64List.fold(0, (sum, item) => sum + (item['base64']?.length ?? 0))}");
+
     final updated = Product(
       id: widget.product.id,
       name: _nameCtrl.text.trim(),
       categoryId: _selectedCategory.id!,
       brandId: _selectedBrand.id!,
-      price: double.tryParse(_priceCtrl.text) ?? widget.product.price,
+      importPrice: double.tryParse(_importPriceCtrl.text) ?? widget.product.importPrice,
+      sellingPrice: double.tryParse(_sellingPriceCtrl.text) ?? widget.product.sellingPrice,
       stock: int.tryParse(_stockCtrl.text) ?? widget.product.stock,
       description: _descCtrl.text.trim(),
-      variants:    _variants,
-      imgUrl: firstPath,
+      images: imageBase64List,
       timeAdd: widget.product.timeAdd,
     );
-    widget.onEdit(updated);
-    Navigator.of(context).pop();
+    try {
+      if (widget.isNew) {
+        final createdProduct = await ProductService.createProduct(updated);
+
+        // Sau khi tạo sản phẩm, gán lại productId cho từng variant và gọi API
+        for (final v in _variants) {
+          final updatedVariant = v.copyWith(productId: createdProduct.id!);
+          try {
+            await ProductService.createVariant(updatedVariant);
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Lỗi tạo biến thể "${v.variantName}": $e')),
+            );
+          }
+        }
+
+        widget.onEdit(createdProduct);
+      } else {
+        final updatedProduct = await ProductService.updateProduct(widget.product.id!, updated);
+        widget.onEdit(updatedProduct);
+      }
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Lỗi lưu sản phẩm: $e')),
+      );
+    }
   }
 
   void _navigateToAddVariantPage() async {
@@ -263,6 +347,10 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
 
   @override
   Widget build(BuildContext context) {
+    if (categories.isEmpty || brands.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final titleText = widget.isNew || widget.product.id == null
         ? 'Thêm sản phẩm'
         : 'Chỉnh sửa sản phẩm';
@@ -335,9 +423,21 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                       children: [
                         Expanded(
                           child: TextFormField(
-                            controller: _priceCtrl,
+                            controller: _importPriceCtrl,
                             decoration: const InputDecoration(
-                              labelText: 'Giá',
+                              labelText: 'Giá nhập',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => double.tryParse(v!) == null ? 'Giá không hợp lệ' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _sellingPriceCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Giá bán',
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
@@ -418,11 +518,17 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                           final nameCtrl = TextEditingController(text: v.variantName);
                           final colorCtrl = TextEditingController(text: v.color);
                           final attrCtrl = TextEditingController(text: v.attributes);
-                          final priceCtrl = TextEditingController(text: v.price.toString());
+                          final importCtrl = TextEditingController(text: v.importPrice.toString());
+                          final sellingCtrl = TextEditingController(text: v.sellingPrice.toString());
                           final stockCtrl = TextEditingController(text: v.stock.toString());
 
-                          _editingVariantImages = v.images.map((img) =>
-                              PlatformFile(name: img.imageUrl.split('/').last, path: img.imageUrl, size: 0)).toList();
+                          _editingVariantImages = v.images.map((img) {
+                            return PlatformFile(
+                              name: img['name'] ?? 'image.png',
+                              bytes: base64Decode(img['base64'] ?? ''),
+                              size: 0,
+                            );
+                          }).toList();
 
                           return Card(
                               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -455,8 +561,15 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                     Row(children: [
                                       Expanded(
                                         child: TextField(
-                                          controller: priceCtrl,
-                                          decoration: const InputDecoration(labelText: 'Giá'),
+                                          controller: importCtrl,
+                                          decoration: const InputDecoration(labelText: 'Giá nhập'),
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: sellingCtrl,
+                                          decoration: const InputDecoration(labelText: 'Giá bán'),
                                           keyboardType: TextInputType.number,
                                         ),
                                       ),
@@ -565,7 +678,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                         return Card(
                           child: ListTile(
                             title: Text(v.variantName.isNotEmpty ? v.variantName : '(Chưa đặt tên)'),
-                            subtitle: Text('Giá: ₫${v.price.toStringAsFixed(0)}  •  Kho: ${v.stock}'),
+                            subtitle: Text('Giá: ₫${v.sellingPrice.toStringAsFixed(0)}  •  Kho: ${v.stock}'),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -579,6 +692,34 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                   tooltip: 'Chỉnh sửa',
                                   onPressed: () => _navigateToEditVariantPage(index),  // ← dùng navigator
                                 ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  tooltip: 'Xoá',
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text('Xác nhận xoá'),
+                                        content: Text('Xoá biến thể "${v.variantName}"?'),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Huỷ')),
+                                          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xoá')),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true && v.id != null) {
+                                      try {
+                                        await ProductService.deleteVariant(v.id!);
+                                        setState(() => _variants.removeAt(index));
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xoá biến thể')));
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi xoá: $e')));
+                                      }
+                                    }
+                                  },
+                                ),
+
                               ],
                             ),
                           ),

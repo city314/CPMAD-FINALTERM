@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ class _VariantDetailScreenState extends State<VariantDetailScreen> {
   final _nameCtrl = TextEditingController();
   final _colorCtrl = TextEditingController();
   final _attrCtrl = TextEditingController();
-  final _priceCtrl = TextEditingController();
+  final _importCtrl = TextEditingController();
+  final _sellingCtrl = TextEditingController();
   final _stockCtrl = TextEditingController();
 
   List<PlatformFile> _images = [];
@@ -57,16 +59,22 @@ class _VariantDetailScreenState extends State<VariantDetailScreen> {
       _nameCtrl.text      = v.variantName;
       _colorCtrl.text     = v.color;
       _attrCtrl.text      = v.attributes;
-      _priceCtrl.text     = v.price.toString();
+      _importCtrl.text     = v.importPrice.toString();
+      _sellingCtrl.text     = v.sellingPrice.toString();
       _stockCtrl.text     = v.stock.toString();
-      _images = v.images
-          .map((img) => PlatformFile(name: img.imageUrl.split('/').last, path: img.imageUrl, size: 0))
-          .toList();
+      _images = v.images.map((img) {
+        return PlatformFile(
+          name: img['name'] ?? 'image.png',
+          bytes: base64Decode(img['base64'] ?? ''),
+          size: 0,
+        );
+      }).toList();
     }
   }
 
-  void _saveVariant() {
+  Future<void> _saveVariant() async {
     if (!_formKey.currentState!.validate()) return;
+    final base64Images = await _convertImagesToBase64();
 
     final variant = Variant(
       id: widget.initialVariant?.id,
@@ -74,13 +82,23 @@ class _VariantDetailScreenState extends State<VariantDetailScreen> {
       variantName: _nameCtrl.text,
       color: _colorCtrl.text,
       attributes: _attrCtrl.text,
-      price: double.tryParse(_priceCtrl.text) ?? 0,
+      importPrice: double.tryParse(_importCtrl.text) ?? 0,
+      sellingPrice: double.tryParse(_sellingCtrl.text) ?? 0,
       stock: int.tryParse(_stockCtrl.text) ?? 0,
-      images: _images.map((file) => VariantImage(imageUrl: file.path ?? '')).toList(),
+      images: base64Images,
       updatedAt: DateTime.now(),
     );
 
     Navigator.pop(context, variant);
+  }
+
+  Future<List<Map<String, String>>> _convertImagesToBase64() async {
+    List<Map<String, String>> encoded = [];
+    for (var file in _images) {
+      Uint8List? bytes = file.bytes ?? await File(file.path!).readAsBytes();
+      encoded.add({'name': file.name, 'base64': base64Encode(bytes)});
+    }
+    return encoded;
   }
 
   @override
@@ -114,8 +132,15 @@ class _VariantDetailScreenState extends State<VariantDetailScreen> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _priceCtrl,
-                decoration: const InputDecoration(labelText: 'Giá'),
+                controller: _importCtrl,
+                decoration: const InputDecoration(labelText: 'Giá nhập'),
+                keyboardType: TextInputType.number,
+                validator: (v) => double.tryParse(v!) == null ? 'Giá không hợp lệ' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _sellingCtrl,
+                decoration: const InputDecoration(labelText: 'Giá bán'),
                 keyboardType: TextInputType.number,
                 validator: (v) => double.tryParse(v!) == null ? 'Giá không hợp lệ' : null,
               ),

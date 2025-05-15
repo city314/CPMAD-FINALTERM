@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../../models/variant.dart';
+import '../../service/ProductService.dart';
 import 'admin_product_detail.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
@@ -26,59 +27,7 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
-  final List<Product> _allProducts = [
-    Product(
-      id: '1',
-      name: 'Gaming Laptop ROG Strix',
-      categoryId: 'laptop',
-      brandId: 'asus',
-      price: 30000000,
-      description: 'Laptop gaming hiệu năng cao.',
-      stock: 12,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 3)),
-      variants: [
-        Variant(
-          id: 'v001',
-          productId: '1',
-          variantName: '16GB RAM',
-          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
-          price: 30000000,
-          stock: 10,
-        ),
-        Variant(
-          id: 'v002',
-          productId: '1',
-          variantName: '32GB RAM',
-          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
-          price: 35000000,
-          stock: 5,
-        ),
-      ],
-    ),
-    // 2) SSD chỉ có 1 variant
-    Product(
-      id: '2',
-      name: 'SSD Samsung 980 Pro 1TB',
-      categoryId: 'ssd',
-      brandId: 'samsung',
-      price: 4500000,
-      description: 'Ổ cứng SSD PCIe Gen4 1TB.',
-      stock: 20,
-      imgUrl: 'assets/images/product/laptop/acer/acer1.png',
-      timeAdd: DateTime.now().subtract(const Duration(days: 10)),
-      variants: [
-        Variant(
-          id: 'v003',
-          productId: '2',
-          variantName: '1TB',
-          attributes: jsonEncode({'color': 'red', 'size': 'M'}),
-          price: 4500000,
-          stock: 20,
-        ),
-      ],
-    ),
-  ];
+  final List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
   final TextEditingController _searchCtrl = TextEditingController();
 
@@ -86,6 +35,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   void initState() {
     super.initState();
     _filteredProducts = List.from(_allProducts);
+    _loadProducts();
     _searchCtrl.addListener(_onSearch);
   }
 
@@ -94,6 +44,19 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _searchCtrl.removeListener(_onSearch);
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final products = await ProductService.fetchAllProducts();
+      setState(() {
+        _allProducts.clear();
+        _allProducts.addAll(products);
+        _filteredProducts = List.from(products);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải sản phẩm: $e')));
+    }
   }
 
   void _onSearch() {
@@ -109,11 +72,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       id: null,
       name: '',
       categoryId: categories.first.id!,
+      categoryName: '',
       brandId: brands.first.id!,
-      price: 0,
+      brandName: '',
+      importPrice: 0,
+      sellingPrice: 0,
       description: '',
       stock: 0,
-      imgUrl: '',
+      images: [],
       timeAdd: DateTime.now(),
       variants:  [],
     );
@@ -213,9 +179,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   // Trong class _AdminProductScreenState:
   Widget _buildProductCard(Product p) {
-    // Lấy tên category/brand từ list đã khai báo
-    final catName   = categories.firstWhere((c) => c.id == p.categoryId).name;
-    final brandName = brands.firstWhere((b) => b.id == p.brandId).name;
 
     return Card(
       elevation: 4,
@@ -236,13 +199,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text('Danh mục: $catName',
+              Text('Danh mục: ${p.categoryName}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 8),
-              Text('Thương hiệu: $brandName',
+              Text('Thương hiệu: ${p.brandName}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 8),
-              Text('₫${p.price.toStringAsFixed(0)}',
+              Text('Giá nhập: ₫${p.importPrice.toStringAsFixed(0)}',
+                  style: const TextStyle(fontSize: 14, color: Colors.green)),
+              const SizedBox(height: 8),
+              Text('Giá bán: ₫${p.sellingPrice.toStringAsFixed(0)}',
                   style: const TextStyle(fontSize: 14, color: Colors.green)),
               const SizedBox(height: 8),
               Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
@@ -262,11 +228,35 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      setState(() {
-                        _allProducts.remove(p);
-                        _onSearch();
-                      });
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Xác nhận xoá'),
+                          content: Text('Bạn có chắc muốn xoá sản phẩm "${p.name}" không?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Huỷ')),
+                            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xoá')),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        try {
+                          await ProductService.deleteProduct(p.id!);
+                          setState(() {
+                            _allProducts.remove(p);
+                            _onSearch();
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Đã xoá sản phẩm.')),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Lỗi xoá sản phẩm: $e')),
+                          );
+                        }
+                      }
                     },
                     tooltip: 'Xóa',
                   ),
