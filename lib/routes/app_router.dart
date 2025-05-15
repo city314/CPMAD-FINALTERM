@@ -88,7 +88,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/account/cart',
       name: 'cart',
-      builder: (context, state) => CartScreen(),
+      builder: (context, state) => UserCartPage(),
     ),
     GoRoute(
       path: '/forgot-password',
