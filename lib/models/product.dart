@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'variant.dart';
 
 class Product {
@@ -102,19 +100,16 @@ class Product {
     );
   }
 
-  /// Named constructor trả về một Product “rỗng” (empty)
+  /// Named constructor that returns an empty Product
   factory Product.empty() {
     return Product(
-      id: '',
       name: '',
       categoryId: '',
       brandId: '',
-      price: 0.0,
       description: '',
       stock: 0,
-      imgUrl: '',
+      images: const [],
       timeAdd: DateTime.now(),
-      variants: [],
     );
   }
 }
