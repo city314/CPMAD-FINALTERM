@@ -15,6 +15,13 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
   DateTime _startDate = DateTime.now();
   DateTime _endDate   = DateTime.now().add(const Duration(days: 7));
   final Set<String> _selectedIds = {};
+  // Searching
+  String _searchQuery = '';
+  // State cho filter
+  String? _selectedCategory;
+  String? _selectedBrand;
+  final _minPriceCtrl = TextEditingController();
+  final _maxPriceCtrl = TextEditingController();
 
   // ── Test data (thay thế bằng fetch từ API sau này) ───────────────────
   final List<Product> _products = [
@@ -50,11 +57,29 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
     ),
     // … thêm sản phẩm test khác nếu muốn …
   ];
+  // Tạo danh sách category/brand từ _products (có thể thay bằng fetch API)
+  late final List<String> _allCategories = [
+    'Tất cả',
+    ...{for (var p in _products) p.categoryId}
+  ];
+  late final List<String> _allBrands = [
+    'Tất cả',
+    ...{for (var p in _products) p.brandId}
+  ];
   // ─────────────────────────────────────────────────────────────────
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = 'Tất cả';
+    _selectedBrand    = 'Tất cả';
+  }
 
   @override
   void dispose() {
     _discountCtrl.dispose();
+    _minPriceCtrl.dispose();
+    _maxPriceCtrl.dispose();
     super.dispose();
   }
 
@@ -115,13 +140,23 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Lọc theo tất cả điều kiện
+    final filtered = _products.where((p) {
+      final matchesSearch = p.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesCat    = _selectedCategory == 'Tất cả' || p.categoryId == _selectedCategory;
+      final matchesBrand  = _selectedBrand    == 'Tất cả' || p.brandId    == _selectedBrand;
+      final minPrice = double.tryParse(_minPriceCtrl.text) ?? 0;
+      final maxPrice = double.tryParse(_maxPriceCtrl.text) ?? double.infinity;
+      final matchesPrice = p.price >= minPrice && p.price <= maxPrice;
+
+      return matchesSearch && matchesCat && matchesBrand && matchesPrice;
+    }).toList();
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SectionHeader dùng chung :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
             const SectionHeader('Quản lý Giảm giá sản phẩm'),
             const SizedBox(height: 16),
 
@@ -153,13 +188,87 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
             ]),
 
             const SizedBox(height: 24),
-
+            // ————— Bộ lọc —————
+            Row(
+              children: [
+                // Category
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Danh mục',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _allCategories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedCategory = v),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Brand
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedBrand,
+                    decoration: const InputDecoration(
+                      labelText: 'Thương hiệu',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _allBrands
+                        .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedBrand = v),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                // Min Price
+                Expanded(
+                  child: TextField(
+                    controller: _minPriceCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Giá từ (₫)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Max Price
+                Expanded(
+                  child: TextField(
+                    controller: _maxPriceCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Đến (₫)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // —————————————— Thanh Search ——————————————
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Tìm kiếm sản phẩm',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v.trim()),
+            ),
+            const SizedBox(height: 16),
             // Danh sách sản phẩm với Checkbox
             Expanded(
               child: ListView.builder(
-                itemCount: _products.length,
+                itemCount: filtered.length,
                 itemBuilder: (_, i) {
-                  final p = _products[i];
+                  final p = filtered[i];
                   final checked = _selectedIds.contains(p.id);
                   return CheckboxListTile(
                     value: checked,

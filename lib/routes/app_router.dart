@@ -1,4 +1,5 @@
 import 'package:cpmad_final/screens/user/productdetail.dart';
+// import 'package:cpmad_final/screens/user/account/user_cart.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -6,6 +7,8 @@ import '../../screens/user/signup.dart';
 import '../../screens/user/home.dart';
 import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
+import '../../screens/user/order_history.dart';
+import '../../screens/user/order_detail.dart';
 import '../screens/admin/admin_brand.dart';
 import '../screens/admin/admin_category.dart';
 import '../screens/admin/admin_chat.dart';
@@ -25,7 +28,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/admin/products',
+  initialLocation: '/order-history/order-detail',
   routes: [
     GoRoute(
       path: '/',
@@ -41,6 +44,16 @@ final GoRouter appRouter = GoRouter(
       path: '/home',
       name: 'home',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/order-history',
+      name: 'order-history',
+      builder: (context, state) => const OrderHistory(),
+    ),
+    GoRoute(
+      path: '/order-history/order-detail',
+      name: 'order-detail',
+      builder: (context, state) => const OrderDetail(),
     ),
     GoRoute(
       path: '/forgot-password/otp',
@@ -60,6 +73,7 @@ final GoRouter appRouter = GoRouter(
         return ChangePasswordScreen(email: email);
       },
     ),
+
     GoRoute(
       path: '/products',
       name: 'products',
@@ -85,6 +99,11 @@ final GoRouter appRouter = GoRouter(
       name: 'change_password_after_login',
       builder: (context, state) => const ChangePasswordAfterLoginScreen(),
     ),
+    // GoRoute(
+    //   path: '/account/cart',
+    //   name: 'cart',
+    //   builder: (context, state) => CartScreen(),
+    // ),
     GoRoute(
       path: '/forgot-password',
       name: 'forgot_password',
