@@ -1,7 +1,8 @@
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'productList.dart';
+
+import 'CustomNavbar.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -111,6 +112,8 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
+  bool isLoggedIn = true; // Mặc định đã đăng nhập để test
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -161,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } : null,
         onLogoutTap: isAndroid ? () {
           setState(() {
-            CurrentUser().isLogin = false;
+            isLoggedIn = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Đã đăng xuất')),
@@ -175,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 .toList();
           });
         },
+        isLoggedIn: isAndroid ? isLoggedIn : false,
       ),
       body: SingleChildScrollView(
         child: Column(

@@ -101,4 +101,20 @@ class Product {
       variants: variants ?? this.variants,
     );
   }
+
+  /// Named constructor trả về một Product “rỗng” (empty)
+  factory Product.empty() {
+    return Product(
+      id: '',
+      name: '',
+      categoryId: '',
+      brandId: '',
+      price: 0.0,
+      description: '',
+      stock: 0,
+      imgUrl: '',
+      timeAdd: DateTime.now(),
+      variants: [],
+    );
+  }
 }
