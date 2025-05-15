@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Variant = require('../models/Variant');
 
-// ✅ GET all variants (optional)
+// GET all variants (optional)
 router.get('/', async (req, res) => {
   try {
     const variants = await Variant.find();
@@ -12,7 +12,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ POST: create new variant
+router.get('/by-product/:productId', async (req, res) => {
+  try {
+    const variants = await Variant.find({ product_id: req.params.productId });
+    res.json(variants);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi lấy biến thể', error: err });
+  }
+});
+
+// POST: create new variant
 router.post('/', async (req, res) => {
   try {
     const variant = new Variant(req.body);
@@ -23,7 +32,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT: update variant
+// PUT: update variant
 router.put('/:id', async (req, res) => {
   try {
     const updated = await Variant.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -34,7 +43,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ✅ DELETE: delete variant
+// DELETE: delete variant
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Variant.findByIdAndDelete(req.params.id);

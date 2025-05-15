@@ -9,6 +9,8 @@ import '../../screens/user/otp.dart';
 import '../../screens/user/productList.dart';
 import '../../screens/user/order_history.dart';
 import '../../screens/user/order_detail.dart';
+import '../models/product.dart';
+import '../models/variant.dart';
 import '../screens/admin/admin_brand.dart';
 import '../screens/admin/admin_category.dart';
 import '../screens/admin/admin_chat.dart';
@@ -17,9 +19,11 @@ import '../screens/admin/admin_dashboard.dart';
 import '../screens/admin/admin_discount.dart';
 import '../screens/admin/admin_order.dart';
 import '../screens/admin/admin_product.dart';
+import '../screens/admin/admin_product_detail.dart';
 import '../screens/admin/admin_support.dart';
 import '../screens/admin/admin_user.dart';
 import '../screens/admin/admin_wrapper.dart';
+import '../screens/admin/component/variant_detail.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
@@ -113,6 +117,34 @@ final GoRouter appRouter = GoRouter(
       path: '/products/detail',
       name: 'product_detail',
       builder: (context, state) => const ProductDetail(),
+    ),
+    GoRoute(
+      path: '/admin/product-detail',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final Product p = extra['product'];
+        final bool isNew = extra['isNew'];
+
+        return AdminProductDetail(
+          product: p,
+          isNew: isNew,
+          onEdit: (_) {},
+          onDelete: () {},
+        );
+      },
+    ),
+    GoRoute(
+      path: '/admin/variant-detail',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final String productId = extra['productId'];
+        final Variant? initialVariant = extra['initialVariant'];
+
+        return VariantDetailScreen(
+          productId: productId,
+          initialVariant: initialVariant,
+        );
+      },
     ),
     ShellRoute(
       // Wrapper duy nhất, quản lý AppBar/Sidebar/BottomNav

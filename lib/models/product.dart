@@ -9,6 +9,7 @@ class Product {
   final String brandId;
   final String? categoryName;
   final String? brandName;
+  int? variantCount;
   final double importPrice;
   final double sellingPrice;
   final String description;
@@ -24,6 +25,7 @@ class Product {
     required this.brandId,
     this.categoryName,
     this.brandName,
+    this.variantCount,
     required this.importPrice,
     required this.sellingPrice,
     required this.description,
@@ -40,6 +42,7 @@ class Product {
     brandId: json['brand_id'] as String,
     categoryName: json['categoryName'] ?? '',
     brandName: json['brandName'] ?? '',
+    variantCount: json['variantCount'] ?? 0,
     importPrice: (json['import_price'] as num).toDouble(),
     sellingPrice: (json['selling_price'] as num).toDouble(),
     description: json['description'] as String,

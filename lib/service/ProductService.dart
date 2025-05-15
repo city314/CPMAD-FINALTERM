@@ -93,6 +93,18 @@ class ProductService {
     }
   }
 
+  static Future<List<Variant>> fetchVariantsByProduct(String productId) async {
+    final response = await http.get(Uri.parse('$_urlVariants/by-product/$productId'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      final List<Variant> variants = jsonList.map((e) => Variant.fromJson(e)).toList();
+      return variants;
+    } else {
+      throw Exception('Lỗi khi tải danh sách biến thể');
+    }
+  }
+
   static Future<Variant> createVariant(Variant v) async {
     final res = await http.post(
       Uri.parse(_urlVariants),

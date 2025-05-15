@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/variant.dart';
 import '../../service/ProductService.dart';
 import 'admin_product_detail.dart';
@@ -8,16 +9,6 @@ import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 import 'component/SectionHeader.dart';
-
-// TODO: Replace with real data sources
-final List<Category> categories = [
-  Category(id: 'laptop', name: 'Laptop'),
-  Category(id: 'ssd', name: 'SSD'),
-];
-final List<Brand> brands = [
-  Brand(id: 'asus', name: 'ASUS'),
-  Brand(id: 'samsung', name: 'Samsung'),
-];
 
 class AdminProductScreen extends StatefulWidget {
   const AdminProductScreen({Key? key}) : super(key: key);
@@ -66,14 +57,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     });
   }
 
-  void _openDetail({Product? product}) {
+  void _openDetail({Product? product}) async {
     final isNew = product == null;
     final p = product ?? Product(
       id: null,
       name: '',
-      categoryId: categories.first.id!,
+      categoryId: '',
       categoryName: '',
-      brandId: brands.first.id!,
+      brandId: '',
       brandName: '',
       importPrice: 0,
       sellingPrice: 0,
@@ -81,39 +72,31 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       stock: 0,
       images: [],
       timeAdd: DateTime.now(),
-      variants:  [],
+      variants: [],
     );
-    Future.microtask(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AdminProductDetail(
-            product: p,
-            isNew: isNew,
-            onEdit: (updated) {
-              setState(() {
-                if (isNew) {
-                  _allProducts.add(updated);
-                } else {
-                  final idx = _allProducts.indexWhere((e) => e.id == updated.id);
-                  if (idx != -1) _allProducts[idx] = updated;
-                }
-                _onSearch();
-              });
-            },
-            onDelete: () {
-              if (!isNew) {
-                setState(() {
-                  _allProducts.removeWhere((e) => e.id == p.id);
-                  _onSearch();
-                });
-              }
-              Navigator.pop(context);
-            },
-          ),
-        ),
-      );
-    });
+
+    final result = await context.push<Product>(
+      '/admin/product-detail',
+      extra: {
+        'product': p,
+        'isNew': isNew,
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        if (isNew) {
+          _allProducts.add(result);
+        } else {
+          final idx = _allProducts.indexWhere((e) => e.id == result.id);
+          if (idx != -1) {
+            _allProducts[idx] = result;
+            _allProducts[idx].variantCount = result.variants.length; // Cập nhật lại count thủ công
+          }
+        }
+        _onSearch();
+      });
+    }
   }
 
   @override
@@ -213,7 +196,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               const SizedBox(height: 8),
               Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 12),  // cách trước ButtonBar
-              Text('Biến thể: ${p.variants.length}',
+              Text('Biến thể: ${p.variantCount}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 12),
               OverflowBar(
@@ -235,8 +218,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                           title: const Text('Xác nhận xoá'),
                           content: Text('Bạn có chắc muốn xoá sản phẩm "${p.name}" không?'),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Huỷ')),
-                            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xoá')),
+                            TextButton(onPressed: () => context.pop(false), child: const Text('Huỷ')),
+                            ElevatedButton(onPressed: () => context.pop(true), child: const Text('Xoá')),
                           ],
                         ),
                       );

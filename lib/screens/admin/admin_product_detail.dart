@@ -7,6 +7,7 @@ import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 import 'package:cpmad_final/models/variant.dart';
+import 'package:go_router/go_router.dart';
 import '../../service/ProductService.dart';
 import 'component/variant_detail.dart';
 
@@ -33,6 +34,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
   final _formKey = GlobalKey<FormState>();
   final List<Category> categories = [];
   final List<Brand> brands = [];
+  List<Variant> _variants = [];
 
   late TextEditingController _nameCtrl;
   late TextEditingController _importPriceCtrl;
@@ -42,7 +44,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
 
   late Category _selectedCategory;
   late Brand _selectedBrand;
-  late List<Variant> _variants;
   List<PlatformFile> _images = [];
   List<PlatformFile> _editingVariantImages = [];
   int? _editingIndex;
@@ -58,8 +59,9 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
     try {
       final cats = await ProductService.fetchAllCategory();
       final brs = await ProductService.fetchAllBrand();
-
       final p = widget.product;
+
+      final fetchedVariants = await ProductService.fetchVariantsByProduct(p.id!);
 
       setState(() {
         categories
@@ -74,7 +76,8 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
         _sellingPriceCtrl = TextEditingController(text: p.sellingPrice.toString());
         _stockCtrl = TextEditingController(text: p.stock.toString());
         _descCtrl = TextEditingController(text: p.description);
-        _variants = List<Variant>.from(p.variants);
+
+        _variants = fetchedVariants; // ✅ chỉ dùng kết quả fetch
 
         _selectedCategory = categories.firstWhere(
               (c) => c.id == p.categoryId,
@@ -85,19 +88,16 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
           orElse: () => brands.first,
         );
 
-        if (p.images != null && p.images.isNotEmpty) {
-          for (final image in p.images) {
-            _images.add(PlatformFile(
-              name: image['name'] ?? 'image.png',
-              bytes: base64Decode(image['base64'] ?? ''),
-              size: 0,
-            ));
-          }
+        if (p.images.isNotEmpty) {
+          _images = p.images.map((img) => PlatformFile(
+            name: img['name'] ?? 'image.png',
+            bytes: base64Decode(img['base64'] ?? ''),
+            size: 0,
+          )).toList();
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Lỗi tải dữ liệu: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải dữ liệu: $e')));
     }
   }
 
@@ -130,15 +130,10 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
 
   void _navigateToEditVariantPage(int index) async {
     final old = _variants[index];
-    final result = await Navigator.push<Variant>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VariantDetailScreen(
-          productId: widget.product.id ?? '',
-          initialVariant: old,        // truyền biến thể cũ
-        ),
-      ),
-    );
+    final result = await context.push<Variant>('/admin/variant-detail', extra: {
+      'productId': widget.product.id ?? '',
+      'initialVariant': old,
+    });
     if (result != null) {
       setState(() {
         _variants[index] = result;  // cập nhật lại list
@@ -215,7 +210,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => context.pop(),
                         child: const Text('Đóng'),
                       ),
                     )
@@ -289,8 +284,6 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final imageBase64List = await _convertImagesToBase64(_images);
-    print("Total images: ${_images.length}");
-    print("Total base64 size: ${imageBase64List.fold(0, (sum, item) => sum + (item['base64']?.length ?? 0))}");
 
     final updated = Product(
       id: widget.product.id,
@@ -304,43 +297,60 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
       images: imageBase64List,
       timeAdd: widget.product.timeAdd,
     );
+
     try {
       if (widget.isNew) {
         final createdProduct = await ProductService.createProduct(updated);
 
-        // Sau khi tạo sản phẩm, gán lại productId cho từng variant và gọi API
+        // Thêm toàn bộ biến thể
         for (final v in _variants) {
           final updatedVariant = v.copyWith(productId: createdProduct.id!);
-          try {
-            await ProductService.createVariant(updatedVariant);
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lỗi tạo biến thể "${v.variantName}": $e')),
-            );
-          }
+          await ProductService.createVariant(updatedVariant);
         }
 
         widget.onEdit(createdProduct);
+        if (mounted) context.pop(createdProduct);
       } else {
         final updatedProduct = await ProductService.updateProduct(widget.product.id!, updated);
-        widget.onEdit(updatedProduct);
-      }
 
-      if (mounted) Navigator.of(context).pop();
+        final oldVariants = await ProductService.fetchVariantsByProduct(widget.product.id!);
+        final oldIds = oldVariants.map((v) => v.id).toSet();
+
+        final newIds = _variants.where((v) => v.id != null).map((v) => v.id!).toSet();
+        final toDelete = oldIds.difference(newIds);
+
+        // Xoá biến thể đã bị loại bỏ
+        for (final id in toDelete) {
+          await ProductService.deleteVariant(id!);
+        }
+
+        // Thêm hoặc cập nhật các biến thể mới
+        for (final v in _variants) {
+          if (v.id == null) {
+            await ProductService.createVariant(v.copyWith(productId: widget.product.id!));
+          } else {
+            await ProductService.updateVariant(v.id!, v);
+          }
+        }
+
+        widget.onEdit(updatedProduct);
+        if (mounted) context.pop(updatedProduct);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Lỗi lưu sản phẩm: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi lưu sản phẩm: $e')));
     }
   }
 
   void _navigateToAddVariantPage() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => VariantDetailScreen(productId: widget.product.id ?? '')),
+    final result = await context.push<Variant>(
+      '/admin/variant-detail',
+      extra: {
+        'productId': widget.product.id ?? '',
+        'initialVariant': null,
+      },
     );
 
-    if (result != null && result is Variant) {
+    if (result != null) {
       setState(() => _variants.add(result));
     }
   }
@@ -690,7 +700,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                 IconButton(
                                   icon: const Icon(Icons.edit, color: Colors.blue),
                                   tooltip: 'Chỉnh sửa',
-                                  onPressed: () => _navigateToEditVariantPage(index),  // ← dùng navigator
+                                  onPressed: () => _navigateToEditVariantPage(index),
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete, color: Colors.red),
@@ -702,8 +712,8 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                                         title: const Text('Xác nhận xoá'),
                                         content: Text('Xoá biến thể "${v.variantName}"?'),
                                         actions: [
-                                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Huỷ')),
-                                          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xoá')),
+                                          TextButton(onPressed: () => context.pop(false), child: const Text('Huỷ')),
+                                          ElevatedButton(onPressed: () => context.pop(true), child: const Text('Xoá')),
                                         ],
                                       ),
                                     );
