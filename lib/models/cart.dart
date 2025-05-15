@@ -55,6 +55,6 @@ class Cart {
   double totalPrice(List<Product> products) {
     final product = products.firstWhere((p) => p.id == productId);
     final variant = product.variants.firstWhere((v) => v.id == variantId);
-    return variant.price * quantity;
+    return variant.sellingPrice * quantity;
   }
 }

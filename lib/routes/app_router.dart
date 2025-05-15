@@ -32,7 +32,7 @@ import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/account/cart',
+  initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/',

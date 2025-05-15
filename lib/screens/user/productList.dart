@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'CustomNavbar.dart';
 
@@ -70,7 +71,7 @@ class _ProductListState extends State<ProductList> {
     return Scaffold(
       appBar: CustomNavbar(
         cartItemCount: 0,
-        onHomeTap: () {},
+        onHomeTap: () { context.go('/home'); },
         onCategoriesTap: () {},
         onCartTap: () {},
         onRegisterTap: () {},

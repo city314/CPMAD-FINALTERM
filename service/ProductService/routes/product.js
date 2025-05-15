@@ -101,4 +101,39 @@ router.put('/discounts/update', async (req, res) => {
   }
 });
 
+router.get('/summary', async (req, res) => {
+  try {
+    const allProducts = await Product.find().sort({ soldCount: -1 }); // sắp để dùng cho best sellers
+
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const promotions = allProducts.filter(p => p.discount_percent > 0);
+    const newProducts = allProducts.filter(p => p.time_create >= sevenDaysAgo);
+    const bestSellers = allProducts.slice(0, 20); // top 20 bán chạy nhất
+
+    res.json({
+      promotions,
+      newProducts,
+      bestSellers,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy dữ liệu tổng hợp', error: err });
+  }
+});
+
+router.get('/by-category', async (req, res) => {
+  try {
+    const { categoryId } = req.query;
+
+    const filter = categoryId ? { category_id: categoryId } : {};
+    const products = await Product.find(filter).sort({ time_create: -1 });
+
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

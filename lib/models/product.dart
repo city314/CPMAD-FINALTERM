@@ -14,6 +14,7 @@ class Product {
   final String description;
   final int stock;
   int? discountPercent;
+  int? soldCount;
   final List<Map<String, String>> images;
   final DateTime timeAdd;
   final List<Variant> variants;      // ← thêm trường này
@@ -30,6 +31,7 @@ class Product {
     required this.description,
     required this.stock,
     this.discountPercent,
+    this.soldCount,
     required this.images,
     required this.timeAdd,
     this.variants = const [],         // ← khởi mặc định là danh sách rỗng
@@ -47,6 +49,7 @@ class Product {
     description: json['description'] as String,
     stock: json['stock'] as int,
     discountPercent: json['discount_percent'] as int,
+    soldCount: json['soldCount'] as int,
     images: List<Map<String, String>>.from(
         (json['images'] as List).map((e) => Map<String, String>.from(e))),
     timeAdd: DateTime.parse(json['time_create'] as String),
@@ -109,12 +112,11 @@ class Product {
       name: '',
       categoryId: '',
       brandId: '',
-      price: 0.0,
       description: '',
       stock: 0,
-      imgUrl: '',
       timeAdd: DateTime.now(),
       variants: [],
+      images: [],
     );
   }
 }

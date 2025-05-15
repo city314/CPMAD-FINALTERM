@@ -202,4 +202,31 @@ class ProductService {
     print('Update failed: ${response.body}');
     return false;
   }
+
+  Future<Map<String, List<Product>>> fetchProductSummary() async {
+    final response = await http.get(Uri.parse('$_urlProduct/summary'));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return {
+        'promotions': (data['promotions'] as List).map((e) => Product.fromJson(e)).toList(),
+        'newProducts': (data['newProducts'] as List).map((e) => Product.fromJson(e)).toList(),
+        'bestSellers': (data['bestSellers'] as List).map((e) => Product.fromJson(e)).toList(),
+      };
+    } else {
+      throw Exception('Lỗi khi lấy tổng hợp sản phẩm');
+    }
+  }
+
+  Future<List<Product>> fetchProductsByCategory(String categoryId) async {
+    print(categoryId);
+    final response = await http.get(
+      Uri.parse('$_urlProduct/by-category?categoryId=$categoryId'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Product.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load products for category $categoryId');
+    }
+  }
 }
