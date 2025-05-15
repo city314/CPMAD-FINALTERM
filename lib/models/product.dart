@@ -112,6 +112,7 @@ class Product {
       name: '',
       categoryId: '',
       brandId: '',
+      price: 0.0,
       description: '',
       stock: 0,
       timeAdd: DateTime.now(),
