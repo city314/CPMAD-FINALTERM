@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'variant.dart';
 
 class Product {
@@ -86,7 +84,7 @@ class Product {
     List<Map<String, String>>? images,
     DateTime? timeAdd,
     String? series,
-    List<Variant>? variants,       // ← thêm param cho copyWith
+    List<Variant>? variants,
   }) {
     return Product(
       id: id ?? this.id,
@@ -108,16 +106,20 @@ class Product {
   /// Named constructor trả về một Product “rỗng” (empty)
   factory Product.empty() {
     return Product(
-      id: '',
+      id: null,
       name: '',
       categoryId: '',
       brandId: '',
-      price: 0.0,
+      categoryName: null,
+      brandName: null,
+      variantCount: 0,
+      lowestPrice: 0,
       description: '',
       stock: 0,
+      discountPercent: 0,
+      images: const [],
       timeAdd: DateTime.now(),
-      variants: [],
-      images: [],
+      variants: const [],
     );
   }
 }
