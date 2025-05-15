@@ -147,7 +147,7 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       final matchesBrand  = _selectedBrand    == 'Tất cả' || p.brandId    == _selectedBrand;
       final minPrice = double.tryParse(_minPriceCtrl.text) ?? 0;
       final maxPrice = double.tryParse(_maxPriceCtrl.text) ?? double.infinity;
-      final matchesPrice = p.price >= minPrice && p.price <= maxPrice;
+      final matchesPrice = p.sellingPrice >= minPrice && p.sellingPrice <= maxPrice;
 
       return matchesSearch && matchesCat && matchesBrand && matchesPrice;
     }).toList();
