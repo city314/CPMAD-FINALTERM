@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'variant.dart';
 
 class Product {
@@ -5,10 +7,14 @@ class Product {
   final String name;
   final String categoryId;
   final String brandId;
-  final double price;
+  final String? categoryName;
+  final String? brandName;
+  int? variantCount;
+  final double importPrice;
+  final double sellingPrice;
   final String description;
   final int stock;
-  final String imgUrl;
+  final List<Map<String, String>> images;
   final DateTime timeAdd;
   final List<Variant> variants;      // ← thêm trường này
 
@@ -17,10 +23,14 @@ class Product {
     required this.name,
     required this.categoryId,
     required this.brandId,
-    required this.price,
+    this.categoryName,
+    this.brandName,
+    this.variantCount,
+    required this.importPrice,
+    required this.sellingPrice,
     required this.description,
     required this.stock,
-    required this.imgUrl,
+    required this.images,
     required this.timeAdd,
     this.variants = const [],         // ← khởi mặc định là danh sách rỗng
   });
@@ -30,11 +40,16 @@ class Product {
     name: json['name'] as String,
     categoryId: json['category_id'] as String,
     brandId: json['brand_id'] as String,
-    price: (json['price'] as num).toDouble(),
+    categoryName: json['categoryName'] ?? '',
+    brandName: json['brandName'] ?? '',
+    variantCount: json['variantCount'] ?? 0,
+    importPrice: (json['import_price'] as num).toDouble(),
+    sellingPrice: (json['selling_price'] as num).toDouble(),
     description: json['description'] as String,
     stock: json['stock'] as int,
-    imgUrl: json['img_url'] as String,
-    timeAdd: DateTime.parse(json['time_add'] as String),
+    images: List<Map<String, String>>.from(
+        (json['images'] as List).map((e) => Map<String, String>.from(e))),
+    timeAdd: DateTime.parse(json['time_create'] as String),
     variants: (json['variants'] as List<dynamic>?)
         ?.map((e) => Variant.fromJson(e as Map<String, dynamic>))
         .toList() ?? [],
@@ -45,11 +60,11 @@ class Product {
       'name': name,
       'category_id': categoryId,
       'brand_id': brandId,
-      'price': price,
+      'import_price': importPrice,
+      'selling_price': sellingPrice,
       'description': description,
       'stock': stock,
-      'img_url': imgUrl,
-      'time_add': timeAdd.toIso8601String(),
+      'images': images,
       'variants': variants.map((v) => v.toJson()).toList(),
     };
     if (id != null) m['_id'] = id;
@@ -61,10 +76,13 @@ class Product {
     String? name,
     String? categoryId,
     String? brandId,
-    double? price,
+    String? brandName,
+    String? categoryName,
+    double? importPrice,
+    double? sellingPrice,
     String? description,
     int? stock,
-    String? imgUrl,
+    List<Map<String, String>>? images,
     DateTime? timeAdd,
     String? series,
     List<Variant>? variants,       // ← thêm param cho copyWith
@@ -74,10 +92,13 @@ class Product {
       name: name ?? this.name,
       categoryId: categoryId ?? this.categoryId,
       brandId: brandId ?? this.brandId,
-      price: price ?? this.price,
+      categoryName: categoryName ?? this.categoryName,
+      brandName: brandName ?? this.brandName,
+      importPrice: importPrice ?? this.importPrice,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
       description: description ?? this.description,
       stock: stock ?? this.stock,
-      imgUrl: imgUrl ?? this.imgUrl,
+      images: images ?? this.images,
       timeAdd: timeAdd ?? this.timeAdd,
       variants: variants ?? this.variants,
     );

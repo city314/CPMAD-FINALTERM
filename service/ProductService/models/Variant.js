@@ -2,15 +2,17 @@ const mongoose = require('mongoose');
 
 // Định nghĩa schema ảnh nhúng trực tiếp
 const variantImageSchema = new mongoose.Schema({
-  image_url: { type: String, required: true }
-}, { _id: false }); // không cần _id riêng cho mỗi ảnh
+  name: String,
+  base64: { type: String, required: true }
+}, { _id: false });
 
 const variantSchema = new mongoose.Schema({
   product_id: { type: String, required: true },
   variant_name: { type: String, required: true },
   color: { type: String, default: 'black' },
   attributes: { type: String, required: true }, // cho nhập tay như description
-  price: { type: Number, required: true },
+  import_price: { type: Number, required: true },
+  selling_price: { type: Number, required: true },
   stock: { type: Number, required: true },
   images: [variantImageSchema],
 }, { timestamps: true });

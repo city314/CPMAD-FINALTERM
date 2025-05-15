@@ -2,23 +2,6 @@
 
 import 'dart:convert';
 
-/// Model cho ảnh của variant (schema embedded)
-class VariantImage {
-  final String imageUrl;
-
-  VariantImage({required this.imageUrl});
-
-  factory VariantImage.fromJson(Map<String, dynamic> json) {
-    return VariantImage(
-      imageUrl: json['image_url'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'image_url': imageUrl,
-  };
-}
-
 /// Model cho Variant
 class Variant {
   final String? id;
@@ -26,9 +9,10 @@ class Variant {
   final String variantName;
   final String color;
   final String attributes;
-  final double price;
+  final double importPrice;
+  final double sellingPrice;
   final int stock;
-  final List<VariantImage> images;
+  final List<Map<String, String>> images;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -38,7 +22,8 @@ class Variant {
     required this.variantName,
     this.color = 'black',
     required this.attributes,
-    required this.price,
+    required this.importPrice,
+    required this.sellingPrice,
     required this.stock,
     this.images = const [],
     DateTime? createdAt,
@@ -53,12 +38,11 @@ class Variant {
       variantName: json['variant_name'] as String,
       color: json['color'] as String? ?? 'black',
       attributes: json['attributes'] as String,
-      price: (json['price'] as num).toDouble(),
+      importPrice: (json['import_price'] as num).toDouble(),
+      sellingPrice: (json['selling_price'] as num).toDouble(),
       stock: json['stock'] as int,
-      images: (json['images'] as List<dynamic>?)
-          ?.map((e) => VariantImage.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-          [],
+      images: List<Map<String, String>>.from(
+          (json['images'] as List).map((e) => Map<String, String>.from(e))),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : null,
@@ -74,9 +58,10 @@ class Variant {
       'variant_name': variantName,
       'color': color,
       'attributes': attributes,
-      'price': price,
+      'import_price': importPrice,
+      'selling_price': sellingPrice,
       'stock': stock,
-      'images': images.map((i) => i.toJson()).toList(),
+      'images': images,
     };
     if (id != null) data['_id'] = id;
     data['createdAt'] = createdAt.toIso8601String();
@@ -90,9 +75,10 @@ class Variant {
     String? variantName,
     String? color,
     String? attributes,
-    double? price,
+    double? importPrice,
+    double? sellingPrice,
     int? stock,
-    List<VariantImage>? images,
+    List<Map<String, String>>? images,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -102,7 +88,8 @@ class Variant {
       variantName: variantName ?? this.variantName,
       color: color ?? this.color,
       attributes: attributes ?? this.attributes,
-      price: price ?? this.price,
+      importPrice: importPrice ?? this.importPrice,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
       stock: stock ?? this.stock,
       images: images ?? this.images,
       createdAt: createdAt ?? this.createdAt,

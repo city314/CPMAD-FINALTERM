@@ -53,5 +53,12 @@ app.use('/api/customer-support', supportRoutes);
 
 // Khởi chạy server
 server.listen(PORT, () => {
-    console.log(`🚀 UserService chạy trên cổng ${PORT}`);
+  console.log(`✅ Server đang chạy tại http://localhost:${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Cổng ${PORT} đã được sử dụng. Vui lòng chọn cổng khác.`);
+  } else {
+    throw err;
+  }
 });
+

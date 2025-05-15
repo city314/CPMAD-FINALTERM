@@ -1,7 +1,9 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'admin_bottom_navbar.dart';
 import 'admin_brand.dart';
 import 'admin_category.dart';
+import 'admin_chat.dart';
 import 'admin_coupon.dart';
 import 'admin_dashboard.dart';
 import 'admin_discount.dart';
@@ -45,6 +47,7 @@ class _AdminHomeState extends State<AdminHome> {
 
   @override
   Widget build(BuildContext context) {
+    final email = CurrentUser().email ?? '';
     final isMobile = MediaQuery
         .of(context)
         .size

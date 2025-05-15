@@ -29,11 +29,14 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       id: 'p001',
       name: 'Gaming Laptop ROG Strix',
       categoryId: 'laptop',
+      brandName: '',
+      categoryName: '',
       brandId: 'asus',
-      price: 30000000,
+      importPrice: 30000000,
+      sellingPrice: 5000000,
       description: 'Laptop gaming hiệu năng cao.',
       stock: 12,
-      imgUrl: '',
+      images: [],
       timeAdd: DateTime.now().subtract(const Duration(days: 3)),
       variants: [], // nếu chưa cần biến thể cụ thể
     ),
@@ -42,10 +45,13 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       name: 'SSD Samsung 980 Pro 1TB',
       categoryId: 'ssd',
       brandId: 'samsung',
-      price: 4500000,
+      categoryName: '',
+      brandName: '',
+      importPrice: 4500000,
+      sellingPrice: 5000000,
       description: 'Ổ cứng SSD PCIe Gen4 1TB.',
       stock: 20,
-      imgUrl: '',
+      images: [],
       timeAdd: DateTime.now().subtract(const Duration(days: 10)),
       variants: [],
     ),
@@ -141,7 +147,7 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
       final matchesBrand  = _selectedBrand    == 'Tất cả' || p.brandId    == _selectedBrand;
       final minPrice = double.tryParse(_minPriceCtrl.text) ?? 0;
       final maxPrice = double.tryParse(_maxPriceCtrl.text) ?? double.infinity;
-      final matchesPrice = p.price >= minPrice && p.price <= maxPrice;
+      final matchesPrice = p.sellingPrice >= minPrice && p.sellingPrice <= maxPrice;
 
       return matchesSearch && matchesCat && matchesBrand && matchesPrice;
     }).toList();
@@ -275,7 +281,7 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
                     title: Text(p.name,
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     subtitle: Text(
-                      'Giá: ₫${p.price.toStringAsFixed(0)}  •  Biến thể: ${p.variants.length}',
+                      'Giá: ₫${p.sellingPrice.toStringAsFixed(0)}  •  Biến thể: ${p.variants.length}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     controlAffinity: ListTileControlAffinity.leading,

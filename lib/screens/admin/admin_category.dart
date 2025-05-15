@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import 'component/SectionHeader.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cpmad_final/service/ProductService.dart';
 
 class AdminCategoryScreen extends StatefulWidget {
   const AdminCategoryScreen({Key? key}) : super(key: key);
@@ -11,11 +13,28 @@ class AdminCategoryScreen extends StatefulWidget {
 
 class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   // Test data ban đầu, có thể load từ API sau này
-  final List<Category> _categories = [
-    Category(id: 'c1', name: 'Laptop'),
-    Category(id: 'c2', name: 'SSD'),
-    Category(id: 'c3', name: 'Mouse'),
-  ];
+  List<Category> _categories = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() => _loading = true);
+    try {
+      final list = await ProductService.fetchAllCategory();
+      setState(() {
+        _categories = list;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải danh mục: $e')));
+    }
+  }
 
   void _showEditDialog({Category? category}) {
     final isNew = category == null;
@@ -23,55 +42,84 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(isNew ? 'Tạo danh mục mới' : 'Chỉnh sửa danh mục'),
-        content: TextField(
-          controller: _nameCtrl,
-          decoration: const InputDecoration(labelText: 'Tên danh mục'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
-          ElevatedButton(
-            onPressed: () {
-              final name = _nameCtrl.text.trim();
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tên danh mục không được để trống')),
-                );
-                return;
-              }
-              setState(() {
-                if (isNew) {
-                  _categories.add(Category(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    name: name,
-                  ));
-                } else {
-                  final idx = _categories.indexWhere((c) => c.id == category.id);
-                  _categories[idx] = Category(id: category.id, name: name);
-                }
-              });
-              Navigator.pop(context);
-            },
-            child: Text(isNew ? 'Tạo' : 'Lưu'),
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(isNew ? 'Tạo danh mục mới' : 'Chỉnh sửa danh mục'),
+          content: TextField(
+            controller: _nameCtrl,
+            decoration: const InputDecoration(labelText: 'Tên danh mục'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Huỷ')),
+            ElevatedButton(
+              onPressed: () async {
+                final name = _nameCtrl.text.trim();
+                if (name.isEmpty) {
+                  if (mounted) {
+                    Future.microtask(() {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Tên danh mục không được để trống')),
+                      );
+                    });
+                  }
+                  return;
+                }
+
+                try {
+                  if (isNew) {
+                    final created = await ProductService.createCategory(name);
+                    if (mounted) setState(() => _categories.add(created));
+                  } else {
+                    final updated = await ProductService.updateCategory(category.id!, name);
+                    _loadCategories();
+                    if (mounted) {
+                      final idx = _categories.indexWhere((c) => c.id == category.id);
+                      if (idx != -1) _categories[idx] = updated;
+                    }
+                  }
+                  if (mounted && Navigator.of(ctx).canPop()) Navigator.of(ctx).pop();
+                } catch (e) {
+                  if (mounted) {
+                    Future.microtask(() {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+                    });
+                  }
+                }
+              },
+              child: Text(isNew ? 'Tạo' : 'Lưu'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _deleteCategory(Category c) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Xác nhận xoá'),
         content: Text('Bạn có chắc muốn xoá danh mục "${c.name}" không?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Huỷ'),
+          ),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _categories.removeWhere((x) => x.id == c.id));
-              Navigator.pop(context);
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await ProductService.deleteCategory(c.id!);
+                if (!mounted) return;
+                setState(() => _categories.removeWhere((x) => x.id == c.id));
+              } catch (e) {
+                if (!mounted) return;
+                Future.microtask(() {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                });
+              }
             },
             child: const Text('Xoá'),
           ),

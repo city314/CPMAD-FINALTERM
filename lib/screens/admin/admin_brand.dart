@@ -1,87 +1,125 @@
 import 'package:flutter/material.dart';
 import '../../models/brand.dart';
 import 'component/SectionHeader.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cpmad_final/service/ProductService.dart';
 
 class AdminBrandScreen extends StatefulWidget {
   const AdminBrandScreen({Key? key}) : super(key: key);
 
   @override
-  State<AdminBrandScreen> createState() => _AdminBrandScreenState();
+  _AdminBrandScreenState createState() => _AdminBrandScreenState();
 }
 
 class _AdminBrandScreenState extends State<AdminBrandScreen> {
-  final List<Brand> _brands = [
-    // Test data
-    Brand(id: 'b1', name: 'ASUS', imgUrl: 'https://example.com/asus.png'),
-    Brand(id: 'b2', name: 'Samsung', imgUrl: 'https://example.com/samsung.png'),
-    // … bạn có thể load từ API thay vào đây …
-  ];
+  // Test data ban đầu, có thể load từ API sau này
+  List<Brand> _brand = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBrand();
+  }
+
+  Future<void> _loadBrand() async {
+    setState(() => _loading = true);
+    try {
+      final list = await ProductService.fetchAllBrand();
+      setState(() {
+        _brand = list;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải danh mục: $e')));
+    }
+  }
 
   void _showEditDialog({Brand? brand}) {
     final isNew = brand == null;
     final _nameCtrl = TextEditingController(text: brand?.name ?? '');
-    final _imgCtrl  = TextEditingController(text: brand?.imgUrl ?? '');
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(isNew ? 'Tạo thương hiệu' : 'Chỉnh sửa thương hiệu'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(isNew ? 'Tạo danh mục mới' : 'Chỉnh sửa danh mục'),
+          content: TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(labelText: 'Tên thương hiệu'),
+            decoration: const InputDecoration(labelText: 'Tên danh mục'),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _imgCtrl,
-            decoration: const InputDecoration(labelText: 'URL ảnh'),
-          ),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
-          ElevatedButton(
-            onPressed: () {
-              final name = _nameCtrl.text.trim();
-              final url  = _imgCtrl.text.trim();
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tên không được để trống')),
-                );
-                return;
-              }
-              setState(() {
-                if (isNew) {
-                  _brands.add(Brand(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    name: name,
-                    imgUrl: url,
-                  ));
-                } else {
-                  final idx = _brands.indexWhere((b) => b.id == brand.id);
-                  _brands[idx] = Brand(id: brand.id, name: name, imgUrl: url);
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Huỷ')),
+            ElevatedButton(
+              onPressed: () async {
+                final name = _nameCtrl.text.trim();
+                if (name.isEmpty) {
+                  if (mounted) {
+                    Future.microtask(() {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Tên danh mục không được để trống')),
+                      );
+                    });
+                  }
+                  return;
                 }
-              });
-              Navigator.pop(context);
-            },
-            child: Text(isNew ? 'Tạo' : 'Lưu'),
-          ),
-        ],
-      ),
+
+                try {
+                  if (isNew) {
+                    final created = await ProductService.createBrand(name);
+                    if (mounted) setState(() => _brand.add(created));
+                  } else {
+                    final updated = await ProductService.updateBrand(brand.id!, name);
+                    _loadBrand();
+                    if (mounted) {
+                      final idx = _brand.indexWhere((c) => c.id == brand.id);
+                      if (idx != -1) _brand[idx] = updated;
+                    }
+                  }
+                  if (mounted && Navigator.of(ctx).canPop()) Navigator.of(ctx).pop();
+                } catch (e) {
+                  if (mounted) {
+                    Future.microtask(() {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+                    });
+                  }
+                }
+              },
+              child: Text(isNew ? 'Tạo' : 'Lưu'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _deleteBrand(Brand b) {
+  void _deleteBrand(Brand c) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Xác nhận xoá'),
-        content: Text('Bạn có chắc muốn xoá “${b.name}”?'),
+        content: Text('Bạn có chắc muốn xoá danh mục "${c.name}" không?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Huỷ')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Huỷ'),
+          ),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _brands.removeWhere((x) => x.id == b.id));
-              Navigator.pop(context);
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await ProductService.deleteBrand(c.id!);
+                if (!mounted) return;
+                setState(() => _brand.removeWhere((x) => x.id == c.id));
+              } catch (e) {
+                if (!mounted) return;
+                Future.microtask(() {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                });
+              }
             },
             child: const Text('Xoá'),
           ),
@@ -96,47 +134,39 @@ class _AdminBrandScreenState extends State<AdminBrandScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showEditDialog(),
         child: const Icon(Icons.add),
-        tooltip: 'Tạo mới brand',
+        tooltip: 'Tạo danh mục mới',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ← Dùng SectionHeader để thay cho Text thường
-            const SectionHeader('Quản lý Thương hiệu'),
+            // SectionHeader mới
+            const SectionHeader('Quản lý Danh mục'),
             const SizedBox(height: 16),
-            // ListView bên dưới được bọc Expanded
+
+            // ListView bọc trong Expanded để tránh overflow
             Expanded(
               child: ListView.separated(
-                itemCount: _brands.length,
+                itemCount: _brand.length,
                 separatorBuilder: (_, __) => const Divider(height: 32),
                 itemBuilder: (context, i) {
-                  final b = _brands[i];
+                  final cat = _brand[i];
                   return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage:
-                      b.imgUrl.isNotEmpty ? NetworkImage(b.imgUrl) : null,
-                      child: b.imgUrl.isEmpty
-                          ? const Icon(Icons.branding_watermark)
-                          : null,
-                    ),
-                    title: Text(
-                      b.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    title: Text(cat.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           tooltip: 'Chỉnh sửa',
-                          onPressed: () => _showEditDialog(brand: b),
+                          onPressed: () => _showEditDialog(brand: cat),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           tooltip: 'Xoá',
-                          onPressed: () => _deleteBrand(b),
+                          onPressed: () => _deleteBrand(cat),
                         ),
                       ],
                     ),
