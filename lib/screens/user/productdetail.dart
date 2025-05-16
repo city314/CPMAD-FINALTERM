@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:cpmad_final/models/variant.dart';
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'dart:io' show Platform;
 import '../../models/product.dart';
+import '../../models/review.dart';
 import '../../service/ProductService.dart';
+import '../../service/UserService.dart';
+import '../../service/WebSocketService.dart';
 import 'CustomNavbar.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -73,16 +77,58 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   late List<Variant> _variants = [];
   Variant? selectedVariant;
 
+  final socketService = WebSocketService();
+  List<Review> reviews = [];
+  final TextEditingController _commentController = TextEditingController();
+  int _rating = 0;
+  Map<String, dynamic>? userInfo;
+
   @override
   void initState() {
     super.initState();
     _loadProduct();
+    socketService.connect((newReview) async {
+      if (!reviews.any((r) =>
+      r.userId == newReview.userId &&
+          r.comment == newReview.comment &&
+          (r.timeCreate.difference(newReview.timeCreate).inSeconds).abs() < 2)) {
+        String avatar = '';
+        try {
+          if(CurrentUser().isLogin) {
+            final user = await UserService.fetchUserByEmail(newReview.userId ?? '');
+            avatar = user['avatar'] ?? '';
+          }
+        } catch (_) {}
+
+        setState(() {
+          reviews.insert(0, newReview.copyWith(avatar: avatar));
+        });
+      }
+    });
+
+    if (CurrentUser().isLogin) {
+      _loadUserInfo();
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final data = await UserService.fetchUserByEmail(CurrentUser().email ?? '');
+      setState(() => userInfo = data);
+    } catch (e) {
+      print('Lỗi lấy user info: $e');
+    }
   }
 
   void _loadProduct() async {
     final fetched = await ProductService.fetchProductById(widget.productId);
     final fetchedVariants = await ProductService.fetchVariantsByProduct(widget.productId);
-    print(fetched?.variants.length);
     setState(() {
       _product = fetched;
       _variants = fetchedVariants;
@@ -166,7 +212,6 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     if (_product == null) {
       return const Center(child: Text('Không tìm thấy sản phẩm'));
     }
-
     return Scaffold(
       appBar: CustomNavbar(
         cartItemCount: 0,
@@ -527,86 +572,72 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildReview(
-                  avatar: '',
-                  name: 'Nguyễn Văn A',
-                  rating: 5,
-                  comment: 'Sản phẩm rất tốt, chơi game mượt, pin lâu, giao hàng nhanh!',
-                ),
-                const SizedBox(height: 16),
-                _buildReview(
-                  avatar: '',
-                  name: 'Trần Thị B',
-                  rating: 4,
-                  comment: 'Máy đẹp, cấu hình mạnh, hơi nóng khi chơi lâu.',
+                // Danh sách đánh giá mẫu
+                Column(
+                  children: reviews.map((review) => _buildReview(
+                    avatar: review.avatar ?? '',
+                    name: review.userName ?? '',
+                    rating: review.rating.toInt() ?? 4,
+                    comment: review.comment,
+                  )).toList(),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          // Sản phẩm gợi ý
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Sản phẩm gợi ý',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const Text("Gửi đánh giá:", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _commentController,
+                  decoration: const InputDecoration(hintText: "Viết đánh giá..."),
                 ),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.8,
+                const SizedBox(height: 8),
+                if (CurrentUser().isLogin) ...[
+                  const SizedBox(height: 8),
+                  const Text("Chọn số sao:"),
+                  Row(
+                    children: List.generate(5, (index) => IconButton(
+                      icon: Icon(index < _rating ? Icons.star : Icons.star_border),
+                      onPressed: () {
+                        setState(() {
+                          _rating = index + 1;
+                        });
+                      },
+                    )),
                   ),
-                  itemCount: 4,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 4,
-                      shadowColor: Colors.black.withOpacity(0.1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                              child: Image.asset(
-                                'assets/images/product/laptop1.png',
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Laptop Gợi ý #${index + 1}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text('19.990.000 đ', style: TextStyle(color: Colors.indigo, fontSize: 13)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                ] else ...[
+                  const SizedBox(height: 8),
+                  const Text("Bạn cần đăng nhập để đánh giá sao.", style: TextStyle(color: Colors.orange)),
+                ],
+                ElevatedButton(
+                  onPressed: () {
+                    final isLoggedIn = CurrentUser().isLogin;
+                    final review = Review(
+                      productId: widget.productId,
+                      userId: isLoggedIn ? userInfo!['email'] ?? '' : '',
+                      userName: isLoggedIn ? userInfo!['name'] ?? 'Ẩn danh' : 'Ẩn danh',
+                      rating: isLoggedIn ? _rating : 0,
+                      comment: _commentController.text,
+                      timeCreate: DateTime.now(),
+                    );
+
+                    ProductService.postReview(review);
+                    socketService.sendReview(review);
+
+                    _commentController.clear();
+                    setState(() => _rating = 0);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(isLoggedIn ? 'Gửi đánh giá thành công' : 'Gửi bình luận thành công')),
                     );
                   },
-                ),
+                  child: const Text("Gửi đánh giá"),
+                )
               ],
             ),
           ),
@@ -824,7 +855,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           Row(
                             children: [
                               Text(
-                                selectedVariant?.variantName ?? _product!.name,
+                                _product!.brandName ?? '',
                                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
                               ),
                             ],
@@ -1021,23 +1052,70 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 const SizedBox(height: 16),
                 // Danh sách đánh giá mẫu
                 Column(
-                  children: [
-                    _buildReview(
-                      avatar: '',
-                      name: 'Nguyễn Văn A',
-                      rating: 5,
-                      comment: 'Sản phẩm rất tốt, chơi game mượt, pin lâu, giao hàng nhanh!',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildReview(
-                      avatar: '',
-                      name: 'Trần Thị B',
-                      rating: 4,
-                      comment: 'Máy đẹp, cấu hình mạnh, hơi nóng khi chơi lâu.',
-                    ),
-                  ],
+                  children: reviews.map((review) => _buildReview(
+                    avatar: review.avatar ?? '',
+                    name: review.userName ?? '',
+                    rating: review.rating.toInt() ?? 4,
+                    comment: review.comment,
+                  )).toList(),
                 ),
                 const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Gửi đánh giá:", style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _commentController,
+                        decoration: const InputDecoration(hintText: "Viết đánh giá..."),
+                      ),
+                      const SizedBox(height: 8),
+                      if (CurrentUser().isLogin) ...[
+                        const SizedBox(height: 8),
+                        const Text("Chọn số sao:"),
+                        Row(
+                          children: List.generate(5, (index) => IconButton(
+                            icon: Icon(index < _rating ? Icons.star : Icons.star_border),
+                            onPressed: () {
+                              setState(() {
+                                _rating = index + 1;
+                              });
+                            },
+                          )),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 8),
+                        const Text("Bạn cần đăng nhập để đánh giá sao.", style: TextStyle(color: Colors.orange)),
+                      ],
+                      ElevatedButton(
+                        onPressed: () {
+                          final isLoggedIn = CurrentUser().isLogin;
+                          final review = Review(
+                            productId: widget.productId,
+                            userId: isLoggedIn ? userInfo!['email'] ?? '' : '',
+                            userName: isLoggedIn ? userInfo!['name'] ?? 'Ẩn danh' : 'Ẩn danh',
+                            rating: isLoggedIn ? _rating : 0,
+                            comment: _commentController.text,
+                            timeCreate: DateTime.now(),
+                          );
+
+                          ProductService.postReview(review);
+                          socketService.sendReview(review);
+
+                          _commentController.clear();
+                          setState(() => _rating = 0);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(isLoggedIn ? 'Gửi đánh giá thành công' : 'Gửi bình luận thành công')),
+                          );
+                        },
+                        child: const Text("Gửi đánh giá"),
+                      )
+                    ],
+                  ),
+                ),
                 // Footer
                 Container(
                   width: double.infinity,
@@ -1143,7 +1221,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                     Row(
                       children: List.generate(
                         rating,
-                        (index) => const Icon(Icons.star, color: Colors.amber, size: 18),
+                            (index) => const Icon(Icons.star, color: Colors.amber, size: 18),
                       ),
                     ),
                   ],
@@ -1195,5 +1273,3 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     return colorMap[colorName.toLowerCase()];
   }
 }
-
-
