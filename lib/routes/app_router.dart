@@ -33,7 +33,7 @@ import '../screens/user/checkout.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/account/cart/checkout',
+  initialLocation: '/order-history/order-detail',
   routes: [
     GoRoute(
       path: '/',

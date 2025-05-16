@@ -27,6 +27,30 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     'Phụ kiện': ['Anker', 'Xiaomi'],
   };
 
+  // Thêm biến thể sản phẩm
+  final List<Map<String, dynamic>> productVariants = [
+    {
+      'name': 'Màu đen',
+      'color': Colors.black,
+      'image': 'assets/images/product/laptop1.png',
+      'price': 200000000,
+    },
+    {
+      'name': 'Màu tím',
+      'color': Colors.purple,
+      'image': 'assets/images/product/laptop2.jpg',
+      'price': 205000000,
+    },
+    {
+      'name': 'Màu đỏ',
+      'color': Colors.red,
+      'image': 'assets/images/product/laptop3.jpg',
+      'price': 210000000,
+    },
+  ];
+
+  int selectedVariantIndex = 0;
+
   final Map<String, IconData> categoryIcons = {
     'Laptop': Icons.laptop,
     'PC': Icons.desktop_windows,
@@ -313,6 +337,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               children: [
                 Text(
                   _product!.name,
+                  '${productVariants[selectedVariantIndex]['price'].toStringAsFixed(0)} đ',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
                 ),
                 Row(
@@ -326,6 +351,71 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               ],
             ),
           ),
+          // Thêm phần chọn biến thể
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Chọn màu sắc:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(
+                      productVariants.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedVariantIndex = index;
+                            _currentImage = 0;
+                            _imagePageController.jumpToPage(0);
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                              width: 2,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: productVariants[index]['color'],
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                productVariants[index]['name'],
+                                style: TextStyle(
+                                  color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                  fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           // Điều chỉnh số lượng
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -734,6 +824,69 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           Text(
                             _product!.lowestPrice.toString(),
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
+                          ),
+                          const SizedBox(height: 24),
+                          // Thêm phần chọn biến thể
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Chọn màu sắc:',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: List.generate(
+                                    productVariants.length,
+                                    (index) => GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedVariantIndex = index;
+                                          _currentImage = 0;
+                                          _imagePageController.jumpToPage(0);
+                                        });
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(right: 16),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(25),
+                                          border: Border.all(
+                                            color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: BoxDecoration(
+                                                color: productVariants[index]['color'],
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: Colors.grey),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              productVariants[index]['name'],
+                                              style: TextStyle(
+                                                color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                                fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                           // Điều chỉnh số lượng
