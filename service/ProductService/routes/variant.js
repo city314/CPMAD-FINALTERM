@@ -1,6 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Variant = require('../models/Variant');
+const Product = require('../models/Product');
+
+// helper để cập nhật lowestPrice
+async function updateLowestPrice(productId) {
+  const variants = await Variant.find({ product_id: productId });
+  const lowest = variants.length > 0
+    ? Math.min(...variants.map(v => v.selling_price ?? Infinity))
+    : 0;
+  await Product.findByIdAndUpdate(productId, { lowest_price: lowest });
+}
 
 // GET all variants (optional)
 router.get('/', async (req, res) => {
@@ -26,6 +36,11 @@ router.post('/', async (req, res) => {
   try {
     const variant = new Variant(req.body);
     await variant.save();
+
+    // cập nhật lowestPrice
+    const productId = variant.product_id;
+    await updateLowestPrice(productId);
+
     res.status(201).json(variant);
   } catch (err) {
     res.status(400).json({ message: 'Tạo biến thể thất bại', error: err });
@@ -37,6 +52,8 @@ router.put('/:id', async (req, res) => {
   try {
     const updated = await Variant.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ message: 'Không tìm thấy biến thể' });
+
+    await updateLowestPrice(updated.product_id);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: 'Cập nhật thất bại', error: err });
@@ -48,6 +65,8 @@ router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Variant.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: 'Không tìm thấy biến thể' });
+
+    await updateLowestPrice(deleted.product_id);
     res.json({ message: 'Đã xoá biến thể' });
   } catch (err) {
     res.status(500).json({ message: 'Xoá thất bại', error: err });

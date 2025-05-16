@@ -68,6 +68,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
       brandName: '',
       description: '',
       stock: 0,
+      lowestPrice: 0,
       discountPercent: 0,
       images: [],
       timeAdd: DateTime.now(),

@@ -13,6 +13,7 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   stock: { type: Number, required: true },
   discount_percent: { type: Number, default: 0 },
+  lowest_price: { type: Number, default: 0 },
   soldCount: { type: Number, default: 0 },
   images: [productImageSchema],
   time_create: { type: Date, default: Date.now },

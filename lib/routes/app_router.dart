@@ -81,7 +81,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/products',
       name: 'products',
-      builder: (context, state) => const ProductList(),
+      builder: (context, state) {
+        final catId = state.extra as String;
+        return ProductList(categoryId: catId);
+      },
     ),
     GoRoute(
       path: '/account',
@@ -108,20 +111,23 @@ final GoRouter appRouter = GoRouter(
       name: 'cart',
       builder: (context, state) => UserCartPage(),
     ),
-    // GoRoute(
-    //   path: '/account/cart/checkout',
-    //   name: 'checkout',
-    //   builder: (context, state) => const CheckoutPage(),
-    // ),
+    GoRoute(
+      path: '/account/cart/checkout',
+      name: 'checkout',
+      builder: (context, state) => const CheckoutPage(),
+    ),
     GoRoute(
       path: '/forgot-password',
       name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
-      path: '/products/detail',
+      path: '/products/:id',
       name: 'product_detail',
-      builder: (context, state) => const ProductDetail(),
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ProductDetailScreen(productId: id);
+      },
     ),
     GoRoute(
       path: '/admin/product-detail',

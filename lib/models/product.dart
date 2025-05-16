@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'variant.dart';
 
 class Product {
@@ -8,7 +10,7 @@ class Product {
   final String? categoryName;
   final String? brandName;
   int? variantCount;
-  final int? lowestPrice;
+  int? lowestPrice;
   final String description;
   final int stock;
   int? discountPercent;
@@ -43,7 +45,7 @@ class Product {
     categoryName: json['categoryName'] ?? '',
     brandName: json['brandName'] ?? '',
     variantCount: json['variantCount'] ?? 0,
-    lowestPrice: json['lowestPrice'] ?? 0,
+    lowestPrice: json['lowest_price'] ?? 0,
     description: json['description'] as String,
     stock: json['stock'] as int,
     discountPercent: json['discount_percent'] as int,
@@ -84,7 +86,7 @@ class Product {
     List<Map<String, String>>? images,
     DateTime? timeAdd,
     String? series,
-    List<Variant>? variants,
+    List<Variant>? variants,       // ← thêm param cho copyWith
   }) {
     return Product(
       id: id ?? this.id,
@@ -106,20 +108,16 @@ class Product {
   /// Named constructor trả về một Product “rỗng” (empty)
   factory Product.empty() {
     return Product(
-      id: null,
+      id: '',
       name: '',
       categoryId: '',
       brandId: '',
-      categoryName: null,
-      brandName: null,
-      variantCount: 0,
-      lowestPrice: 0,
       description: '',
+      lowestPrice: 0,
       stock: 0,
-      discountPercent: 0,
-      images: const [],
       timeAdd: DateTime.now(),
-      variants: const [],
+      variants: [],
+      images: [],
     );
   }
 }

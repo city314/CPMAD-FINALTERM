@@ -1,16 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'dart:io' show Platform;
+import '../../models/product.dart';
+import '../../service/ProductService.dart';
 import 'CustomNavbar.dart';
 
-class ProductDetail extends StatefulWidget {
-  const ProductDetail({super.key});
+class ProductDetailScreen extends StatefulWidget {
+  final String productId;
+  const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  State<ProductDetail> createState() => _ProductDetailState();
+  State<ProductDetailScreen> createState() => _ProductDetailState();
 }
 
-class _ProductDetailState extends State<ProductDetail> {
+class _ProductDetailState extends State<ProductDetailScreen> {
   // Danh sách danh mục và thương hiệu mẫu
   final Map<String, List<String>> categoryBrands = {
     'Laptop': ['Asus', 'Dell', 'HP', 'Apple'],
@@ -21,6 +26,30 @@ class _ProductDetailState extends State<ProductDetail> {
     'Chuột': ['Logitech', 'Razer', 'Fuhlen'],
     'Phụ kiện': ['Anker', 'Xiaomi'],
   };
+
+  // Thêm biến thể sản phẩm
+  final List<Map<String, dynamic>> productVariants = [
+    {
+      'name': 'Màu đen',
+      'color': Colors.black,
+      'image': 'assets/images/product/laptop1.png',
+      'price': 200000000,
+    },
+    {
+      'name': 'Màu tím',
+      'color': Colors.purple,
+      'image': 'assets/images/product/laptop2.jpg',
+      'price': 205000000,
+    },
+    {
+      'name': 'Màu đỏ',
+      'color': Colors.red,
+      'image': 'assets/images/product/laptop3.jpg',
+      'price': 210000000,
+    },
+  ];
+
+  int selectedVariantIndex = 0;
 
   final Map<String, IconData> categoryIcons = {
     'Laptop': Icons.laptop,
@@ -55,15 +84,26 @@ class _ProductDetailState extends State<ProductDetail> {
 
   int quantity = 1;
   int _currentImage = 0;
-  final List<String> productImages = [
-    'assets/images/product/laptop1.png',
-    'assets/images/product/laptop2.jpg',
-    'assets/images/product/laptop3.jpg',
-  ];
 
   final PageController _imagePageController = PageController();
 
   bool get isAndroid => !kIsWeb && Platform.isAndroid;
+  Product? _product;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProduct();
+  }
+
+  void _loadProduct() async {
+    final fetched = await ProductService.fetchProductById(widget.productId);
+    setState(() {
+      _product = fetched;
+      _isLoading = false;
+    });
+  }
 
   void _showCategoryBottomSheet() {
     showModalBottomSheet(
@@ -133,6 +173,14 @@ class _ProductDetailState extends State<ProductDetail> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_product == null) {
+      return const Center(child: Text('Không tìm thấy sản phẩm'));
+    }
+
     return Scaffold(
       appBar: CustomNavbar(
         cartItemCount: 0,
@@ -190,7 +238,7 @@ class _ProductDetailState extends State<ProductDetail> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Laptop Gaming ROG Zephyrus',
+                  _product!.name,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -215,17 +263,17 @@ class _ProductDetailState extends State<ProductDetail> {
               children: [
                 PageView.builder(
                   controller: _imagePageController,
-                  itemCount: productImages.length,
+                  itemCount: _product!.images.length,
                   onPageChanged: (index) {
                     setState(() {
                       _currentImage = index;
                     });
                   },
                   itemBuilder: (context, index) {
-                    return Image.asset(
-                      productImages[index],
-                      fit: BoxFit.contain,
-                    );
+                    final imageBytes = getImageBytes(_product!.images[index] as Map<String, String>);
+                    return imageBytes != null
+                        ? Image.memory(imageBytes, fit: BoxFit.contain)
+                        : const Icon(Icons.broken_image);
                   },
                 ),
                 // Nút chuyển trái
@@ -239,7 +287,7 @@ class _ProductDetailState extends State<ProductDetail> {
                       if (_currentImage > 0) {
                         _imagePageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                       } else {
-                        _imagePageController.jumpToPage(productImages.length - 1);
+                        _imagePageController.jumpToPage(_product!.images.length - 1);
                       }
                     },
                   ),
@@ -252,7 +300,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   child: IconButton(
                     icon: const Icon(Icons.chevron_right, color: Colors.black54, size: 32),
                     onPressed: () {
-                      if (_currentImage < productImages.length - 1) {
+                      if (_currentImage < _product!.images.length - 1) {
                         _imagePageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                       } else {
                         _imagePageController.jumpToPage(0);
@@ -265,7 +313,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   bottom: 16,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(productImages.length, (index) {
+                    children: List.generate(_product!.images.length, (index) {
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         width: _currentImage == index ? 16 : 8,
@@ -288,19 +336,86 @@ class _ProductDetailState extends State<ProductDetail> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '200.000.000 đ',
+                  _product!.name,
+                  '${productVariants[selectedVariantIndex]['price'].toStringAsFixed(0)} đ',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
                 ),
                 Row(
                   children: [
-                    Image.asset('assets/images/brand/asus.png', width: 32, height: 32),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.laptop),
+                    Text(
+                      _product!.brandName ?? '',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
+          // Thêm phần chọn biến thể
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Chọn màu sắc:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(
+                      productVariants.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedVariantIndex = index;
+                            _currentImage = 0;
+                            _imagePageController.jumpToPage(0);
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                              width: 2,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: productVariants[index]['color'],
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                productVariants[index]['name'],
+                                style: TextStyle(
+                                  color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                  fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           // Điều chỉnh số lượng
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -383,8 +498,8 @@ class _ProductDetailState extends State<ProductDetail> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Laptop Gaming ROG Zephyrus sở hữu cấu hình mạnh mẽ, thiết kế mỏng nhẹ, màn hình 240Hz, phù hợp cho cả game thủ và dân sáng tạo nội dung. Pin trâu, tản nhiệt tốt, nhiều cổng kết nối.',
+                Text(
+                  _product!.description,
                   style: TextStyle(fontSize: 15),
                 ),
               ],
@@ -596,7 +711,7 @@ class _ProductDetailState extends State<ProductDetail> {
               children: [
                 // Tên sản phẩm + đánh giá
                 Text(
-                  'Laptop Gaming ROG Zephyrus',
+                  _product!.name,
                   style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -632,7 +747,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                 if (_currentImage > 0) {
                                   _imagePageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                                 } else {
-                                  _imagePageController.jumpToPage(productImages.length - 1);
+                                  _imagePageController.jumpToPage(_product!.images.length - 1);
                                 }
                               },
                             ),
@@ -641,19 +756,17 @@ class _ProductDetailState extends State<ProductDetail> {
                             borderRadius: BorderRadius.circular(16),
                             child: PageView.builder(
                               controller: _imagePageController,
-                              itemCount: productImages.length,
+                              itemCount: _product!.images.length,
                               onPageChanged: (index) {
                                 setState(() {
                                   _currentImage = index;
                                 });
                               },
                               itemBuilder: (context, index) {
-                                return Image.asset(
-                                  productImages[index],
-                                  fit: BoxFit.cover,
-                                  width: 320,
-                                  height: 320,
-                                );
+                                final imageBytes = getImageBytes(_product!.images[index] as Map<String, String>);
+                                return imageBytes != null
+                                    ? Image.memory(imageBytes, fit: BoxFit.contain)
+                                    : const Icon(Icons.broken_image);
                               },
                             ),
                           ),
@@ -665,7 +778,7 @@ class _ProductDetailState extends State<ProductDetail> {
                             child: IconButton(
                               icon: const Icon(Icons.chevron_right, color: Colors.black54, size: 32),
                               onPressed: () {
-                                if (_currentImage < productImages.length - 1) {
+                                if (_currentImage < _product!.images.length - 1) {
                                   _imagePageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                                 } else {
                                   _imagePageController.jumpToPage(0);
@@ -677,7 +790,7 @@ class _ProductDetailState extends State<ProductDetail> {
                             bottom: 10,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(productImages.length, (index) {
+                              children: List.generate(_product!.images.length, (index) {
                                 return Container(
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   width: _currentImage == index ? 16 : 8,
@@ -701,17 +814,79 @@ class _ProductDetailState extends State<ProductDetail> {
                         children: [
                           Row(
                             children: [
-                              // Logo thương hiệu
-                              Image.asset('assets/images/brand/asus.png', width: 36, height: 36),
-                              const SizedBox(width: 12),
-                              // Logo danh mục
-                              Icon(Icons.laptop),
+                              Text(
+                                _product!.name,
+                                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '200.000.000 đ',
+                            _product!.lowestPrice.toString(),
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
+                          ),
+                          const SizedBox(height: 24),
+                          // Thêm phần chọn biến thể
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Chọn màu sắc:',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: List.generate(
+                                    productVariants.length,
+                                    (index) => GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedVariantIndex = index;
+                                          _currentImage = 0;
+                                          _imagePageController.jumpToPage(0);
+                                        });
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(right: 16),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(25),
+                                          border: Border.all(
+                                            color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: BoxDecoration(
+                                                color: productVariants[index]['color'],
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: Colors.grey),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              productVariants[index]['name'],
+                                              style: TextStyle(
+                                                color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                                fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                           // Điều chỉnh số lượng
@@ -793,9 +968,9 @@ class _ProductDetailState extends State<ProductDetail> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Laptop Gaming ROG Zephyrus sở hữu cấu hình mạnh mẽ, thiết kế mỏng nhẹ, màn hình 240Hz, phù hợp cho cả game thủ và dân sáng tạo nội dung. Pin trâu, tản nhiệt tốt, nhiều cổng kết nối.',
-                  style: TextStyle(fontSize: 16),
+                Text(
+                  _product!.description,
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 32),
                 // Đánh giá khách hàng
@@ -996,6 +1171,18 @@ class _ProductDetailState extends State<ProductDetail> {
         ],
       ),
     );
+  }
+
+  Uint8List? getImageBytes(Map<String, String> image) {
+    final base64Str = image['base64'];
+    if (base64Str != null) {
+      try {
+        return base64Decode(base64Str);
+      } catch (e) {
+        debugPrint('Lỗi decode base64: $e');
+      }
+    }
+    return null;
   }
 }
 
