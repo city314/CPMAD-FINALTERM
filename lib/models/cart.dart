@@ -15,46 +15,62 @@ class Cart {
     required this.sessionId,
     required this.productId,
     required this.variantId,
-    required this.quantity,
-    required this.timeAdd,
-  });
+    this.quantity = 0,
+    DateTime? timeAdd,
+  }) : timeAdd = timeAdd ?? DateTime.now();
 
-  factory Cart.fromJson(Map<String, dynamic> json) => Cart(
-    id: json['_id'] as String,
-    userId: json['user_id'] as String?,
-    sessionId: json['session_id'] as String,
-    productId: json['product_id'] as String,
-    variantId: json['variant_id'] as String,
-    quantity: json['quantity'] as int,
-    timeAdd: DateTime.parse(json['time_add'] as String),
-  );
-
-  Map<String, dynamic> toJson() => {
-    '_id': id,
-    'user_id': userId,
-    'session_id': sessionId,
-    'product_id': productId,
-    'variant_id': variantId,
-    'quantity': quantity,
-    'time_add': timeAdd.toIso8601String(),
-  };
-
-  Cart copyWith({ int? quantity }) {
+  factory Cart.fromJson(Map<String, dynamic> json) {
     return Cart(
-      id:        id,
-      userId:    userId,
-      sessionId: sessionId,
-      productId: productId,
-      variantId: variantId,
-      quantity:  quantity ?? this.quantity,
-      timeAdd:   timeAdd,
+      id: json['_id'] as String,
+      userId: json['userId'] as String?,
+      sessionId: json['sessionId'] as String,
+      productId: json['productId'] as String,
+      variantId: json['variantId'] as String,
+      quantity: json['quantity'] as int? ?? 1,
+      timeAdd: DateTime.parse(json['timeAdd'] as String),
     );
   }
 
-  /// Tính tổng tiền dựa trên giá hiện tại của variant
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    if (userId != null) 'userId': userId,
+    'sessionId': sessionId,
+    'productId': productId,
+    'variantId': variantId,
+    'quantity': quantity,
+    'timeAdd': timeAdd.toIso8601String(),
+  };
+
+  Cart copyWith({
+    String? id,
+    String? userId,
+    String? sessionId,
+    String? productId,
+    String? variantId,
+    int? quantity,
+    DateTime? timeAdd,
+  }) {
+    return Cart(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      sessionId: sessionId ?? this.sessionId,
+      productId: productId ?? this.productId,
+      variantId: variantId ?? this.variantId,
+      quantity: quantity ?? this.quantity,
+      timeAdd: timeAdd ?? this.timeAdd,
+    );
+  }
+
+  /// Tính tổng tiền dựa trên giá của variant
   double totalPrice(List<Product> products) {
-    final product = products.firstWhere((p) => p.id == productId);
-    final variant = product.variants.firstWhere((v) => v.id == variantId);
-    return variant.sellingPrice * quantity;
+    final product = products.firstWhere(
+          (p) => p.id == productId,
+      orElse: () => throw Exception('Product $productId not found'),
+    );
+    final variant = product.variants.firstWhere(
+          (v) => v.id == variantId,
+      orElse: () => throw Exception('Variant $variantId not found'),
+    );
+    return variant.importPrice * quantity;
   }
 }

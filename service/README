@@ -13,7 +13,7 @@
 
 
 các bước chạy:
-b1: npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io
+b1: npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io nodemon concurrently
     npm install --save-dev concurrently
 b2: sửa trong package.json
     {
@@ -31,10 +31,11 @@ b2: sửa trong package.json
         "uuid": "^11.1.0"
       },
 
-      "scripts": {
+    "scripts": {
         "dev:user": "nodemon UserService/server.js",
         "dev:product": "nodemon ProductService/server.js",
-        "dev": "concurrently \"npm run dev:user\" \"npm run dev:product\""
+        "dev:order": "nodemon OrderService/server.js",
+        "dev": "concurrently \"npm run dev:user\" \"npm run dev:product\" \"npm run dev:order\""
       }
     }
 b3: npm run dev (ở folder service)
