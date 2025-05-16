@@ -82,27 +82,21 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   int _rating = 0;
   Map<String, dynamic>? userInfo;
+  int _visibleReviewCount = 5;
+  int _reviewCount = 0;
+  double _averageRating = 0.0;
 
   @override
   void initState() {
     super.initState();
     _loadProduct();
-    socketService.connect((newReview) async {
+    _loadReviews();
+    socketService.connect((newReview) {
       if (!reviews.any((r) =>
       r.userId == newReview.userId &&
           r.comment == newReview.comment &&
           (r.timeCreate.difference(newReview.timeCreate).inSeconds).abs() < 2)) {
-        String avatar = '';
-        try {
-          if(CurrentUser().isLogin) {
-            final user = await UserService.fetchUserByEmail(newReview.userId ?? '');
-            avatar = user['avatar'] ?? '';
-          }
-        } catch (_) {}
-
-        setState(() {
-          reviews.insert(0, newReview.copyWith(avatar: avatar));
-        });
+        setState(() => reviews.insert(0, newReview));
       }
     });
 
@@ -114,7 +108,24 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
+    socketService.disconnect();
     super.dispose();
+  }
+
+  void _loadReviews() async {
+    try {
+      final fetched = await ProductService.fetchReviews(widget.productId);
+      setState(() {
+        reviews = fetched;
+        _reviewCount = fetched.length;
+        _visibleReviewCount = 5;
+        _averageRating = _reviewCount == 0
+            ? 0.0
+            : fetched.map((r) => r.rating).reduce((a, b) => a + b) / _reviewCount;
+      });
+    } catch (e) {
+      debugPrint('Danh sách rỗng');
+    }
   }
 
   Future<void> _loadUserInfo() async {
@@ -276,10 +287,20 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 Row(
                   children: [
                     Row(
-                      children: List.generate(5, (index) => const Icon(Icons.star, color: Colors.amber, size: 20)),
+                      children: List.generate(
+                        5,
+                            (index) => Icon(
+                          index < _averageRating.round()
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                          size: 20,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    const Text('(120 đánh giá)', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    Text('(${_reviewCount} đánh giá)',
+                        style: const TextStyle(fontSize: 14, color: Colors.grey)),
                   ],
                 ),
               ],
@@ -574,13 +595,30 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 const SizedBox(height: 16),
                 // Danh sách đánh giá mẫu
                 Column(
-                  children: reviews.map((review) => _buildReview(
-                    avatar: review.avatar ?? '',
-                    name: review.userName ?? '',
-                    rating: review.rating.toInt() ?? 4,
-                    comment: review.comment,
-                  )).toList(),
+                  children: [
+                    ...reviews
+                        .take(_visibleReviewCount)
+                        .map((review) => _buildReview(
+                      avatar: review.avatar ?? '',
+                      name: review.userName ?? '',
+                      rating: review.rating.toInt(),
+                      comment: review.comment,
+                    ))
+                        .toList(),
+                    if (_visibleReviewCount < reviews.length)
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _visibleReviewCount += 10;
+                            });
+                          },
+                          child: const Text("Tải thêm bình luận"),
+                        ),
+                      ),
+                  ],
                 ),
+
               ],
             ),
           ),
@@ -624,6 +662,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                       rating: isLoggedIn ? _rating : 0,
                       comment: _commentController.text,
                       timeCreate: DateTime.now(),
+                      avatar: isLoggedIn ? userInfo!['avatar'] : ''
                     );
 
                     ProductService.postReview(review);
@@ -758,10 +797,20 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 Row(
                   children: [
                     Row(
-                      children: List.generate(5, (index) => const Icon(Icons.star, color: Colors.amber, size: 22)),
+                      children: List.generate(
+                        5,
+                            (index) => Icon(
+                          index < _averageRating.round()
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                          size: 20,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    const Text('(120 đánh giá)', style: TextStyle(fontSize: 15, color: Colors.grey)),
+                    Text('(${_reviewCount} đánh giá)',
+                        style: const TextStyle(fontSize: 14, color: Colors.grey)),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -1052,12 +1101,28 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 const SizedBox(height: 16),
                 // Danh sách đánh giá mẫu
                 Column(
-                  children: reviews.map((review) => _buildReview(
-                    avatar: review.avatar ?? '',
-                    name: review.userName ?? '',
-                    rating: review.rating.toInt() ?? 4,
-                    comment: review.comment,
-                  )).toList(),
+                  children: [
+                    ...reviews
+                        .take(_visibleReviewCount)
+                        .map((review) => _buildReview(
+                      avatar: review.avatar ?? '',
+                      name: review.userName ?? '',
+                      rating: review.rating.toInt(),
+                      comment: review.comment,
+                    ))
+                        .toList(),
+                    if (_visibleReviewCount < reviews.length)
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _visibleReviewCount += 10;
+                            });
+                          },
+                          child: const Text("Tải thêm bình luận"),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 32),
                 Padding(
@@ -1099,6 +1164,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                             rating: isLoggedIn ? _rating : 0,
                             comment: _commentController.text,
                             timeCreate: DateTime.now(),
+                            avatar: isLoggedIn ? userInfo!['avatar'] : ''
                           );
 
                           ProductService.postReview(review);
@@ -1206,7 +1272,9 @@ class _ProductDetailState extends State<ProductDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundImage: AssetImage(avatar),
+            backgroundImage: avatar.isNotEmpty
+                ? MemoryImage(base64Decode(avatar))
+                : AssetImage('images/avt_default.png'),
             radius: 24,
           ),
           const SizedBox(width: 16),

@@ -954,7 +954,6 @@ class ProductSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) return const SizedBox();
-    print(products.length);
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 400;
