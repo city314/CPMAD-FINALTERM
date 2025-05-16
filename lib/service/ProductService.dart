@@ -37,7 +37,6 @@ class ProductService {
   }
 
   static Future<Category> updateCategory(String id, String name) async {
-    print(id);
     final res = await http.put(
       Uri.parse('$_urlC/$id'),
       headers: {'Content-Type': 'application/json'},
@@ -76,7 +75,6 @@ class ProductService {
   }
 
   static Future<Brand> updateBrand(String id, String name) async {
-    print(id);
     final res = await http.put(
       Uri.parse('$_urlB/$id'),
       headers: {'Content-Type': 'application/json'},
@@ -218,7 +216,6 @@ class ProductService {
   }
 
   Future<List<Product>> fetchProductsByCategory(String categoryId) async {
-    print(categoryId);
     final response = await http.get(
       Uri.parse('$_urlProduct/by-category?categoryId=$categoryId'),
     );
@@ -228,5 +225,46 @@ class ProductService {
     } else {
       throw Exception('Failed to load products for category $categoryId');
     }
+  }
+
+  static Future<List<Product>> fetchProductsPanigation({
+    String? categoryId,
+    String? price,
+    String? sort,
+    int skip = 0,
+    int limit = 20,
+  }) async {
+    final query = {
+      if (categoryId != null) 'categoryId': categoryId,
+      if (price != null) 'price': price,
+      if (sort != null) 'sort': sort,
+      'skip': '$skip',
+      'limit': '$limit',
+    };
+
+    final uri = Uri.parse('$_urlProduct/pagination').replace(queryParameters: query);
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      final List data = json.decode(res.body);
+      return data.map((e) => Product.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
+  static Future<Product?> fetchProductById(String productId) async {
+    final url = Uri.parse(_urlProduct);
+    final res = await http.get(url);
+
+    if (res.statusCode == 200) {
+      List<dynamic> data = jsonDecode(res.body);
+      final matched = data.firstWhere((e) => e['_id'] == productId, orElse: () => null);
+      if (matched != null) {
+        return Product.fromJson(matched);
+      }
+    }
+
+    return null;
   }
 }

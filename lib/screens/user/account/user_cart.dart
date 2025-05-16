@@ -29,6 +29,7 @@ final List<Product> testProducts = [
     brandId: 'asus',
     description: '',
     stock: 0,
+    lowestPrice: 0,
     timeAdd: DateTime.now(),
     images: [],
     variants: [
@@ -63,6 +64,7 @@ final List<Product> testProducts = [
     brandId: 'samsung',
     description: '',
     stock: 0,
+    lowestPrice: 0,
     timeAdd: DateTime.now(),
     images: [],
     variants: [

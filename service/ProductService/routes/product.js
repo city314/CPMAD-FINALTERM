@@ -15,20 +15,13 @@ router.get('/', async (req, res) => {
     const result = await Promise.all(products.map(async (p) => {
       const brand = await Brand.findById(p.brand_id);
       const category = await Category.findById(p.category_id);
-
       const variants = await Variant.find({ product_id: p._id });
-
-      // Tìm giá thấp nhất trong các biến thể (giá bán)
-      const lowestPrice = variants.length > 0
-        ? Math.min(...variants.map(v => v.sellingPrice || Infinity))
-        : 0;
 
       return {
         ...p.toObject(),
         brandName: brand?.name || '',
         categoryName: category?.name || '',
         variantCount: variants.length,
-        lowestPrice,
       };
     }));
 
@@ -133,6 +126,94 @@ router.get('/by-category', async (req, res) => {
   } catch (error) {
     console.error('Error fetching products by category:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/pagination', async (req, res) => {
+  try {
+    const {
+      categoryId,
+      price,
+      sort,
+      skip = 0,
+      limit = 20,
+    } = req.query;
+
+    const query = {};
+
+    if (categoryId) {
+      const ids = categoryId.split(',');
+      query.category_id = { $in: ids };
+    }
+
+    if (price) {
+      switch (price) {
+        case 'Dưới 5 triệu':
+          query.lowest_price = { $lt: 5000000 };
+          break;
+        case '5-10 triệu':
+          query.lowest_price = { $gte: 5000000, $lte: 10000000 };
+          break;
+        case '10-20 triệu':
+          query.lowest_price = { $gte: 10000000, $lte: 20000000 };
+          break;
+        case 'Trên 20 triệu':
+          query.lowest_price = { $gt: 20000000 };
+          break;
+      }
+    }
+
+    const sortOption = {};
+    if (sort) {
+      switch (sort) {
+        case 'Mới nhất':
+          sortOption.time_create = -1;
+          break;
+        case 'Giá tăng dần':
+          sortOption.lowestPrice = 1;
+          break;
+        case 'Giá giảm dần':
+          sortOption.lowestPrice = -1;
+          break;
+        case 'Sắp xếp theo tên từ A-Z':
+          sortOption.name = 1;
+          break;
+        case 'Sắp xếp theo tên từ Z-A':
+          sortOption.name = -1;
+          break;
+      }
+    }
+
+    const products = await Product.find(query)
+      .sort(sortOption)
+      .skip(parseInt(skip))
+      .limit(parseInt(limit));
+
+    res.json(products);
+  } catch (error) {
+    console.error('[Product API] Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET product by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+
+    const brand = await Brand.findById(product.brand_id);
+    const category = await Category.findById(product.category_id);
+    const variants = await Variant.find({ product_id: product._id });
+
+    res.json({
+      ...product.toObject(),
+      brandName: brand?.name || '',
+      categoryName: category?.name || '',
+      variantCount: variants.length,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server', error: err });
   }
 });
 

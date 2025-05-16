@@ -1,10 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../models/brand.dart';
+import '../../models/category.dart';
+import '../../models/product.dart';
+import '../../service/ProductService.dart';
 import 'CustomNavbar.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  final String categoryId;
+  const ProductList({super.key, required this.categoryId});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -12,25 +19,19 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   final ScrollController _scrollController = ScrollController();
-  List<int> _products = List.generate(20, (index) => index);
+  List<Product> _products = [];
   bool _isLoading = false;
 
   // Dữ liệu mẫu cho filter
-  final List<String> categories = [
-    'Laptop',
-    'PC',
-    'Bàn phím',
-    'Tai Nghe',
-    'Đĩa game',
-  ];
-  final List<String> brands = [
-    'Apple', 'Samsung', 'Sony', 'Xiaomi', 'Oppo'
-  ];
+  final List<Category> categories = [];
+  final List<Brand> brands = [];
   final List<String> priceRanges = [
     'Dưới 5 triệu', '5-10 triệu', '10-20 triệu', 'Trên 20 triệu'
   ];
   List<String> selectedCategories = [];
+  List<String> selectedCategoriesId = [];
   List<String> selectedBrands = [];
+  List<String> selectedBrandsId = [];
   String? selectedPrice;
   String sortType = 'Mới nhất';
 
@@ -38,7 +39,30 @@ class _ProductListState extends State<ProductList> {
   void initState() {
     super.initState();
     _scrollController.addListener(_loadMoreIfNeeded);
+    _loadInitialData();
   }
+
+  void _loadInitialData() async {
+    try {
+      final cats = await ProductService.fetchAllCategory();
+      final brs = await ProductService.fetchAllBrand();
+      final products = await ProductService.fetchProductsPanigation(
+        categoryId: widget.categoryId,
+      );
+
+      setState(() {
+        categories.clear();
+        categories.addAll(cats);
+        brands.clear();
+        brands.addAll(brs);
+        _products = products;
+      });
+    } catch (e) {
+      print("Load data error: $e");
+    }
+  }
+
+  int _skip = 0;
 
   void _loadMoreIfNeeded() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 && !_isLoading) {
@@ -47,15 +71,24 @@ class _ProductListState extends State<ProductList> {
   }
 
   void _loadMoreProducts() async {
-    setState(() {
-      _isLoading = true;
-    });
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-      final nextItems = List.generate(20, (index) => _products.length + index);
-      _products.addAll(nextItems);
-      _isLoading = false;
-    });
+    setState(() => _isLoading = true);
+
+    try {
+      _skip += 20;
+      final moreProducts = await ProductService.fetchProductsPanigation(
+        categoryId: widget.categoryId,
+        price: selectedPrice,
+        sort: sortType,
+        skip: _skip,
+      );
+      setState(() {
+        _products.addAll(moreProducts);
+      });
+    } catch (e) {
+      print("Pagination error: $e");
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -174,7 +207,7 @@ class _ProductListState extends State<ProductList> {
                       const SizedBox(height: 8),
                       for (final c in categories)
                         ListTile(
-                          title: Text(c),
+                          title: Text(c.name),
                           dense: true,
                           contentPadding: const EdgeInsets.only(left: 8),
                           onTap: () {},
@@ -184,35 +217,19 @@ class _ProductListState extends State<ProductList> {
                       const SizedBox(height: 8),
                       const Text('Theo Danh Mục', style: TextStyle(fontWeight: FontWeight.w500)),
                       ...categories.map((cat) => CheckboxListTile(
-                        value: selectedCategories.contains(cat),
+                        value: selectedCategories.contains(cat.name),
                         onChanged: (v) {
                           setState(() {
                             if (v == true) {
-                              selectedCategories.add(cat);
+                              selectedCategories.add(cat.name);
+                              selectedCategoriesId.add(cat.id!);
                             } else {
-                              selectedCategories.remove(cat);
+                              selectedCategories.remove(cat.name);
+                              selectedCategoriesId.remove(cat.id);
                             }
                           });
                         },
-                        title: Text(cat),
-                        dense: true,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.zero,
-                      )),
-                      const SizedBox(height: 8),
-                      const Text('Thương hiệu', style: TextStyle(fontWeight: FontWeight.w500)),
-                      ...brands.map((brand) => CheckboxListTile(
-                        value: selectedBrands.contains(brand),
-                        onChanged: (v) {
-                          setState(() {
-                            if (v == true) {
-                              selectedBrands.add(brand);
-                            } else {
-                              selectedBrands.remove(brand);
-                            }
-                          });
-                        },
-                        title: Text(brand),
+                        title: Text(cat.name),
                         dense: true,
                         controlAffinity: ListTileControlAffinity.leading,
                         contentPadding: EdgeInsets.zero,
@@ -234,7 +251,7 @@ class _ProductListState extends State<ProductList> {
                       const SizedBox(height: 12),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Áp dụng filter
+                          _applyFilters();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueAccent,
@@ -304,13 +321,10 @@ class _ProductListState extends State<ProductList> {
     );
   }
 
-  Widget _buildProductCard(int index) {
-    // Danh sách ảnh mẫu cho mỗi sản phẩm
-    final List<String> images = [
-      'assets/images/product/laptop/acer/acer1.png',
-      'assets/images/product/laptop/acer/acer2.png',
-      'assets/images/product/laptop/acer/acer3.png',
-    ];
+  Widget _buildProductCard(Product product) {
+    final imageBytes = product.images != null && product.images!.isNotEmpty
+        ? base64Decode(product.images!.first['base64'] ?? '')
+        : null;
 
     return Card(
       elevation: 3,
@@ -322,15 +336,9 @@ class _ProductListState extends State<ProductList> {
             flex: 7,
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: PageView.builder(
-                itemCount: images.length,
-                itemBuilder: (context, imgIndex) {
-                  return Image.asset(
-                    images[imgIndex],
-                    fit: BoxFit.contain,
-                  );
-                },
-              ),
+              child: imageBytes != null
+                  ? Image.memory(imageBytes, fit: BoxFit.contain)
+                  : const Icon(Icons.broken_image),
             ),
           ),
           Expanded(
@@ -341,11 +349,16 @@ class _ProductListState extends State<ProductList> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Laptop #$index',
+                    product.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  const Text('₫999', style: TextStyle(color: Colors.blueAccent)),
+                  Text(
+                    '${product.lowestPrice}₫',
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
                 ],
               ),
             ),
@@ -370,31 +383,15 @@ class _ProductListState extends State<ProductList> {
               onChanged: (v) {
                 setState(() {
                   if (v == true) {
-                    selectedCategories.add(cat);
+                    selectedCategories.add(cat.name);
+                    selectedCategoriesId.add(cat.id!);
                   } else {
-                    selectedCategories.remove(cat);
+                    selectedCategories.remove(cat.name);
+                    selectedCategoriesId.remove(cat.id);
                   }
                 });
               },
-              title: Text(cat),
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            )),
-            const SizedBox(height: 8),
-            const Text('Thương hiệu', style: TextStyle(fontWeight: FontWeight.w500)),
-            ...brands.map((brand) => CheckboxListTile(
-              value: selectedBrands.contains(brand),
-              onChanged: (v) {
-                setState(() {
-                  if (v == true) {
-                    selectedBrands.add(brand);
-                  } else {
-                    selectedBrands.remove(brand);
-                  }
-                });
-              },
-              title: Text(brand),
+              title: Text(cat.name),
               dense: true,
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
@@ -416,8 +413,7 @@ class _ProductListState extends State<ProductList> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
-                // TODO: Áp dụng filter
+                _applyFilters();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
@@ -431,4 +427,29 @@ class _ProductListState extends State<ProductList> {
       ),
     );
   }
+
+  void _applyFilters() async {
+    setState(() {
+      _isLoading = true;
+      _products.clear();
+      _skip = 0;
+    });
+
+    try {
+      final filtered = await ProductService.fetchProductsPanigation(
+        categoryId: selectedCategoriesId.join(','), // nhiều danh mục
+        price: selectedPrice,
+        sort: sortType,
+        skip: 0,
+      );
+      setState(() {
+        _products = filtered;
+      });
+    } catch (e) {
+      print("Filter error: $e");
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
 }

@@ -10,7 +10,7 @@ class Product {
   final String? categoryName;
   final String? brandName;
   int? variantCount;
-  final int? lowestPrice;
+  int? lowestPrice;
   final String description;
   final int stock;
   int? discountPercent;
@@ -45,7 +45,7 @@ class Product {
     categoryName: json['categoryName'] ?? '',
     brandName: json['brandName'] ?? '',
     variantCount: json['variantCount'] ?? 0,
-    lowestPrice: json['lowestPrice'] ?? 0,
+    lowestPrice: json['lowest_price'] ?? 0,
     description: json['description'] as String,
     stock: json['stock'] as int,
     discountPercent: json['discount_percent'] as int,
@@ -112,8 +112,8 @@ class Product {
       name: '',
       categoryId: '',
       brandId: '',
-      price: 0.0,
       description: '',
+      lowestPrice: 0,
       stock: 0,
       timeAdd: DateTime.now(),
       variants: [],
