@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/product.dart';
 import '../models/productDiscount.dart';
+import '../models/review.dart';
 import '../models/variant.dart';
 
 class ProductService {
@@ -15,6 +16,7 @@ class ProductService {
   static const String _urlB = 'http://localhost:3002/api/brands';
   static const String _urlProduct = 'http://localhost:3002/api/products';
   static const String _urlVariants = 'http://localhost:3002/api/variants';
+  static const String _urlReviews = 'http://localhost:3002/api/reviews';
 
   static Future<List<Category>> fetchAllCategory() async {
     final res = await http.get(Uri.parse(_urlC));
@@ -266,5 +268,27 @@ class ProductService {
     }
 
     return null;
+  }
+
+  static Future<void> postReview(Review review) async {
+    final response = await http.post(
+      Uri.parse(_urlReviews),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(review.toJson()),
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Failed to post review');
+    }
+  }
+
+  static Future<List<Review>> fetchReviews(String productId) async {
+    final response = await http.get(Uri.parse('$_urlReviews/$productId'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => Review.fromJson(json)).toList();
+    } else {
+      throw Exception('Lỗi khi tải đánh giá');
+    }
   }
 }

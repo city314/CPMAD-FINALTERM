@@ -72,6 +72,8 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/images/admin_avatar.png
+    - assets/images/avt_default.png
     - assets/images/logo/
     - assets/images/slider/
     - assets/images/brand/

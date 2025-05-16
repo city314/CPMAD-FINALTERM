@@ -126,7 +126,6 @@ class UserService {
 
   static Future<Map<String, dynamic>> fetchUserByEmail(String email) async {
     final url = Uri.parse('$_url/profile/$email');
-
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -294,4 +293,14 @@ class UserService {
       return [];
     }
   }
+
+  static Future<Map<String, dynamic>> fetchUserImage(String email) async {
+    final response = await http.get(Uri.parse('$_url/email/$email'));
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch user info');
+    }
+  }
+
 }
