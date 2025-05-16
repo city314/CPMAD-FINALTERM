@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cpmad_final/models/variant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'dart:io' show Platform;
@@ -26,28 +27,6 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     'Chuột': ['Logitech', 'Razer', 'Fuhlen'],
     'Phụ kiện': ['Anker', 'Xiaomi'],
   };
-
-  // Thêm biến thể sản phẩm
-  final List<Map<String, dynamic>> productVariants = [
-    {
-      'name': 'Màu đen',
-      'color': Colors.black,
-      'image': 'assets/images/product/laptop1.png',
-      'price': 200000000,
-    },
-    {
-      'name': 'Màu tím',
-      'color': Colors.purple,
-      'image': 'assets/images/product/laptop2.jpg',
-      'price': 205000000,
-    },
-    {
-      'name': 'Màu đỏ',
-      'color': Colors.red,
-      'image': 'assets/images/product/laptop3.jpg',
-      'price': 210000000,
-    },
-  ];
 
   int selectedVariantIndex = 0;
 
@@ -90,6 +69,9 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   bool get isAndroid => !kIsWeb && Platform.isAndroid;
   Product? _product;
   bool _isLoading = true;
+  // Thêm biến thể sản phẩm
+  late List<Variant> _variants = [];
+  Variant? selectedVariant;
 
   @override
   void initState() {
@@ -99,8 +81,12 @@ class _ProductDetailState extends State<ProductDetailScreen> {
 
   void _loadProduct() async {
     final fetched = await ProductService.fetchProductById(widget.productId);
+    final fetchedVariants = await ProductService.fetchVariantsByProduct(widget.productId);
+    print(fetched?.variants.length);
     setState(() {
       _product = fetched;
+      _variants = fetchedVariants;
+      // selectedVariant = fetchedVariants.isNotEmpty ? fetchedVariants[0] : null;
       _isLoading = false;
     });
   }
@@ -238,7 +224,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _product!.name,
+                  selectedVariant?.variantName ?? _product!.name,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -263,14 +249,14 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               children: [
                 PageView.builder(
                   controller: _imagePageController,
-                  itemCount: _product!.images.length,
+                  itemCount: (selectedVariant?.images ?? _product!.images).length,
                   onPageChanged: (index) {
                     setState(() {
                       _currentImage = index;
                     });
                   },
                   itemBuilder: (context, index) {
-                    final imageBytes = getImageBytes(_product!.images[index] as Map<String, String>);
+                    final imageBytes = getImageBytes((selectedVariant?.images ?? _product!.images)[index] as Map<String, String>);
                     return imageBytes != null
                         ? Image.memory(imageBytes, fit: BoxFit.contain)
                         : const Icon(Icons.broken_image);
@@ -287,7 +273,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                       if (_currentImage > 0) {
                         _imagePageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                       } else {
-                        _imagePageController.jumpToPage(_product!.images.length - 1);
+                        _imagePageController.jumpToPage((selectedVariant?.images ?? _product!.images).length - 1);
                       }
                     },
                   ),
@@ -300,7 +286,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.chevron_right, color: Colors.black54, size: 32),
                     onPressed: () {
-                      if (_currentImage < _product!.images.length - 1) {
+                      if (_currentImage < (selectedVariant?.images ?? _product!.images).length - 1) {
                         _imagePageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                       } else {
                         _imagePageController.jumpToPage(0);
@@ -313,7 +299,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                   bottom: 16,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_product!.images.length, (index) {
+                    children: List.generate((selectedVariant?.images ?? _product!.images).length, (index) {
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         width: _currentImage == index ? 16 : 8,
@@ -336,8 +322,8 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _product!.name,
-                  '${productVariants[selectedVariantIndex]['price'].toStringAsFixed(0)} đ',
+                  selectedVariant?.variantName ?? _product!.name,
+                  semanticsLabel: '${_variants[selectedVariantIndex].sellingPrice.toStringAsFixed(0)} đ',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
                 ),
                 Row(
@@ -357,58 +343,53 @@ class _ProductDetailState extends State<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Chọn màu sắc:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
                 const SizedBox(height: 8),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: List.generate(
-                      productVariants.length,
-                      (index) => GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedVariantIndex = index;
-                            _currentImage = 0;
-                            _imagePageController.jumpToPage(0);
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
-                              width: 2,
+                      _variants.length,
+                          (index) {
+                        final variant = _variants[index];
+                        final firstImage = variant.images.isNotEmpty ? variant.images[0]['base64'] : null;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedVariantIndex = index;
+                              selectedVariant = _variants[index];
+                              _currentImage = 0;
+                              _imagePageController.jumpToPage(0);
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                firstImage != null
+                                    ? Image.memory(base64Decode(firstImage), width: 40, height: 40, fit: BoxFit.cover)
+                                    : const Icon(Icons.image, size: 40),
+                                const SizedBox(width: 8),
+                                Text(
+                                  variant.variantName,
+                                  style: TextStyle(
+                                    color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                    fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: productVariants[index]['color'],
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                productVariants[index]['name'],
-                                style: TextStyle(
-                                  color: selectedVariantIndex == index ? Colors.blue : Colors.black,
-                                  fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -487,7 +468,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // Mô tả sản phẩm
+          // Mô tả sản phẩm và cấu hình biến thể (nếu có)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -500,8 +481,37 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _product!.description,
-                  style: TextStyle(fontSize: 15),
+                  style: const TextStyle(fontSize: 15),
                 ),
+                if (selectedVariant != null) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Cấu hình biến thể',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('Màu sắc:', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 8),
+                      Text(selectedVariant!.color),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Text('Số lượng tồn:', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 8),
+                      Text(selectedVariant!.stock.toString()),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text('Thông số khác:', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ...selectedVariant!.attributes
+                      .split('\n')
+                      .map((line) => Text('- $line', style: const TextStyle(fontSize: 14)))
+                      .toList(),
+                ]
               ],
             ),
           ),
@@ -518,14 +528,14 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildReview(
-                  avatar: 'assets/images/avatar1.png',
+                  avatar: '',
                   name: 'Nguyễn Văn A',
                   rating: 5,
                   comment: 'Sản phẩm rất tốt, chơi game mượt, pin lâu, giao hàng nhanh!',
                 ),
                 const SizedBox(height: 16),
                 _buildReview(
-                  avatar: 'assets/images/avatar2.png',
+                  avatar: '',
                   name: 'Trần Thị B',
                   rating: 4,
                   comment: 'Máy đẹp, cấu hình mạnh, hơi nóng khi chơi lâu.',
@@ -709,9 +719,8 @@ class _ProductDetailState extends State<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tên sản phẩm + đánh giá
                 Text(
-                  _product!.name,
+                  selectedVariant?.variantName ?? _product!.name,
                   style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -747,7 +756,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                                 if (_currentImage > 0) {
                                   _imagePageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                                 } else {
-                                  _imagePageController.jumpToPage(_product!.images.length - 1);
+                                  _imagePageController.jumpToPage((selectedVariant?.images ?? _product!.images).length - 1);
                                 }
                               },
                             ),
@@ -756,14 +765,14 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                             borderRadius: BorderRadius.circular(16),
                             child: PageView.builder(
                               controller: _imagePageController,
-                              itemCount: _product!.images.length,
+                              itemCount: (selectedVariant?.images ?? _product!.images).length,
                               onPageChanged: (index) {
                                 setState(() {
                                   _currentImage = index;
                                 });
                               },
                               itemBuilder: (context, index) {
-                                final imageBytes = getImageBytes(_product!.images[index] as Map<String, String>);
+                                final imageBytes = getImageBytes((selectedVariant?.images ?? _product!.images)[index] as Map<String, String>);
                                 return imageBytes != null
                                     ? Image.memory(imageBytes, fit: BoxFit.contain)
                                     : const Icon(Icons.broken_image);
@@ -778,7 +787,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.chevron_right, color: Colors.black54, size: 32),
                               onPressed: () {
-                                if (_currentImage < _product!.images.length - 1) {
+                                if (_currentImage < (selectedVariant?.images ?? _product!.images).length - 1) {
                                   _imagePageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                                 } else {
                                   _imagePageController.jumpToPage(0);
@@ -790,7 +799,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                             bottom: 10,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(_product!.images.length, (index) {
+                              children: List.generate((selectedVariant?.images ?? _product!.images).length, (index) {
                                 return Container(
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   width: _currentImage == index ? 16 : 8,
@@ -815,14 +824,14 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           Row(
                             children: [
                               Text(
-                                _product!.name,
+                                selectedVariant?.variantName ?? _product!.name,
                                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _product!.lowestPrice.toString(),
+                            '${(selectedVariant?.sellingPrice ?? _product!.lowestPrice)?.toStringAsFixed(0)} đ',
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
                           ),
                           const SizedBox(height: 24),
@@ -830,59 +839,53 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Chọn màu sắc:',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
                               const SizedBox(height: 12),
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
                                   children: List.generate(
-                                    productVariants.length,
-                                    (index) => GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedVariantIndex = index;
-                                          _currentImage = 0;
-                                          _imagePageController.jumpToPage(0);
-                                        });
-                                      },
-                                      child: Container(
-                                        margin: const EdgeInsets.only(right: 16),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                        decoration: BoxDecoration(
-                                          color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(25),
-                                          border: Border.all(
-                                            color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
-                                            width: 2,
+                                    _variants.length,
+                                        (index) {
+                                      final variant = _variants[index];
+                                      final firstImage = variant.images.isNotEmpty ? variant.images[0]['base64'] : null;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedVariantIndex = index;
+                                            selectedVariant = _variants[index];
+                                            _currentImage = 0;
+                                            _imagePageController.jumpToPage(0);
+                                          });
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(right: 12),
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              firstImage != null
+                                                  ? Image.memory(base64Decode(firstImage), width: 40, height: 40, fit: BoxFit.cover)
+                                                  : const Icon(Icons.image, size: 40),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                variant.variantName,
+                                                style: TextStyle(
+                                                  color: selectedVariantIndex == index ? Colors.blue : Colors.black,
+                                                  fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 24,
-                                              height: 24,
-                                              decoration: BoxDecoration(
-                                                color: productVariants[index]['color'],
-                                                shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.grey),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              productVariants[index]['name'],
-                                              style: TextStyle(
-                                                color: selectedVariantIndex == index ? Colors.blue : Colors.black,
-                                                fontWeight: selectedVariantIndex == index ? FontWeight.bold : FontWeight.normal,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -963,14 +966,51 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 ),
                 const SizedBox(height: 32),
                 // Mô tả sản phẩm
-                const Text(
-                  'Mô tả sản phẩm',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _product!.description,
-                  style: const TextStyle(fontSize: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Mô tả sản phẩm',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _product!.description,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                      if (selectedVariant != null) ...[
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Cấu hình biến thể',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('Màu sắc:', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const SizedBox(width: 8),
+                            Text(selectedVariant!.color),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Text('Số lượng tồn:', style: TextStyle(fontWeight: FontWeight.w600)),
+                            const SizedBox(width: 8),
+                            Text(selectedVariant!.stock.toString()),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Thông số khác:', style: TextStyle(fontWeight: FontWeight.w600)),
+                        ...selectedVariant!.attributes
+                            .split('\n')
+                            .map((line) => Text('- $line', style: const TextStyle(fontSize: 14)))
+                            .toList(),
+                      ]
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
                 // Đánh giá khách hàng
@@ -983,74 +1023,19 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 Column(
                   children: [
                     _buildReview(
-                      avatar: 'assets/images/avatar1.png',
+                      avatar: '',
                       name: 'Nguyễn Văn A',
                       rating: 5,
                       comment: 'Sản phẩm rất tốt, chơi game mượt, pin lâu, giao hàng nhanh!',
                     ),
                     const SizedBox(height: 16),
                     _buildReview(
-                      avatar: 'assets/images/avatar2.png',
+                      avatar: '',
                       name: 'Trần Thị B',
                       rating: 4,
                       comment: 'Máy đẹp, cấu hình mạnh, hơi nóng khi chơi lâu.',
                     ),
                   ],
-                ),
-                const SizedBox(height: 32),
-                // Sản phẩm gợi ý
-                const Text(
-                  'Sản phẩm gợi ý',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 1.1,
-                  ),
-                  itemCount: 8,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 6,
-                      shadowColor: Colors.black.withOpacity(0.14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                              child: Image.asset(
-                                'assets/images/product/laptop1.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Laptop Gợi ý #${index + 1}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                const Text('19.990.000 đ', style: TextStyle(color: Colors.indigo, fontSize: 12)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
                 ),
                 const SizedBox(height: 32),
                 // Footer
@@ -1183,6 +1168,31 @@ class _ProductDetailState extends State<ProductDetailScreen> {
       }
     }
     return null;
+  }
+
+  static Color? parseColor(String? colorName) {
+    if (colorName == null) return null;
+    final colorMap = {
+      'red': Colors.red,
+      'blue': Colors.blue,
+      'green': Colors.green,
+      'yellow': Colors.yellow,
+      'orange': Colors.orange,
+      'purple': Colors.purple,
+      'pink': Colors.pink,
+      'black': Colors.black,
+      'white': Colors.white,
+      'grey': Colors.grey,
+      'gray': Colors.grey, // US/UK spelling
+      'brown': Colors.brown,
+      'cyan': Colors.cyan,
+      'teal': Colors.teal,
+      'amber': Colors.amber,
+      'indigo': Colors.indigo,
+      'lime': Colors.lime,
+    };
+
+    return colorMap[colorName.toLowerCase()];
   }
 }
 

@@ -34,7 +34,7 @@ class Product {
     this.soldCount,
     required this.images,
     required this.timeAdd,
-    this.variants = const [],         // ← khởi mặc định là danh sách rỗng
+    this.variants = const [],
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(

@@ -114,7 +114,7 @@ final GoRouter appRouter = GoRouter(
     // GoRoute(
     //   path: '/account/cart/checkout',
     //   name: 'checkout',
-    //   builder: (context, state) => const CheckoutPage(),
+    //   builder: (context, state) => const CheckoutPage(cartItems: [],),
     // ),
     GoRoute(
       path: '/forgot-password',
