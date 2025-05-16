@@ -15,6 +15,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _communeController = TextEditingController();
+  final TextEditingController _districtController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -23,8 +27,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String fullName = _fullNameController.text.trim();
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
+    String address = _addressController.text.trim();
+    String commune = _communeController.text.trim();
+    String district = _districtController.text.trim();
+    String city = _cityController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || fullName.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || fullName.isEmpty || address.isEmpty || commune.isEmpty || district.isEmpty || city.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
       );
@@ -158,6 +166,94 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         controller: _fullNameController,
                         decoration: const InputDecoration(
                           labelText: 'Họ và tên',
+                          prefixIcon: Icon(Icons.person),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  size.width > 700
+                      ? Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _cityController,
+                          decoration: const InputDecoration(
+                            labelText: 'Thành phố/Tỉnh',
+                            prefixIcon: Icon(Icons.location_city),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _districtController,
+                          decoration: const InputDecoration(
+                            labelText: 'Quận/Huyện',
+                            prefixIcon: Icon(Icons.location_city_outlined),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _communeController,
+                          decoration: const InputDecoration(
+                            labelText: 'Phường/Xã',
+                            prefixIcon: Icon(Icons.location_city_rounded),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _addressController,
+                          decoration: const InputDecoration(
+                            labelText: 'Địa chỉ, số nhà',
+                            prefixIcon: Icon(Icons.location_city_sharp),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                      : Column(
+                    children: [
+                      TextField(
+                        controller: _cityController,
+                        decoration: const InputDecoration(
+                          labelText: 'Tỉnh/Thành phố',
+                          prefixIcon: Icon(Icons.email),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _districtController,
+                        decoration: const InputDecoration(
+                          labelText: 'Quận/Huyện',
+                          prefixIcon: Icon(Icons.person),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _communeController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phường/Xã',
+                          prefixIcon: Icon(Icons.email),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _addressController,
+                        decoration: const InputDecoration(
+                          labelText: 'Địa chỉ, số nhà',
                           prefixIcon: Icon(Icons.person),
                           border: OutlineInputBorder(),
                         ),
