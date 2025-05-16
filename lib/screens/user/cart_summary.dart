@@ -3,13 +3,13 @@ import 'package:cpmad_final/models/cart.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/coupon.dart';
 
-class CheckoutPage extends StatefulWidget {
+class CartSummaryPage extends StatefulWidget {
   final List<Cart> cartItems;
   final List<Product> products;
   final List<Coupon> vouchers;
   final double coinBalance;
 
-  const CheckoutPage({
+  const CartSummaryPage({
     Key? key,
     required this.cartItems,
     required this.products,
@@ -18,10 +18,10 @@ class CheckoutPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CheckoutPageState createState() => _CheckoutPageState();
+  _CartSummaryPageState createState() => _CartSummaryPageState();
 }
 
-class _CheckoutPageState extends State<CheckoutPage> {
+class _CartSummaryPageState extends State<CartSummaryPage> {
   late Map<String, bool> _selected;
   bool _useCoins = false;
 
