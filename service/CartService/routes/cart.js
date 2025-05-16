@@ -10,7 +10,9 @@ const { getCartItems, addCartItem, updateCartItem, deleteCartItem } = require('.
  */
 router.get('/', async (req, res, next) => {
   try {
-    const { userId, sessionId } = req.query;
+    const filter = userId
+      ? { user_id: userId }
+      : { session_id: sessionId };
     if (!userId && !sessionId) {
       return res.status(400).json({ error: 'Thiếu userId hoặc sessionId' });
     }

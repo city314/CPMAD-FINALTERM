@@ -11,7 +11,7 @@ class CartService {
   ///
   /// Nếu [userId] != null, API sẽ dùng userId, ngược lại sẽ dùng sessionId.
   /// Trả về Future<List<Cart>>
-  Future<List<Cart>> fetchCartItems({String? userId, String? sessionId}) async {
+  Future<List<Cart>> getCartItems({String? userId, String? sessionId}) async {
     if (userId == null && sessionId == null) {
       throw ArgumentError('Phải truyền userId hoặc sessionId');
     }
