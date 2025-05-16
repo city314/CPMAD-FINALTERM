@@ -13,7 +13,7 @@
 
 
 các bước chạy:
-b1: npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io
+b1: npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io nodemon concurrently
     npm install --save-dev concurrently
 b2: sửa trong package.json
     {
