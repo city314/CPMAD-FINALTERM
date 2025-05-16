@@ -21,12 +21,13 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) => Review(
     id: json['_id'] as String?,
-    userId: json['user_id'] as String,
+    userId: json['user_id'] as String?,
     userName: json['user_name'],
     productId: json['product_id'] as String,
     rating: json['rating'] as num,
     comment: json['comment'] as String,
     timeCreate: DateTime.parse(json['time_create'] as String),
+      avatar: json['avatar'] as String? ?? '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -37,6 +38,7 @@ class Review {
     'rating': rating,
     'comment': comment,
     'time_create': timeCreate.toIso8601String(),
+    'avatar': avatar,
   };
 
   Review copyWith({String? avatar}) {

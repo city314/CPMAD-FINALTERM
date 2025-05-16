@@ -7,6 +7,7 @@ const reviewSchema = new mongoose.Schema({
   rating: Number,
   comment: String,
   time_create: { type: Date, default: Date.now },
+  avatar: { type: String },
 });
 
 module.exports = mongoose.model('Review', reviewSchema);
