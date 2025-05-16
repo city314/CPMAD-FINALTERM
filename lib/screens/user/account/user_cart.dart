@@ -37,7 +37,7 @@ final List<Product> testProducts = [
         id: 'v001',
         productId: '1',
         variantName: '16GB RAM',
-        color: 'Red',
+        color: 'red',
         attributes: '{}',
         importPrice: 100,
         sellingPrice: 100,

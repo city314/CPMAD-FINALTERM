@@ -33,7 +33,7 @@ import '../screens/user/checkout.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/order-history/order-detail',
+  initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/',
@@ -111,11 +111,11 @@ final GoRouter appRouter = GoRouter(
       name: 'cart',
       builder: (context, state) => UserCartPage(),
     ),
-    GoRoute(
-      path: '/account/cart/checkout',
-      name: 'checkout',
-      builder: (context, state) => const CheckoutPage(),
-    ),
+    // GoRoute(
+    //   path: '/account/cart/checkout',
+    //   name: 'checkout',
+    //   builder: (context, state) => const CheckoutPage(cartItems: [],),
+    // ),
     GoRoute(
       path: '/forgot-password',
       name: 'forgot_password',
