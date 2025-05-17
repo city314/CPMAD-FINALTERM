@@ -4,7 +4,6 @@ class OrderDetail {
   final String productId;
   final int quantity;
   final num price;
-  final num total;
 
   OrderDetail({
     this.id,
@@ -12,7 +11,6 @@ class OrderDetail {
     required this.productId,
     required this.quantity,
     required this.price,
-    required this.total,
   });
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) => OrderDetail(
@@ -21,7 +19,6 @@ class OrderDetail {
     productId: json['product_id'] as String,
     quantity: json['quantity'] as int,
     price: json['price'] as num,
-    total: json['total'] as num,
   );
 
   Map<String, dynamic> toJson() => {
@@ -30,6 +27,5 @@ class OrderDetail {
     'product_id': productId,
     'quantity': quantity,
     'price': price,
-    'total': total,
   };
 }

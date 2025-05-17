@@ -73,4 +73,15 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.patch('/stock/:id', async (req, res) => {
+  const { change } = req.body;
+  const variant = await Variant.findById(req.params.id);
+  if (!variant) return res.status(404).json({ message: 'Không tìm thấy biến thể' });
+
+  variant.stock += change;
+  if (variant.stock < 0) variant.stock = 0;
+  await variant.save();
+  res.json({ message: 'Đã cập nhật tồn kho', newStock: variant.stock });
+});
+
 module.exports = router;

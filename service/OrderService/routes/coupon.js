@@ -76,4 +76,16 @@ router.get('/check', async (req, res) => {
   });
 });
 
+router.patch('/use/:code', async (req, res) => {
+  const coupon = await Coupon.findOne({ code: req.params.code });
+  console.log(req.params.code);
+  if (!coupon) return res.status(404).json({ message: 'Không tìm thấy mã' });
+  if (coupon.usageTimes >= coupon.usageMax)
+    return res.status(400).json({ message: 'Đã vượt quá số lượt dùng' });
+
+  coupon.usage_times += 1;
+  await coupon.save();
+  res.json({ message: 'Cập nhật mã thành công' });
+});
+
 module.exports = router;

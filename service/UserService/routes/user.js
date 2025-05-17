@@ -365,4 +365,16 @@ router.get('/check-email/:email', async (req, res) => {
   res.json({ exists: !!user });
 });
 
+router.patch('/loyalty/:email', async (req, res) => {
+  const { change } = req.body;
+  const user = await User.findOne({ email: req.params.email });
+  if (!user) return res.status(404).json({ message: 'User không tồn tại' });
+
+  user.loyalty_point += change;
+  if (user.loyalty_point < 0) user.loyalty_point = 0;
+  await user.save();
+  res.json({ message: 'Cập nhật điểm thành công', newPoint: user.loyalty_point });
+});
+
+
 module.exports = router;

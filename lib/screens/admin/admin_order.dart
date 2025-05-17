@@ -29,23 +29,23 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 // Sample data; replace with real API fetch
   final List<Order> _orders = [
     Order(
-      id: 'o1001', userId: 'u01', sessionId: 'sess_abc',
+      id: 'o1001', userId: 'u01',
       totalPrice: 500000, loyaltyPointUsed: 10000, discount: 20000,
       tax: 30000, shippingFee: 15000, finalPrice: 515000,
       status: OrderStatus.pending,
-      timeCreate: DateTime.now().subtract(const Duration(days: 2)),
+      timeCreate: DateTime.now().subtract(const Duration(days: 2)), coupon: 0,
     ),
     Order(
-      id: 'o1002', userId: 'u02', sessionId: 'sess_def',
+      id: 'o1002', userId: 'u02',
       totalPrice: 1200000, loyaltyPointUsed: 0, discount: 0,
       tax: 60000, shippingFee: 20000, finalPrice: 1280000,
       status: OrderStatus.shipped,
-      timeCreate: DateTime.now().subtract(const Duration(days: 1, hours: 5)),
+      timeCreate: DateTime.now().subtract(const Duration(days: 1, hours: 5)), coupon: 0,
     ),
   ];
   final List<OrderDetail> _orderDetails = [
-    OrderDetail(id: 'd1', orderId: 'o1001', productId: 'p1', quantity: 1, price: 500000, total: 500000),
-    OrderDetail(id: 'd2', orderId: 'o1002', productId: 'p2', quantity: 2, price: 600000, total: 1200000),
+    OrderDetail(id: 'd1', orderId: 'o1001', productId: 'p1', quantity: 1, price: 500000),
+    OrderDetail(id: 'd2', orderId: 'o1002', productId: 'p2', quantity: 2, price: 600000),
   ];
   final List<User> _users = [
     User(
@@ -281,7 +281,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 children: [
                   Text(d.productId, style: const TextStyle(color: kDark3)),
                   Text('x${d.quantity}', style: const TextStyle(color: kDark3)),
-                  Text(formatPrice(d.total.toDouble()), style: const TextStyle(color: kDark3)),
+                  Text(formatPrice((d.price*d.quantity).toDouble()), style: const TextStyle(color: kDark3)),
                 ],
               ),
             )),

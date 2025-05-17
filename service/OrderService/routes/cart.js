@@ -164,4 +164,27 @@ router.put('/update-user', async (req, res) => {
   }
 });
 
+// Xoá các variant đã mua khỏi giỏ hàng
+router.post('/remove-items', async (req, res) => {
+  const { variantIds, user_id } = req.body;
+
+  if (!variantIds || !Array.isArray(variantIds) || variantIds.length === 0) {
+    return res.status(400).json({ message: 'variantIds không hợp lệ' });
+  }
+
+  try {
+    // Xoá từng variantId khỏi giỏ hàng của user
+    await Cart.updateOne(
+      { user_id },
+      { $pull: { items: { variant_id: { $in: variantIds } } } }
+    );
+
+    const updatedCart = await Cart.findOne({ user_id });
+    res.json({ message: 'Đã xoá các sản phẩm khỏi giỏ hàng' });
+  } catch (error) {
+    console.error('❌ Lỗi khi xoá sản phẩm trong giỏ hàng:', error);
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+});
+
 module.exports = router;
