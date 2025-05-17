@@ -19,6 +19,9 @@ class _OrderHistoryState extends State<OrderHistory> {
     'Đã hủy',
   ];
 
+  // Giả lập trạng thái đăng nhập
+  bool isLoggedIn = true; // Đổi thành false để test trường hợp chưa đăng nhập
+
   // Dữ liệu mẫu
   final String userName = 'Mai Nguyễn Phương Trang';
   final String userPhone = '03*****253';
@@ -26,7 +29,7 @@ class _OrderHistoryState extends State<OrderHistory> {
   final int totalOrders = 2;
   final List<Map<String, dynamic>> orders = [
     {
-      'image': 'assets/images/product/headphone.png',
+      'image': 'assets/images/product/laptop/acer/acer1.png',
       'name': 'Tai nghe chụp tai Dareu EH416-Đen',
       'price': 320000,
       'status': 'Đã giao hàng',
@@ -41,8 +44,68 @@ class _OrderHistoryState extends State<OrderHistory> {
     },
   ];
 
+  void _showRatingDialog(BuildContext context) {
+    int selectedStars = 5;
+    TextEditingController commentController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Đánh giá sản phẩm'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Chọn số sao:'),
+              const SizedBox(height: 8),
+              Row(
+                children: List.generate(5, (index) => IconButton(
+                  icon: Icon(
+                    index < selectedStars ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () {
+                    selectedStars = index + 1;
+                    (context as Element).markNeedsBuild();
+                  },
+                )),
+              ),
+              if (isLoggedIn) ...[
+                const SizedBox(height: 16),
+                const Text('Bình luận của bạn:'),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: commentController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Nhập bình luận...'
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Xử lý lưu đánh giá
+                Navigator.pop(context);
+              },
+              child: const Text('Gửi đánh giá'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     return Scaffold(
       appBar: CustomNavbar(
         cartItemCount: 0,
@@ -57,22 +120,22 @@ class _OrderHistoryState extends State<OrderHistory> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Menu bên trái
-          Container(
-            width: 240,
-            color: const Color(0xFFF7F7F7),
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildMenuItem(Icons.home, 'Trang chủ', false, () {}),
-                _buildMenuItem(Icons.history, 'Lịch sử mua hàng', true, () {}),
-                _buildMenuItem(Icons.person, 'Tài khoản của bạn', false, () {}),
-                _buildMenuItem(Icons.support_agent, 'Hỗ trợ', false, () {}),
-                _buildMenuItem(Icons.logout, 'Đăng xuất', false, () {}),
-              ],
+          if (!isAndroid)
+            Container(
+              width: 240,
+              color: const Color(0xFFF7F7F7),
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildMenuItem(Icons.home, 'Trang chủ', false, () {}),
+                  _buildMenuItem(Icons.history, 'Lịch sử mua hàng', true, () {}),
+                  _buildMenuItem(Icons.person, 'Tài khoản của bạn', false, () {}),
+                  _buildMenuItem(Icons.support_agent, 'Hỗ trợ', false, () {}),
+                  _buildMenuItem(Icons.logout, 'Đăng xuất', false, () {}),
+                ],
+              ),
             ),
-          ),
           // Nội dung bên phải
           Expanded(
             child: Padding(
@@ -80,6 +143,56 @@ class _OrderHistoryState extends State<OrderHistory> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Tiêu đề + menu icon cho Android
+                  Row(
+                    children: [
+                      const Text('Lịch sử mua hàng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                      if (isAndroid) ...[
+                        Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.menu),
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (context) => Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.home),
+                                    title: const Text('Trang chủ'),
+                                    onTap: () {},
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.history),
+                                    title: const Text('Lịch sử mua hàng'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.person),
+                                    title: const Text('Tài khoản của bạn'),
+                                    onTap: () {},
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.support_agent),
+                                    title: const Text('Hỗ trợ'),
+                                    onTap: () {},
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.logout),
+                                    title: const Text('Đăng xuất'),
+                                    onTap: () {},
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ]
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   // Thông tin user
                   Row(
                     children: [
@@ -88,13 +201,25 @@ class _OrderHistoryState extends State<OrderHistory> {
                         radius: 32,
                       ),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                          const SizedBox(height: 4),
-                          Text(userPhone, style: const TextStyle(color: Colors.grey)),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userName,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              userPhone,
+                              style: const TextStyle(color: Colors.grey),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -206,48 +331,78 @@ class _OrderHistoryState extends State<OrderHistory> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  order['image'],
-                                  width: 72,
-                                  height: 72,
-                                  fit: BoxFit.cover,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.asset(
+                                    order['image'],
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                const SizedBox(width: 12),
+                                SizedBox(
+                                  width: 120,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        order['name'],
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        '${order['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ',
+                                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(order['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                    const SizedBox(height: 8),
-                                    Text('${order['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
+                                    Text(order['created'], style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.red,
+                                            side: const BorderSide(color: Colors.red),
+                                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Xem chi tiết', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            _showRatingDialog(context);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Đánh giá', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(order['created'], style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                                  const SizedBox(height: 24),
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      foregroundColor: Colors.red,
-                                      side: const BorderSide(color: Colors.red),
-                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                    child: const Text('Xem chi tiết', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
