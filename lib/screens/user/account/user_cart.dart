@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +12,7 @@ import 'package:cpmad_final/models/brand.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../models/selectedproduct.dart';
 import '../../../service/CartService.dart';
 import '../../../service/ProductService.dart';
 import '../CustomNavbar.dart';
@@ -22,31 +25,35 @@ class UserCartPage extends StatefulWidget {
 
 class _UserCartPageState extends State<UserCartPage> {
   final Set<String> _selected = {};
-  Cart? _cart;
+  Cart? _cart ;
   List<Product> _allProducts = [];
   List<Category> _categories = [];
   List<Brand> _brands = [];
+  List<Variant> _variants = [];
   bool isLoading = true;
   bool isLoggedIn = CurrentUser().isLogin;
   String _searchKeyword = '';
   bool get _allSelected =>
       _cart != null && _selected.length == _cart!.items.length;
 
-  double get _totalPrice {
-    double sum = 0;
-    if (_cart == null) return 0;
-    for (var item in _cart!.items) {
-      if (_selected.contains(item.variantId)) {
-        final product = _allProducts.firstWhere(
-                (p) => p.variants.any((v) => v.id == item.variantId),
-            orElse: () => Product.empty());
-        final variant = product.variants
-            .firstWhere((v) => v.id == item.variantId, orElse: () => Variant.empty());
-        sum += variant.sellingPrice * item.quantity;
-      }
-    }
-    return sum;
-  }
+  double get _totalPrice => _selected.fold(0, (sum, id) {
+    final item = _cart!.items.firstWhere((i) => i.variantId == id);
+    final variant = _variants.firstWhere((v) => v.id == id, orElse: () => Variant.empty());
+    return sum + (variant.sellingPrice * item.quantity);
+  });
+
+  int get _totalQuantity => _selected.fold(0, (sum, id) {
+    final item = _cart!.items.firstWhere((i) => i.variantId == id);
+    return sum + item.quantity;
+  });
+
+  double get _totalDiscount => _selected.fold(0, (sum, id) {
+    final item = _cart!.items.firstWhere((i) => i.variantId == id);
+    final variant = _variants.firstWhere((v) => v.id == id, orElse: () => Variant.empty());
+    final product = _allProducts.firstWhere((p) => p.id == variant.productId, orElse: () => Product.empty());
+    final discountPercent = product.discountPercent ?? 0;
+    return sum + (variant.sellingPrice * discountPercent / 100 * item.quantity);
+  });
 
   List<Cart> _cartItems = [];
   bool _isLoading = true;
@@ -61,20 +68,22 @@ class _UserCartPageState extends State<UserCartPage> {
     final prefs = await SharedPreferences.getInstance();
     final cartId = prefs.getString('cartId');
     final id = CurrentUser().isLogin ? CurrentUser().email : cartId;
-    final cart = await CartService.fetchCart('guest-123');
+
+    final cart = await CartService.fetchCart(id ?? '');
     final products = await ProductService.fetchAllProducts();
-    final categories = await ProductService.fetchAllCategory();
-    final brands = await ProductService.fetchAllBrand();
+    final variants = await ProductService.fetchAllVariants();
+    // final categories = await ProductService.fetchAllCategory();
+    // final brands = await ProductService.fetchAllBrand();
 
     setState(() {
       _cart = cart;
       _allProducts = products;
-      _categories = categories;
-      _brands = brands;
+      _variants = variants;
+      // _categories = categories;
+      // _brands = brands;
       isLoading = false;
     });
   }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -158,59 +167,108 @@ class _UserCartPageState extends State<UserCartPage> {
         const Spacer(),
         IconButton(
           icon: const Icon(Icons.delete_outline),
-          onPressed: () => setState(() {
-            _cart!.items.removeWhere((e) => _selected.contains(e.variantId));
-            _selected.clear();
-          }),
+          onPressed: () async {
+            final userId = CurrentUser().isLogin ? CurrentUser().email! : (await SharedPreferences.getInstance()).getString('cartId') ?? '';
+            for (final id in _selected) {
+              await CartService.removeItem(userId, id);
+            }
+            setState(() {
+              _cart!.items.removeWhere((e) => _selected.contains(e.variantId));
+              _selected.clear();
+            });
+          },
         ),
       ],
     ),
   );
 
-  Widget _buildCartList() => ListView.separated(
-    itemCount: _cart!.items.length,
-    separatorBuilder: (_, __) => const Divider(height: 1),
-    itemBuilder: (_, index) => _buildCartItem(_cart!.items[index]),
-  );
+  Widget _buildCartList() {
+    if (_cart == null || _cart!.items.isEmpty) {
+      return const Center(
+        child: Text(
+          'Giỏ hàng trống',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: _cart!.items.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (_, index) => _buildCartItem(_cart!.items[index]),
+    );
+  }
 
   Widget _buildCartItem(CartItem item) {
-    final product = _allProducts.firstWhere(
-            (p) => p.variants.any((v) => v.id == item.variantId),
-        orElse: () => Product.empty());
-    final variant = product.variants.firstWhere(
-            (v) => v.id == item.variantId,
-        orElse: () => Variant.empty());
-    final category = _categories.firstWhere((c) => c.id == product.categoryId,
-        orElse: () => Category(id: '', name: ''));
-    final brand = _brands.firstWhere((b) => b.id == product.brandId,
-        orElse: () => Brand(id: '', name: ''));
-
+    final variant = _variants.firstWhere((v) => v.id == item.variantId, orElse: () => Variant.empty());
+    final product = _allProducts.firstWhere((p) => p.id == variant.productId, orElse: () => Product.empty());
+    final imageUrl = variant.images.isNotEmpty ? variant.images[0]['base64'] ?? '' : '';
+    final discountPercent = product.discountPercent ?? 0;
+    final originalPrice = variant.sellingPrice;
+    final discountedPrice = originalPrice * (1 - discountPercent / 100);
     return ListTile(
-      leading: Checkbox(
-        value: _selected.contains(item.variantId),
-        onChanged: (sel) => setState(() {
-          if (sel == true) {
-            _selected.add(item.variantId);
-          } else {
-            _selected.remove(item.variantId);
-          }
-        }),
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Checkbox(
+            value: _selected.contains(item.variantId),
+            onChanged: (sel) => setState(() {
+              if (sel == true) {
+                _selected.add(item.variantId);
+              } else {
+                _selected.remove(item.variantId);
+              }
+            }),
+          ),
+          imageUrl.isNotEmpty
+              ? Image.memory(base64Decode(imageUrl), width: 50, height: 50, fit: BoxFit.cover)
+              : const Icon(Icons.image, size: 40),
+        ],
       ),
       title: Text(product.name),
-      subtitle: Text('${variant.variantName} | ${variant.color}'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${variant.variantName} | ${variant.color}'),
+          if (discountPercent > 0)
+            Row(
+              children: [
+                Text('${originalPrice.toStringAsFixed(0)} đ', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                const SizedBox(width: 6),
+                Text('${discountedPrice.toStringAsFixed(0)} đ', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
+            )
+          else
+            Text('${originalPrice.toStringAsFixed(0)} đ', style: const TextStyle(color: Colors.red)),
+        ],
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
             icon: const Icon(Icons.remove),
-            onPressed: () => setState(() {
-              if (item.quantity > 1) item.quantity--;
-            }),
+            onPressed: () async {
+              if (item.quantity > 1) {
+                final newQuantity = item.quantity - 1;
+                final userId = CurrentUser().isLogin ? CurrentUser().email! : (await SharedPreferences.getInstance()).getString('cartId') ?? '';
+                await CartService.updateCartItemQuantity(userId: userId, variantId: item.variantId, quantity: newQuantity);
+                setState(() => item.quantity = newQuantity);
+              }
+            },
           ),
           Text('${item.quantity}'),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => setState(() => item.quantity++),
+            onPressed: () async {
+              if (item.quantity < variant.stock) {
+                final newQuantity = item.quantity + 1;
+                final userId = CurrentUser().isLogin ? CurrentUser().email! : (await SharedPreferences.getInstance()).getString('cartId') ?? '';
+                await CartService.updateCartItemQuantity(userId: userId, variantId: item.variantId, quantity: newQuantity);
+                setState(() => item.quantity = newQuantity);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vượt quá số lượng tồn kho')));
+              }
+            },
           ),
         ],
       ),
@@ -225,16 +283,33 @@ class _UserCartPageState extends State<UserCartPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Total'),
-            Text('\$${_totalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Tổng sản phẩm: $_totalQuantity'),
+            const SizedBox(height: 4),
+            Text('Tổng tiền hàng: ${(_totalPrice + _totalDiscount).toStringAsFixed(0)} đ'),
+            Text('Tiết kiệm được: -${_totalDiscount.toStringAsFixed(0)} đ', style: const TextStyle(color: Colors.green)),
+            const SizedBox(height: 4),
+            Text('Tổng thanh toán:', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text('${_totalPrice.toStringAsFixed(0)} đ', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
           ],
         ),
         const Spacer(),
         ElevatedButton(
-          onPressed: () {},
-          child: const Text('Buy Now'),
+          onPressed: () {
+            final selectedProducts = _selected.map((id) {
+              final variant = _variants.firstWhere((v) => v.id == id);
+              final product = _allProducts.firstWhere((p) => p.id == variant.productId);
+              final quantity = _cart!.items.firstWhere((i) => i.variantId == id).quantity;
+              final discount = product.discountPercent ?? 0;
+              return SelectedProduct(variant: variant, quantity: quantity, discount: discount);
+            }).toList();
+            context.goNamed('cartsummary', extra: {'items': selectedProducts.map((e) => e.toJson()).toList()});
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.indigo,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: const Text('Buy Now', style: TextStyle(fontSize: 16, color: Colors.white)),
         ),
       ],
     ),

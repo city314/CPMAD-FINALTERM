@@ -31,7 +31,6 @@ import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
 import '../screens/user/account/change_password_after_login.dart';
 import '../screens/user/change_password.dart';
-import '../screens/user/check_out.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -124,11 +123,6 @@ final GoRouter appRouter = GoRouter(
             .toList();
         return CartSummary(selectedItems: selectedItems);
       },
-    ),
-    GoRoute(
-      path: '/account/cart/cartsummary/checkout',
-      name: 'checkout',
-      builder: (context, state) => CheckoutPage(),
     ),
     GoRoute(
       path: '/forgot-password',
