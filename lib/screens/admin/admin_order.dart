@@ -4,20 +4,28 @@ import '../../models/orderDetail.dart';
 import '../../models/user.dart';
 import 'component/SectionHeader.dart';
 
-// Helper extension to capitalize enum names
+// Color palette
+const Color kDark1    = Color.fromRGBO(11,  36,  51, 1);
+const Color kDark2    = Color.fromRGBO(49,  68,  78, 1);
+const Color kDark3    = Color.fromRGBO(73,  86,  98, 1);
+const Color kLight1   = Color.fromRGBO(166, 188, 194,1);
+const Color kLight2   = Color.fromRGBO(238, 249, 254,1);
+const Color kAccent1  = Color.fromRGBO(76,  159, 195,1);
+const Color kAccent2  = Color.fromRGBO(91,  241, 245,1);
+
+// Extension to capitalize enum names
 extension StringExtension on String {
   String capitalize() => this[0].toUpperCase() + substring(1);
 }
 
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({Key? key}) : super(key: key);
-
   @override
   _AdminOrderScreenState createState() => _AdminOrderScreenState();
 }
 
 class _AdminOrderScreenState extends State<AdminOrderScreen> {
-  // Sample data; replace with real API fetch
+// Sample data; replace with real API fetch
   final List<Order> _orders = [
     Order(
       id: 'o1001', userId: 'u01', sessionId: 'sess_abc',
@@ -64,122 +72,216 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     return DefaultTabController(
       length: _statuses.length,
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              const SectionHeader('Quản lý Đơn hàng'),
-              const SizedBox(height: 12),
-              TabBar(
+        body: Column(
+          children: [
+            // Section Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: kLight2,
+              child: const SectionHeader('Quản lý Danh mục'),
+            ),
+            // TabBar
+            Container(
+              color: Colors.white,
+              child: TabBar(
                 isScrollable: true,
-                labelColor: Theme.of(context).primaryColor,
-                unselectedLabelColor: Colors.grey,
-                tabs: _statuses
-                    .map((s) => Tab(text: s.name.capitalize()))
-                    .toList(),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: Theme.of(context).primaryColor,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
+                tabs: _statuses.map((s) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(s.name.capitalize()),
+                )).toList(),
               ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: TabBarView(
-                  children: _statuses.map((status) {
-                    // Filter and sort orders by status and date
-                    final list = _orders
-                        .where((o) => o.status == status)
-                        .toList()
-                      ..sort((a, b) => b.timeCreate.compareTo(a.timeCreate));
-                    return _buildOrderList(list);
-                  }).toList(),
+            ),
+            // Tab Views
+            Expanded(
+              child: TabBarView(
+                children: _statuses.map((status) {
+                  final list = _orders.where((o) => o.status == status).toList()
+                    ..sort((a, b) => b.timeCreate.compareTo(a.timeCreate));
+                  if (list.isEmpty) {
+                    return const Center(
+                      child: Text('Không có đơn hàng', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: list.length,
+                    itemBuilder: (context, i) {
+                      final o = list[i];
+                      final user = _users.firstWhere(
+                            (u) => u.id == o.userId,
+                        orElse: () => User(
+                          id: '', avatar: '', email: '', name: 'Unknown', gender: '', birthday: '',
+                          phone: '', addresses: [], role: '', status: '', timeCreate: DateTime.now(),
+                        ),
+                      );
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => _showDetail(o),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: kLight1,
+                                  child: Text(user.name.isNotEmpty ? user.name[0] : '?', style: const TextStyle(color: kDark2)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold, color: kDark1)),
+                                      const SizedBox(height: 4),
+                                      Text(user.name, style: const TextStyle(color: kDark3)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${o.timeCreate.toLocal()}'.split('.')[0],
+                                        style: const TextStyle(fontSize: 12, color: kDark3),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Chip(
+                                  label: Text(o.status.name.capitalize()),
+                                  backgroundColor: _statusColor(o.status).withAlpha((0.2 * 255).round()),
+                                  labelStyle: TextStyle(color: _statusColor(o.status)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDetail(Order o) {
+    OrderStatus selected = o.status;
+    final user = _users.firstWhere(
+          (u) => u.id == o.userId,
+      orElse: () => User(
+        id: '', avatar: '', email: '', name: 'Unknown', gender: '', birthday: '',
+        phone: '', addresses: [], role: '', status: '', timeCreate: DateTime.now(),
+      ),
+    );
+    final details = _orderDetails.where((d) => d.orderId == o.id).toList();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: kDark3,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrderList(List<Order> orders) {
-    if (orders.isEmpty) {
-      return const Center(child: Text('Không có đơn hàng'));}
-    return ListView.separated(
-      itemCount: orders.length,
-      separatorBuilder: (_, __) => const Divider(height: 32),
-      itemBuilder: (context, i) {
-        final o = orders[i];
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          title: Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text('Ngày: ${o.timeCreate.toLocal().toString().split('.')[0]}'),
-          trailing: Text(o.status.name.capitalize(), style: const TextStyle(fontSize: 12)),
-          onTap: () => _showDetail(o),
-        );
-      },
-    );
-  }
-
-  void _showDetail(Order order) {
-    OrderStatus selected = order.status;
-    // Fetch user and order details
-    final user = _users.firstWhere((u) => u.id == order.userId, orElse: () => User(
-      id: '',
-      avatar: '',
-      email: '',
-      name: 'Unknown',
-      gender: '',
-      birthday: '',
-      phone: '',
-      addresses: [],
-      role: '',
-      status: '',
-      timeCreate: DateTime.now(),
-    ));
-    final details = _orderDetails.where((d) => d.orderId == order.id).toList();
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Đơn #${order.id}'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Khách hàng: ${user.name} (${user.email})'),
-              const SizedBox(height: 8),
-              ...details.map((d) => Text('• ${d.productId} x${d.quantity} = ₫${d.total.toStringAsFixed(0)}')),
-              const Divider(),
-              Text('Tạm tính: ₫${order.totalPrice.toStringAsFixed(0)}'),
-              Text('Giảm: ₫${order.discount.toStringAsFixed(0)}'),
-              Text('Thuế: ₫${order.tax.toStringAsFixed(0)}'),
-              Text('Ship: ₫${order.shippingFee.toStringAsFixed(0)}'),
-              Text('Tổng: ₫${order.finalPrice.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<OrderStatus>(
-                value: selected,
-                decoration: const InputDecoration(labelText: 'Trạng thái'),
-                items: _statuses.map((st) {
-                  return DropdownMenuItem(value: st, child: Text(st.name.capitalize()));
-                }).toList(),
-                onChanged: (v) => selected = v ?? selected,
+            ),
+            const SizedBox(height: 12),
+            Text('Đơn #${o.id}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDark1)),
+            const SizedBox(height: 8),
+            Text('Khách hàng: ${user.name}', style: const TextStyle(fontSize: 14, color: kDark3)),
+            Text('Email: ${user.email}', style: const TextStyle(fontSize: 14, color: kDark3)),
+            const Divider(color: kDark2, height: 24),
+            const Text('Chi tiết sản phẩm', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            ...details.map((d) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(d.productId, style: const TextStyle(color: kDark3)),
+                  Text('x${d.quantity}', style: const TextStyle(color: kDark3)),
+                  Text('₫${d.total.toStringAsFixed(0)}', style: const TextStyle(color: kDark3)),
+                ],
               ),
-            ],
-          ),
+            )),
+            const Divider(color: kDark2, height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Tổng cộng', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('₫${o.finalPrice.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<OrderStatus>(
+                    value: selected,
+                    decoration: const InputDecoration(labelText: 'Trạng thái'),
+                    items: _statuses.map((st) => DropdownMenuItem(
+                      value: st,
+                      child: Text(st.name.capitalize(), style: TextStyle(color: _statusColor(st))),
+                    )).toList(),
+                    onChanged: (v) => selected = v ?? selected,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      final idx = _orders.indexWhere((o2) => o2.id == o.id);
+                      _orders[idx] = o.copyWith(status: selected);
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: kAccent1),
+                  child: const Text('Cập nhật'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Đóng')),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                final idx = _orders.indexWhere((o) => o.id == order.id);
-                if (idx != -1) {
-                  _orders[idx] = order.copyWith(status: selected);
-                }
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Lưu'),
-          ),
-        ],
       ),
     );
+  }
+
+  Color _statusColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return Colors.orange;
+      case OrderStatus.paid:
+        return Colors.blue;
+      case OrderStatus.shipped:
+        return Colors.purple;
+      case OrderStatus.complete:
+        return Colors.green;
+      case OrderStatus.canceled:
+        return Colors.red;
+      }
   }
 }
