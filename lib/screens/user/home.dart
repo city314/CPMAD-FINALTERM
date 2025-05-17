@@ -411,29 +411,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: Icon(Icons.add_shopping_cart, size: isMobile ? 20 : 16),
-                                label: Text(
-                                    'Thêm',
-                                    style: TextStyle(fontSize: isMobile ? 16 : 12)
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 16 : 8,
-                                      vertical: isMobile ? 10 : 6
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -526,23 +511,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: const Icon(Icons.add_shopping_cart, size: 20),
-                                label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blueAccent,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -635,23 +611,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: const Icon(Icons.add_shopping_cart, size: 20),
-                                label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -1017,23 +984,14 @@ class ProductSection extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 20),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
+                        SizedBox(height: 4),
+                        Text(
+                          product.description ?? '',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: isMobile ? 12 : 13,
+                            color: Colors.grey[700],
                           ),
                         ),
                       ],
