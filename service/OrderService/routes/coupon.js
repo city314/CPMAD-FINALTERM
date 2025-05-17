@@ -63,4 +63,17 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/check', async (req, res) => {
+  const { code } = req.query;
+  const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+  if (!coupon) return res.status(404).json({ message: 'Không tìm thấy mã' });
+  res.json({
+    code: coupon.code,
+    discount_amount: coupon.discount_amount,
+    usage_max: coupon.usage_max,
+    usage_times: coupon.usage_times,
+    time_create: coupon.time_create,
+  });
+});
+
 module.exports = router;

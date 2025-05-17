@@ -58,4 +58,15 @@ class OrderService {
     final response = await http.delete(Uri.parse('$baseUrl/$id'));
     return response.statusCode == 200;
   }
+
+  static Future<Coupon?> checkCoupon(String code) async {
+    final uri = Uri.parse('$baseUrl/check?code=${code.toUpperCase()}');
+    final resp = await http.get(uri);
+    if (resp.statusCode == 200) {
+      return Coupon.fromJson(json.decode(resp.body));
+    } else {
+      return null;
+    }
+  }
+
 }

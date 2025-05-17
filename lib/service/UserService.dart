@@ -303,4 +303,14 @@ class UserService {
     }
   }
 
+  static Future<int> getLoyaltyPoint(String email) async {
+    final uri = Uri.parse('$_url/loyalty-point?email=$email');
+    final resp = await http.get(uri);
+    if (resp.statusCode == 200) {
+      final data = json.decode(resp.body);
+      return data['loyalty_point'];
+    } else {
+      throw Exception('Lỗi khi lấy điểm khách hàng');
+    }
+  }
 }

@@ -11,6 +11,7 @@ import '../../screens/user/order_history.dart';
 import '../../screens/user/order_detail.dart';
 import '../models/product.dart';
 import '../models/variant.dart';
+import '../models/selectedproduct.dart';
 import '../screens/admin/admin_brand.dart';
 import '../screens/admin/admin_category.dart';
 import '../screens/admin/admin_chat.dart';
@@ -112,9 +113,16 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => UserCartPage(),
     ),
     GoRoute(
-      path: '/account/cart/checkout',
-      name: 'checkout',
-      builder: (context, state) => const CheckoutPage(cartItems: [], products: [],),
+      path: '/account/cart/summary',
+      name: 'cartsummary',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final List<dynamic> rawItems = extra['items'];
+        final List<SelectedProduct> selectedItems = rawItems
+            .map((e) => SelectedProduct.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return CheckoutPage(selectedItems: selectedItems);
+      },
     ),
     GoRoute(
       path: '/forgot-password',

@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const couponRoutes = require('./routes/coupon');
+const cartRoutes = require('./routes/cart');
 
 const app = express();
 const PORT = 3003;
@@ -18,6 +19,7 @@ connectDB();
 
 // Routes
 app.use('/api/coupons', couponRoutes);
+app.use('/api/carts', cartRoutes);
 
 // Khởi chạy server
 app.listen(PORT, () => {

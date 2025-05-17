@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     ProductService().fetchProductSummary().then((data) {
+      if (!mounted) return;
       setState(() {
         hotSaleProducts = data['bestSellers'] ?? [];
         newProducts = data['newProducts'] ?? [];
@@ -65,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final fetched = await ProductService.fetchAllCategory();
       final ids = fetched.take(7).map((c) => c.id).toList();
       final name = fetched.take(7).map((c) => c.name).toList();
-
+      if (!mounted) return;
       setState(() {
         categories = fetched;
         categoryIds = ids;
@@ -74,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       for (String? id in ids) {
         final products = await ProductService().fetchProductsByCategory(id!);
+        if (!mounted) return;
         setState(() {
           _categoryProducts[id!] = products;
         });
@@ -115,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onCartTap: () {
           // TODO: Chuyển tới trang giỏ hàng
+          context.go('/account/cart');
         },
         onRegisterTap: () {
           // TODO: Chuyển tới trang đăng ký
