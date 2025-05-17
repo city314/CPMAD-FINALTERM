@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/brand.dart';
 import 'component/SectionHeader.dart';
-import 'package:go_router/go_router.dart';
 import 'package:cpmad_final/service/ProductService.dart';
 
 class AdminBrandScreen extends StatefulWidget {
@@ -12,14 +11,16 @@ class AdminBrandScreen extends StatefulWidget {
 }
 
 class _AdminBrandScreenState extends State<AdminBrandScreen> {
-  // Test data ban đầu, có thể load từ API sau này
+  final TextEditingController _searchCtrl = TextEditingController();
   List<Brand> _brand = [];
+  List<Brand> _filteredBrands = [];
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _loadBrand();
+    _searchCtrl.addListener(_applySearch);
   }
 
   Future<void> _loadBrand() async {
@@ -29,11 +30,27 @@ class _AdminBrandScreenState extends State<AdminBrandScreen> {
       setState(() {
         _brand = list;
         _loading = false;
+        _filteredBrands = List.from(list);
       });
     } catch (e) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải danh mục: $e')));
     }
+  }
+
+  void _applySearch() {
+    final q = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filteredBrands = _brand
+          .where((b) => b.name.toLowerCase().contains(q))
+          .toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   void _showEditDialog({Brand? brand}) {
@@ -144,14 +161,25 @@ class _AdminBrandScreenState extends State<AdminBrandScreen> {
             // SectionHeader mới
             const SectionHeader('Quản lý Danh mục'),
             const SizedBox(height: 16),
-
+            // —— Thanh Search ——
+            TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm thương hiệu...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // ListView bọc trong Expanded để tránh overflow
             Expanded(
               child: ListView.separated(
-                itemCount: _brand.length,
+                itemCount: _filteredBrands.length,
                 separatorBuilder: (_, __) => const Divider(height: 32),
                 itemBuilder: (context, i) {
-                  final cat = _brand[i];
+                  final cat = _filteredBrands[i];
                   return ListTile(
                     title: Text(cat.name,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
