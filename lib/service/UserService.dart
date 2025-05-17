@@ -346,4 +346,14 @@ class UserService {
     );
     return resp.statusCode == 201;
   }
+
+  static Future<bool> updateLoyalty(String email, int change) async {
+    final uri = Uri.parse('$_url/loyalty/$email');
+    final response = await http.patch(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'change': change}),
+    );
+    return response.statusCode == 200;
+  }
 }

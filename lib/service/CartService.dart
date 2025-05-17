@@ -152,4 +152,14 @@ class CartService {
     }
   }
 
+  static Future<bool> removeItemsFromCart(List<String> variantIds, String userId) async {
+    final uri = Uri.parse('$baseUrl/remove-items'); // backend cần hỗ trợ endpoint này
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'variantIds': variantIds, 'user_id': userId}),
+    );
+    return response.statusCode == 200;
+  }
+
 }

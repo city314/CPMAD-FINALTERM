@@ -3,10 +3,10 @@ enum OrderStatus { pending, complete, canceled, shipped, paid }
 class Order {
   final String? id;
   final String? userId;
-  final String sessionId;
   final num totalPrice;
   final num loyaltyPointUsed;
   final num discount;
+  final num coupon;
   final num tax;
   final num shippingFee;
   final num finalPrice;
@@ -16,10 +16,10 @@ class Order {
   Order({
     this.id,
     this.userId,
-    required this.sessionId,
     required this.totalPrice,
     required this.loyaltyPointUsed,
     required this.discount,
+    required this.coupon,
     required this.tax,
     required this.shippingFee,
     required this.finalPrice,
@@ -30,10 +30,10 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json) => Order(
     id: json['_id'] as String?,
     userId: json['user_id'] as String?,
-    sessionId: json['session_id'] as String,
     totalPrice: json['total_price'] as num,
     loyaltyPointUsed: json['loyalty_point_used'] as num,
     discount: json['discount'] as num,
+    coupon: json['coupon'] as num,
     tax: json['tax'] as num,
     shippingFee: json['shipping_fee'] as num,
     finalPrice: json['final_price'] as num,
@@ -44,10 +44,10 @@ class Order {
   Map<String, dynamic> toJson() => {
     if (id != null) '_id': id,
     'user_id': userId,
-    'session_id': sessionId,
     'total_price': totalPrice,
     'loyalty_point_used': loyaltyPointUsed,
     'discount': discount,
+    'coupon': coupon,
     'tax': tax,
     'shipping_fee': shippingFee,
     'final_price': finalPrice,
@@ -59,10 +59,10 @@ class Order {
     return Order(
       id: this.id,
       userId: this.userId,
-      sessionId: this.sessionId,
       totalPrice: this.totalPrice,
       loyaltyPointUsed: this.loyaltyPointUsed,
       discount: this.discount,
+      coupon: this.coupon,
       tax: this.tax,
       shippingFee: this.shippingFee,
       finalPrice: this.finalPrice,

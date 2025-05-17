@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:cpmad_final/service/OrderService.dart';
+import 'package:cpmad_final/service/ProductService.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +33,8 @@ class _CheckoutPageState extends State<CartSummary> {
   final TextEditingController _coinController = TextEditingController();
   int loyalty = 0;
   int lyt = 0;
+  List<Map<String, dynamic>> _addressList = [];
+  Map<String, dynamic>? _selectedAddress;
 
   // Controllers
   final _nameCtrl = TextEditingController();
@@ -74,7 +77,15 @@ class _CheckoutPageState extends State<CartSummary> {
       lyt = loyalty;
       if (user != null) {
         setState(() {
-          _nameCtrl.text = user['address']['receiver_name'] ?? '';
+          final addresses = user['address'] as List<dynamic>? ?? [];
+          _addressList = List<Map<String, dynamic>>.from(addresses);
+          _selectedAddress = addresses.firstWhere((addr) => addr['default'] == true, orElse: () => addresses.isNotEmpty ? addresses[0] : null);
+
+          final defaultAddr = addresses.firstWhere(
+                (addr) => addr['default'] == true,
+            orElse: () => null,
+          );
+          _nameCtrl.text = defaultAddr != null ? defaultAddr['receiver_name'] ?? '' : '';
           _phoneCtrl.text = user['phone'] ?? '';
           _emailCtrl.text = user['email'] ?? '';
           _addressCtrl.text = getDefaultFullAddress(user);
@@ -311,18 +322,25 @@ class _CheckoutPageState extends State<CartSummary> {
               const Icon(Icons.monetization_on, color: Colors.orange),
               const SizedBox(width: 10),
               Expanded(
-                child: TextField(
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _coinController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Sử dụng Điểm khách hàng thân thiết (tối đa: ${lyt
-                        .toStringAsFixed(0)})',
+                    labelText: 'Sử dụng Điểm KHTT (tối đa: ${lyt.toStringAsFixed(0)})',
                     border: const OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return null;
+                    final input = int.tryParse(value);
+                    if (input == null || input < 0) return 'Điểm không hợp lệ';
+                    if (input > lyt) return 'Bạn chỉ có tối đa $lyt điểm';
+                    return null;
+                  },
                   onChanged: (value) {
-                    final input = double.tryParse(value) ?? 0;
+                    final input = int.tryParse(value) ?? 0;
                     setState(() {
-                      loyalty = input as int;
+                      loyalty = input.clamp(0, lyt);
                     });
                   },
                 ),
@@ -449,6 +467,31 @@ class _CheckoutPageState extends State<CartSummary> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (CurrentUser().isLogin && _addressList.length > 1)
+          ...[
+            const Text('Chọn địa chỉ giao hàng:'),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<Map<String, dynamic>>(
+              value: _selectedAddress,
+              items: _addressList.map((addr) {
+                final label = '${addr['receiver_name']} - ${addr['address']}';
+                return DropdownMenuItem(
+                  value: addr,
+                  child: Text(label),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedAddress = value;
+                  _nameCtrl.text = value?['receiver_name'] ?? '';
+                  _phoneCtrl.text = value?['phone'] ?? '';
+                  _addressCtrl.text = value?['address'] ?? '';
+                });
+              },
+              decoration: _inputDecoration('Địa chỉ giao hàng', Icons.location_on),
+            ),
+            const SizedBox(height: 16),
+          ],
         TextFormField(
           controller: _nameCtrl,
           decoration: _inputDecoration('Họ và tên', Icons.person),
@@ -491,6 +534,19 @@ class _CheckoutPageState extends State<CartSummary> {
   }
 
   void _onConfirmPressed() async {
+    double totalPrice = 0;
+    double totalDiscount = 0;
+
+    for (var item in widget.selectedItems) {
+      final price = item.variant.sellingPrice;
+      final discount = item.discount;
+      totalPrice += price * item.quantity;
+      totalDiscount += price * item.quantity * (discount / 100);
+    }
+
+    final shippingFee = 20000.0;
+    final tax = totalPrice * 0.03;
+    double finalAmount = totalPrice - totalDiscount - loyalty * 1000 - _voucherDiscount + tax + shippingFee;
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameCtrl.text.trim();
@@ -534,6 +590,89 @@ class _CheckoutPageState extends State<CartSummary> {
         }
       }
     }
+    if (_coinController.text.trim().isEmpty) {
+      loyalty = 0;
+    }
     // TODO: Gửi orderPayload đến OrderService
+    final orderPayload = {
+      "user_id": CurrentUser().isLogin ? CurrentUser().email : email, // hoặc lấy từ SharedPreferences
+      "total_price": totalPrice,
+      "loyalty_point_used": loyalty,
+      "discount": totalDiscount,
+      "coupon": _voucherDiscount,
+      "tax": tax,
+      "shipping_fee": shippingFee,
+      "final_price": finalAmount,
+      "status": "pending",
+    };
+
+    final orderId = await OrderService.createOrder(orderPayload);
+
+    if (orderId != null) {
+      final orderDetails = widget.selectedItems.map((item) => {
+        "order_id": orderId,
+        "variant_id": item.variant.id,
+        "quantity": item.quantity,
+        "price": item.variant.sellingPrice,
+      }).toList();
+
+      await OrderService.saveOrderStatus(
+        orderId: orderId,
+        status: "pending", // hoặc "created"
+      );
+
+      final success = await OrderService.createOrderDetails(orderDetails);
+      if (success) {
+        //Trừ số lần sử dụng coupon
+        if (_isVoucherApplied) {
+          await OrderService.useCoupon(_voucherController.text.trim());
+          await OrderService.saveCouponUsage(
+            orderId: orderId,
+            couponCode: _voucherController.text.trim(),
+          );
+        }
+
+        // Cập nhật loyalty
+        final earnedPoints = (finalAmount / 10000).floor();
+        final loyaltyChange = (loyalty * -1) + earnedPoints;
+        await UserService.updateLoyalty(email, loyaltyChange);
+
+        // Cập nhật stock và soldCount
+        for (var item in widget.selectedItems) {
+          await ProductService.updateVariantStock(item.variant.id ?? '', -item.quantity);
+          await ProductService.updateProductSold(item.variant.productId, item.quantity);
+        }
+
+        // Xoá khỏi giỏ hàng
+        // await CartService.removeItemsFromCart(widget.selectedItems.map((e) => e.variant.id ?? '').toList(), email);
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //   content: Text('Đặt hàng thành công!'),
+        //   backgroundColor: Colors.green,
+        // ));
+
+        await OrderService.sendConfirmationEmail(
+          email: email,
+          name: name,
+          orderId: orderId,
+          finalAmount: finalAmount,
+          items: widget.selectedItems.map((item) => {
+            'variantName': item.variant.variantName,
+            'quantity': item.quantity,
+            'price': item.variant.sellingPrice,
+          }).toList(),
+        );
+        // Navigate hoặc reset state
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Lỗi khi lưu chi tiết đơn hàng'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Lỗi khi tạo đơn hàng'),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 }

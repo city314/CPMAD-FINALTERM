@@ -301,4 +301,24 @@ class ProductService {
       throw Exception('Lỗi khi tải đánh giá');
     }
   }
+
+  static Future<bool> updateVariantStock(String variantId, int quantityChange) async {
+    final uri = Uri.parse('$_urlVariants/stock/$variantId');
+    final response = await http.patch(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'change': quantityChange}),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> updateProductSold(String productId, int quantityChange) async {
+    final uri = Uri.parse('$_urlProduct/sold/$productId');
+    final response = await http.patch(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'change': quantityChange}),
+    );
+    return response.statusCode == 200;
+  }
 }

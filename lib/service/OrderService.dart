@@ -4,6 +4,10 @@ import '../models/coupon.dart';
 
 class OrderService {
   static const String baseUrl = 'http://localhost:3003/api/coupons'; // đổi lại IP nếu chạy thật
+  static const String _urlOrder = 'http://localhost:3003/api/orders'; // đổi lại IP nếu chạy thật
+  static const String _urlOrderDetails = 'http://localhost:3003/api/orderdetails';
+  static const String _urlOrderStatus = 'http://localhost:3003/api/order-status';
+  static const String _urlCouponUsage = 'http://localhost:3003/api/coupon-usage';
 
   /// Lấy danh sách coupon
   static Future<List<Coupon>> fetchAllCoupons() async {
@@ -69,4 +73,83 @@ class OrderService {
     }
   }
 
+  static Future<String?> createOrder(Map<String, dynamic> payload) async {
+    final uri = Uri.parse(_urlOrder);
+    final resp = await http.post(uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload));
+    if (resp.statusCode == 200) {
+      final data = json.decode(resp.body);
+      return data['_id']; // hoặc theo response thực tế
+    }
+    return null;
+  }
+
+  static Future<bool> createOrderDetails(List<Map<String, dynamic>> details) async {
+    final uri = Uri.parse(_urlOrderDetails);
+    final resp = await http.post(uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(details));
+    return resp.statusCode == 200;
+  }
+
+  static Future<bool> useCoupon(String code) async {
+    final uri = Uri.parse('$baseUrl/use/$code');
+    final response = await http.patch(uri);
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> sendConfirmationEmail({
+    required String email,
+    required String name,
+    required String orderId,
+    required List<Map<String, dynamic>> items,
+    required double finalAmount,
+  }) async {
+    final uri = Uri.parse('$_urlOrder/send-confirmation');
+    final resp = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'email': email,
+        'name': name,
+        'orderId': orderId,
+        'items': items,
+        'finalAmount': finalAmount,
+      }),
+    );
+    return resp.statusCode == 200;
+  }
+
+  static Future<bool> saveOrderStatus({
+    required String orderId,
+    required String status,
+  }) async {
+    final uri = Uri.parse(_urlOrderStatus);
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'order_id': orderId,
+        'status': status,
+      }),
+    );
+    return response.statusCode == 201;
+  }
+
+  static Future<bool> saveCouponUsage({
+    required String orderId,
+    required String couponCode,
+  }) async {
+    final uri = Uri.parse(_urlCouponUsage);
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'order_id': orderId,
+        'coupon_code': couponCode,
+      }),
+    );
+    return response.statusCode == 201;
+  }
 }
