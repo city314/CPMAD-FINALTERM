@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     ProductService().fetchProductSummary().then((data) {
+      if (!mounted) return;
       setState(() {
         hotSaleProducts = data['bestSellers'] ?? [];
         newProducts = data['newProducts'] ?? [];
@@ -65,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final fetched = await ProductService.fetchAllCategory();
       final ids = fetched.take(7).map((c) => c.id).toList();
       final name = fetched.take(7).map((c) => c.name).toList();
-
+      if (!mounted) return;
       setState(() {
         categories = fetched;
         categoryIds = ids;
@@ -74,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       for (String? id in ids) {
         final products = await ProductService().fetchProductsByCategory(id!);
+        if (!mounted) return;
         setState(() {
           _categoryProducts[id!] = products;
         });
@@ -115,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onCartTap: () {
           // TODO: Chuyển tới trang giỏ hàng
+          context.go('/account/cart');
         },
         onRegisterTap: () {
           // TODO: Chuyển tới trang đăng ký
@@ -408,29 +411,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: Icon(Icons.add_shopping_cart, size: isMobile ? 20 : 16),
-                                label: Text(
-                                    'Thêm',
-                                    style: TextStyle(fontSize: isMobile ? 16 : 12)
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 16 : 8,
-                                      vertical: isMobile ? 10 : 6
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -523,23 +511,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: const Icon(Icons.add_shopping_cart, size: 20),
-                                label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blueAccent,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -632,23 +611,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Spacer(),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Thêm vào giỏ hàng
-                                },
-                                icon: const Icon(Icons.add_shopping_cart, size: 20),
-                                label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              product.description ?? '',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isMobile ? 12 : 13,
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -1014,23 +984,14 @@ class ProductSection extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Thêm vào giỏ hàng
-                            },
-                            icon: const Icon(Icons.add_shopping_cart, size: 20),
-                            label: const Text('Thêm', style: TextStyle(fontSize: 16)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
+                        SizedBox(height: 4),
+                        Text(
+                          product.description ?? '',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: isMobile ? 12 : 13,
+                            color: Colors.grey[700],
                           ),
                         ),
                       ],

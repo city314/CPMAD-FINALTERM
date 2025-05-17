@@ -1,3 +1,4 @@
+import 'package:cpmad_final/screens/user/cart_summary.dart';
 import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:cpmad_final/screens/user/account/user_cart.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,7 @@ import '../../screens/user/order_history.dart';
 import '../../screens/user/order_detail.dart';
 import '../models/product.dart';
 import '../models/variant.dart';
+import '../models/selectedproduct.dart';
 import '../screens/admin/admin_brand.dart';
 import '../screens/admin/admin_category.dart';
 import '../screens/admin/admin_chat.dart';
@@ -117,6 +119,18 @@ final GoRouter appRouter = GoRouter(
     //   name: 'cartsummary',
     //   builder: (context, state) => CartSummaryPage(),
     // ),
+    GoRoute(
+      path: '/account/cart/summary',
+      name: 'cartsummary',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        final List<dynamic> rawItems = extra['items'];
+        final List<SelectedProduct> selectedItems = rawItems
+            .map((e) => SelectedProduct.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return CartSummary(selectedItems: selectedItems);
+      },
+    ),
     GoRoute(
       path: '/account/cart/cartsummary/checkout',
       name: 'checkout',

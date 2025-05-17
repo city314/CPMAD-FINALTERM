@@ -4,9 +4,13 @@ import 'package:cpmad_final/models/variant.dart';
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 import '../../models/product.dart';
 import '../../models/review.dart';
+import '../../models/selectedproduct.dart';
+import '../../service/CartService.dart';
 import '../../service/ProductService.dart';
 import '../../service/UserService.dart';
 import '../../service/WebSocketService.dart';
@@ -92,6 +96,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     _loadProduct();
     _loadReviews();
     socketService.connect((newReview) {
+      if (!mounted) return;
       if (!reviews.any((r) =>
       r.userId == newReview.userId &&
           r.comment == newReview.comment &&
@@ -108,7 +113,6 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
-    socketService.disconnect();
     super.dispose();
   }
 
@@ -140,6 +144,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
   void _loadProduct() async {
     final fetched = await ProductService.fetchProductById(widget.productId);
     final fetchedVariants = await ProductService.fetchVariantsByProduct(widget.productId);
+
     setState(() {
       _product = fetched;
       _variants = fetchedVariants;
@@ -174,7 +179,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => context.pop(),
                   ),
                 ],
               ),
@@ -228,7 +233,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
         cartItemCount: 0,
         onHomeTap: () {},
         onCategoriesTap: () {},
-        onCartTap: () {},
+        onCartTap: () { context.go('/account/cart'); },
         onRegisterTap: () {},
         onLoginTap: () {},
         onSupportTap: () {},
@@ -506,7 +511,33 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () async {
+                      if (selectedVariant == null) return;
+                      try {
+                        final cartExists = await CartService.isCartCreated();
+                        final userId = await CartService.getEffectiveUserId();
+                        if (!cartExists) {
+                          await CartService.createCartAndAddItem(
+                            userId: userId,
+                            variantId: selectedVariant!.id!,
+                            quantity: quantity,
+                          );
+                        } else {
+                          await CartService.updateCartItem(
+                            userId: userId,
+                            variantId: selectedVariant!.id!,
+                            quantity: quantity,
+                          );
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Đã thêm vào giỏ hàng')),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Lỗi: $e')),
+                        );
+                      }
+                    },
                     icon: const Icon(Icons.add_shopping_cart, size: 18),
                     label: const Text('Thêm giỏ hàng', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
@@ -520,7 +551,26 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (selectedVariant == null) return;
+                      final selectedProduct = SelectedProduct(
+                        variant: selectedVariant!,
+                        quantity: quantity,
+                        discount: _product!.discountPercent ?? 0,
+                      );
+                      context.goNamed(
+                        'cartsummary',
+                        extra: {
+                          'items': [
+                            SelectedProduct(
+                              variant: selectedVariant!,
+                              quantity: quantity,
+                              discount: _product?.discountPercent ?? 0,
+                            ).toJson()
+                          ]
+                        },
+                      );
+                    },
                     child: const Text('Mua ngay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -1016,7 +1066,34 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           Row(
                             children: [
                               ElevatedButton.icon(
-                                onPressed: () {},
+                                onPressed: () async {
+                                  if (selectedVariant == null) return;
+                                  try {
+                                    final cartExists = await CartService.isCartCreated();
+                                    final userId = await CartService.getEffectiveUserId();
+                                    print(cartExists);
+                                    if (!cartExists) {
+                                      await CartService.createCartAndAddItem(
+                                        userId: userId,
+                                        variantId: selectedVariant!.id!,
+                                        quantity: quantity,
+                                      );
+                                    } else {
+                                      await CartService.updateCartItem(
+                                        userId: userId,
+                                        variantId: selectedVariant!.id!,
+                                        quantity: quantity,
+                                      );
+                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Đã thêm vào giỏ hàng')),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Lỗi: $e')),
+                                    );
+                                  }
+                                },
                                 icon: const Icon(Icons.add_shopping_cart, size: 18),
                                 label: const Text('Thêm giỏ hàng', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
@@ -1028,7 +1105,26 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                               ),
                               const SizedBox(width: 16),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (selectedVariant == null) return;
+                                  final selectedProduct = SelectedProduct(
+                                    variant: selectedVariant!,
+                                    quantity: quantity,
+                                    discount: _product!.discountPercent ?? 0,
+                                  );
+                                  context.goNamed(
+                                    'cartsummary',
+                                    extra: {
+                                      'items': [
+                                        SelectedProduct(
+                                          variant: selectedVariant!,
+                                          quantity: quantity,
+                                          discount: _product?.discountPercent ?? 0,
+                                        ).toJson()
+                                      ]
+                                    },
+                                  );
+                                },
                                 child: const Text('Mua ngay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,

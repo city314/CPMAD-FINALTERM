@@ -1,3 +1,4 @@
+import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 
 // Models của bạn
@@ -7,111 +8,11 @@ import 'package:cpmad_final/models/variant.dart';  // Variant (variantName, colo
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../service/CartService.dart';
+import '../../../service/ProductService.dart';
 import '../CustomNavbar.dart';
-
-// Dữ liệu mẫu
-final List<Category> testCategories = [
-  Category(id: 'laptop', name: 'Laptop'),
-  Category(id: 'ssd',    name: 'SSD'),
-];
-
-final List<Brand> testBrands = [
-  Brand(id: 'asus',    name: 'ASUS'),
-  Brand(id: 'samsung', name: 'Samsung'),
-];
-
-final List<Product> testProducts = [
-  Product(
-    id: '1',
-    name: 'Gaming Laptop ROG Strix',
-    categoryId: 'laptop',
-    brandId: 'asus',
-    description: '',
-    stock: 0,
-    lowestPrice: 0,
-    timeAdd: DateTime.now(),
-    images: [],
-    variants: [
-      Variant(
-        id: 'v001',
-        productId: '1',
-        variantName: '16GB RAM',
-        color: 'red',
-        attributes: '{}',
-        importPrice: 100,
-        sellingPrice: 100,
-        stock: 10,
-        images: [],
-      ),
-      Variant(
-        id: 'v002',
-        productId: '1',
-        variantName: '32GB RAM',
-        color: 'Red',
-        attributes: '{}',
-        importPrice: 100,
-        sellingPrice: 100,
-        stock: 10,
-        images: [],
-      ),
-    ],
-  ),
-  Product(
-    id: '2',
-    name: 'SSD Samsung 980 Pro 1TB',
-    categoryId: 'ssd',
-    brandId: 'samsung',
-    description: '',
-    stock: 0,
-    lowestPrice: 0,
-    timeAdd: DateTime.now(),
-    images: [],
-    variants: [
-      Variant(
-        id: 'v003',
-        productId: '2',
-        variantName: '1TB',
-        color: 'Black',
-        attributes: '{}',
-        importPrice: 100,
-        sellingPrice: 100,
-        stock: 10,
-        images: [],
-      ),
-    ],
-  ),
-];
-
-final List<Cart> testCarts = [
-  Cart(
-    id: 'c1',
-    userId: null,
-    sessionId: 's1',
-    productId: '1',
-    variantId: 'v001',
-    quantity: 1,
-    timeAdd: DateTime.now(),
-  ),
-  Cart(
-    id: 'c2',
-    userId: null,
-    sessionId: 's1',
-    productId: '1',
-    variantId: 'v002',
-    quantity: 2,
-    timeAdd: DateTime.now(),
-  ),
-  Cart(
-    id: 'c3',
-    userId: null,
-    sessionId: 's1',
-    productId: '2',
-    variantId: 'v003',
-    quantity: 1,
-    timeAdd: DateTime.now(),
-  ),
-];
 
 class UserCartPage extends StatefulWidget {
   const UserCartPage({Key? key}) : super(key: key);
@@ -120,20 +21,59 @@ class UserCartPage extends StatefulWidget {
 }
 
 class _UserCartPageState extends State<UserCartPage> {
-  final _selected = <String>{};
-  final List<String> _allLaptops = List.generate(6, (index) => 'Laptop Model ${index + 1}');
-  List<String> _filteredLaptops = [];
-  bool isLoggedIn = true;
+  final Set<String> _selected = {};
+  Cart? _cart;
+  List<Product> _allProducts = [];
+  List<Category> _categories = [];
+  List<Brand> _brands = [];
+  bool isLoading = true;
+  bool isLoggedIn = CurrentUser().isLogin;
   String _searchKeyword = '';
   bool get _allSelected =>
-      testCarts.isNotEmpty && _selected.length == testCarts.length;
+      _cart != null && _selected.length == _cart!.items.length;
 
-  double get _totalPrice => _selected.fold(0.0, (sum, id) {
-    final c = testCarts.firstWhere((c) => c.id == id);
-    final p = testProducts.firstWhere((p) => p.id == c.productId);
-    final v = p.variants.firstWhere((v) => v.id == c.variantId);
-    return sum + v.sellingPrice * c.quantity;
-  });
+  double get _totalPrice {
+    double sum = 0;
+    if (_cart == null) return 0;
+    for (var item in _cart!.items) {
+      if (_selected.contains(item.variantId)) {
+        final product = _allProducts.firstWhere(
+                (p) => p.variants.any((v) => v.id == item.variantId),
+            orElse: () => Product.empty());
+        final variant = product.variants
+            .firstWhere((v) => v.id == item.variantId, orElse: () => Variant.empty());
+        sum += variant.sellingPrice * item.quantity;
+      }
+    }
+    return sum;
+  }
+
+  List<Cart> _cartItems = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cartId = prefs.getString('cartId');
+    final id = CurrentUser().isLogin ? CurrentUser().email : cartId;
+    final cart = await CartService.fetchCart('guest-123');
+    final products = await ProductService.fetchAllProducts();
+    final categories = await ProductService.fetchAllCategory();
+    final brands = await ProductService.fetchAllBrand();
+
+    setState(() {
+      _cart = cart;
+      _allProducts = products;
+      _categories = categories;
+      _brands = brands;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +95,7 @@ class _UserCartPageState extends State<UserCartPage> {
         },
         onCartTap: () {
           // TODO: Chuyển tới trang giỏ hàng
+          context.go('/account/cart');
         },
         onRegisterTap: () {
           // TODO: Chuyển tới trang đăng ký
@@ -182,207 +123,120 @@ class _UserCartPageState extends State<UserCartPage> {
         onSearch: (value) {
           setState(() {
             _searchKeyword = value.toLowerCase();
-            _filteredLaptops = _allLaptops
-                .where((laptop) => laptop.toLowerCase().contains(_searchKeyword))
-                .toList();
           });
         },
         isLoggedIn: isAndroid ? isLoggedIn : false,
       ),
-      body: Column(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
         children: [
-          // —— Header: Select All + Delete ——
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Checkbox(
-                  // primary fill
-                  fillColor: WidgetStateProperty.all(Color(0xFF4C9FC3)),
-                  checkColor: Colors.white,
-                  value: _allSelected,
-                  onChanged: (all) => setState(() {
-                    if (all == true) {
-                      _selected
-                        ..clear()
-                        ..addAll(testCarts.map((c) => c.id));
-                    } else {
-                      _selected.clear();
-                    }
-                  }),
-                ),
-                const Text('Select All',
-                    style: TextStyle(color: Color(0xFF0B2433))),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  color: const Color(0xFF31444E), // darkVariant
-                  onPressed: () => setState(() {
-                    testCarts.removeWhere((c) => _selected.contains(c.id));
-                    _selected.clear();
-                  }),
-                ),
-              ],
-            ),
-          ),
-
-          // —— List of items ——
-          Expanded(
-            child: ListView.separated(
-              itemCount: testCarts.length,
-              separatorBuilder: (_, __) =>
-              const Divider(color: Color(0xFFA6BCC2), height: 1), // light
-              itemBuilder: (_, i) => _buildCartItem(testCarts[i]),
-            ),
-          ),
-
-          // —— Footer: Total + Buy ——
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Total Price',
-                        style:
-                        TextStyle(fontSize: 14, color: Color(0xFF31444E))),
-                    Text('\$${_totalPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0B2433))),
-                  ],
-                ),
-                const Spacer(),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {/* TODO: thanh toán */},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                      const Color(0xFF5BF1F5), // accent
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Buy',
-                        style: TextStyle(
-                            fontSize: 16, color: Color(0xFF0B2433))),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildHeader(),
+          Expanded(child: _buildCartList()),
+          _buildFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(Cart cart) {
-    final prod = testProducts.firstWhere((p) => p.id == cart.productId);
-    final varnt = prod.variants.firstWhere((v) => v.id == cart.variantId);
-    final cat = testCategories
-        .firstWhere((c) => c.id == prod.categoryId, orElse: () => Category(id: '', name: ''));
-    final brd = testBrands
-        .firstWhere((b) => b.id == prod.brandId,    orElse: () => Brand(id: '', name: ''));
-    final imgUrl = varnt.images.isNotEmpty ? varnt.images.first : null;
+  Widget _buildHeader() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Row(
+      children: [
+        Checkbox(
+          value: _allSelected,
+          onChanged: (value) => setState(() {
+            if (value == true) {
+              _selected.clear();
+              _selected.addAll(_cart!.items.map((e) => e.variantId));
+            } else {
+              _selected.clear();
+            }
+          }),
+        ),
+        const Text('Select All'),
+        const Spacer(),
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          onPressed: () => setState(() {
+            _cart!.items.removeWhere((e) => _selected.contains(e.variantId));
+            _selected.clear();
+          }),
+        ),
+      ],
+    ),
+  );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+  Widget _buildCartList() => ListView.separated(
+    itemCount: _cart!.items.length,
+    separatorBuilder: (_, __) => const Divider(height: 1),
+    itemBuilder: (_, index) => _buildCartItem(_cart!.items[index]),
+  );
+
+  Widget _buildCartItem(CartItem item) {
+    final product = _allProducts.firstWhere(
+            (p) => p.variants.any((v) => v.id == item.variantId),
+        orElse: () => Product.empty());
+    final variant = product.variants.firstWhere(
+            (v) => v.id == item.variantId,
+        orElse: () => Variant.empty());
+    final category = _categories.firstWhere((c) => c.id == product.categoryId,
+        orElse: () => Category(id: '', name: ''));
+    final brand = _brands.firstWhere((b) => b.id == product.brandId,
+        orElse: () => Brand(id: '', name: ''));
+
+    return ListTile(
+      leading: Checkbox(
+        value: _selected.contains(item.variantId),
+        onChanged: (sel) => setState(() {
+          if (sel == true) {
+            _selected.add(item.variantId);
+          } else {
+            _selected.remove(item.variantId);
+          }
+        }),
+      ),
+      title: Text(product.name),
+      subtitle: Text('${variant.variantName} | ${variant.color}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Checkbox item
-          Checkbox(
-            fillColor: WidgetStateProperty.all(const Color(0xFF4C9FC3)),
-            checkColor: Colors.white,
-            value: _selected.contains(cart.id),
-            onChanged: (sel) => setState(() {
-              if (sel == true) _selected.add(cart.id);
-              else _selected.remove(cart.id);
-            }),
-          ),
-
-          // Image variant
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: imgUrl != null
-                ? Image.network(imgUrl as String,
-                width: 64, height: 64, fit: BoxFit.cover)
-                : const SizedBox(
-                width: 64,
-                height: 64,
-                child: Icon(Icons.image_not_supported,
-                    color: Color(0xFF495662))), // medium
-          ),
-          const SizedBox(width: 12),
-
-          // Info column
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(cat.name,
-                    style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF31444E))), // darkVariant
-                const SizedBox(height: 4),
-                Text(prod.name,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0B2433))), // dark
-                const SizedBox(height: 4),
-                Text(varnt.variantName,
-                    style: const TextStyle(
-                        fontSize: 14, color: Color(0xFF495662))), // medium
-                const SizedBox(height: 4),
-                Text('Color: ${varnt.color}',
-                    style: const TextStyle(
-                        fontSize: 12, color: Color(0xFFA6BCC2))), // light
-              ],
-            ),
-          ),
-
-          // Price
-          Text('\$${varnt.sellingPrice.toStringAsFixed(2)}',
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF4C9FC3))), // primary
-          const SizedBox(width: 16),
-
-          // Quantity controls
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove),
-                color: const Color(0xFF4C9FC3), // primary
-                onPressed: () {
-                  if (cart.quantity > 1) setState(() => cart.quantity--);
-                },
-              ),
-              Text('${cart.quantity}',
-                  style: const TextStyle(color: Color(0xFF0B2433))),
-              IconButton(
-                icon: const Icon(Icons.add),
-                color: const Color(0xFF4C9FC3), // primary
-                onPressed: () => setState(() => cart.quantity++),
-              ),
-            ],
-          ),
-
-          // Delete single item
           IconButton(
-            icon: const Icon(Icons.delete_outline),
-            color: const Color(0xFF31444E), // darkVariant
+            icon: const Icon(Icons.remove),
             onPressed: () => setState(() {
-              _selected.remove(cart.id);
-              testCarts.removeWhere((c) => c.id == cart.id);
+              if (item.quantity > 1) item.quantity--;
             }),
+          ),
+          Text('${item.quantity}'),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => setState(() => item.quantity++),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildFooter() => Container(
+    color: Colors.white,
+    padding: const EdgeInsets.all(16),
+    child: Row(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Total'),
+            Text('\$${_totalPrice.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        const Spacer(),
+        ElevatedButton(
+          onPressed: () {},
+          child: const Text('Buy Now'),
+        ),
+      ],
+    ),
+  );
 }

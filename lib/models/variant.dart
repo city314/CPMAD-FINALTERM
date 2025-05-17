@@ -97,6 +97,18 @@ class Variant {
     );
   }
 
+  factory Variant.empty() => Variant(
+    id: '',
+    productId: '',
+    variantName: '',
+    color: '',
+    attributes: '',
+    importPrice: 0,
+    sellingPrice: 0,
+    stock: 0,
+    images: [],
+  );
+
   @override
   String toString() => jsonEncode(toJson());
 }

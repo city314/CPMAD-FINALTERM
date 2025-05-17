@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -322,9 +323,30 @@ class _ProductListState extends State<ProductList> {
   }
 
   Widget _buildProductCard(Product product) {
-    final imageBytes = product.images != null && product.images!.isNotEmpty
-        ? base64Decode(product.images!.first['base64'] ?? '')
-        : null;
+    // Log dữ liệu product để debug
+    try {
+      print(product.toJson());
+    } catch (e) {
+      print(product);
+    }
+
+    String? base64Str;
+    if (product.images != null && product.images!.isNotEmpty) {
+      final img = product.images!.first;
+      if (img != null && img['base64'] != null && img['base64'] is String) {
+        base64Str = img['base64'] as String;
+      }
+    }
+    Uint8List? imageBytes;
+    try {
+      if (base64Str != null && base64Str.isNotEmpty) {
+        // Loại bỏ prefix nếu có (data:image/png;base64,...)
+        imageBytes = base64Decode(base64Str.split(',').last);
+      }
+    } catch (e) {
+      print('Lỗi decode base64: $e, base64Str: $base64Str');
+      imageBytes = null;
+    }
 
     return Card(
       elevation: 3,
@@ -349,15 +371,34 @@ class _ProductListState extends State<ProductList> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    product.name,
+                    product.name ?? '',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${product.lowestPrice}₫',
+                    '${product.lowestPrice ?? ''}₫',
                     style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        // TODO: Thêm vào giỏ hàng
+                      },
+                      icon: const Icon(Icons.add_shopping_cart, size: 18),
+                      label: const Text('Thêm vào giỏ hàng', style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

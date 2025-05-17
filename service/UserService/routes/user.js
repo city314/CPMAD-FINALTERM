@@ -348,4 +348,11 @@ router.get('/email/:email', async (req, res) => {
   }
 });
 
+router.get('/loyalty-point', async (req, res) => {
+  const { email } = req.query;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json({ loyalty_point: user.loyalty_point });
+});
+
 module.exports = router;
