@@ -72,30 +72,26 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     return DefaultTabController(
       length: _statuses.length,
       child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
         body: Column(
           children: [
             // Section Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: kLight2,
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: const SectionHeader('Quản lý Danh mục'),
             ),
             // TabBar
             Container(
-              color: Colors.white,
+              color: Theme.of(context).primaryColor,
               child: TabBar(
                 isScrollable: true,
-                indicatorSize: TabBarIndicatorSize.tab,
                 indicator: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Theme.of(context).primaryColor,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-                tabs: _statuses.map((s) => Container(
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.white,
+                tabs: _statuses.map((s) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(s.name.capitalize()),
                 )).toList(),
@@ -124,8 +120,74 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           phone: '', addresses: [], role: '', status: '', timeCreate: DateTime.now(),
                         ),
                       );
+                      // For pending orders, show action buttons
+                      if (status == OrderStatus.pending) {
+                        return Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.grey.shade300,
+                                      child: Text(user.name.isNotEmpty ? user.name[0] : '?'),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('#\${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 4),
+                                          Text(user.name),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            final idx = _orders.indexWhere((e) => e.id == o.id);
+                                            if (idx != -1) {
+                                              _orders[idx] = o.copyWith(status: OrderStatus.canceled);
+                                            }
+                                          });
+                                        },
+                                        child: const Text('Từ chối'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            final idx = _orders.indexWhere((e) => e.id == o.id);
+                                            if (idx != -1) {
+                                              _orders[idx] = o.copyWith(status: OrderStatus.paid);
+                                            }
+                                          });
+                                        },
+                                        child: const Text('Duyệt đơn'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      // Other statuses: default card
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 2,
                         child: InkWell(
@@ -136,29 +198,24 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: kLight1,
-                                  child: Text(user.name.isNotEmpty ? user.name[0] : '?', style: const TextStyle(color: kDark2)),
+                                  backgroundColor: Colors.grey.shade300,
+                                  child: Text(user.name.isNotEmpty ? user.name[0] : '?'),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('#${o.id}', style: const TextStyle(fontWeight: FontWeight.bold, color: kDark1)),
+                                      Text('#\${o.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
                                       const SizedBox(height: 4),
-                                      Text(user.name, style: const TextStyle(color: kDark3)),
+                                      Text(user.name),
                                       const SizedBox(height: 4),
                                       Text(
-                                        '${o.timeCreate.toLocal()}'.split('.')[0],
-                                        style: const TextStyle(fontSize: 12, color: kDark3),
+                                        '\${o.timeCreate.toLocal()}'.split('.')[0],
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                                       ),
                                     ],
                                   ),
-                                ),
-                                Chip(
-                                  label: Text(o.status.name.capitalize()),
-                                  backgroundColor: _statusColor(o.status).withAlpha((0.2 * 255).round()),
-                                  labelStyle: TextStyle(color: _statusColor(o.status)),
                                 ),
                               ],
                             ),
@@ -269,7 +326,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       ),
     );
   }
-
   Color _statusColor(OrderStatus status) {
     switch (status) {
       case OrderStatus.pending:
@@ -282,6 +338,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         return Colors.green;
       case OrderStatus.canceled:
         return Colors.red;
-      }
+    }
   }
 }
