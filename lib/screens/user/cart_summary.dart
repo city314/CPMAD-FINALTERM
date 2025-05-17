@@ -8,10 +8,10 @@ import 'package:cpmad_final/models/variant.dart';
 
 import '../../models/selectedproduct.dart';
 
-class CheckoutPage extends StatefulWidget {
+class CartSummary extends StatefulWidget {
   final List<SelectedProduct> selectedItems;
 
-  const CheckoutPage({
+  const CartSummary({
     Key? key,
     required this.selectedItems,
   }) : super(key: key);
@@ -20,7 +20,7 @@ class CheckoutPage extends StatefulWidget {
   _CheckoutPageState createState() => _CheckoutPageState();
 }
 
-class _CheckoutPageState extends State<CheckoutPage> {
+class _CheckoutPageState extends State<CartSummary> {
   bool _useCoins = false;
   final TextEditingController _voucherController = TextEditingController();
   double _voucherDiscount = 0;
