@@ -392,10 +392,11 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     constraints: BoxConstraints(minWidth: screenWidth),
                     child: DataTable(
                       columnSpacing: 24,
-                      headingRowColor: WidgetStateProperty.resolveWith((_) =>
-                          Theme.of(context).dividerColor..withValues(alpha: 0.1)),
+                      headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                            (states) => Theme.of(context).colorScheme.onSurface.withOpacity(0.04),
+                      ),
                       columns: const [
-                        DataColumn(label: Text('Tên SP')),
+                        DataColumn(label: Text('Tên sản phẩm')),
                         DataColumn(label: Text('Thương hiệu')),
                         DataColumn(label: Text('Danh mục')),
                         DataColumn(label: Text('Giá')),
