@@ -1,10 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/variant.dart';
 import '../../service/ProductService.dart';
-import 'admin_product_detail.dart';
 import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
@@ -20,7 +16,14 @@ class AdminProductScreen extends StatefulWidget {
 class _AdminProductScreenState extends State<AdminProductScreen> {
   final List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
+  List<Brand> _brands = [];
+  List<Category> _categories = [];
   final TextEditingController _searchCtrl = TextEditingController();
+  final TextEditingController _minPriceCtrl = TextEditingController();
+  final TextEditingController _maxPriceCtrl = TextEditingController();
+
+  Brand? _selectedBrand;
+  Category? _selectedCategory;
 
   @override
   void initState() {
@@ -28,6 +31,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _filteredProducts = List.from(_allProducts);
     _loadProducts();
     _searchCtrl.addListener(_onSearch);
+    _minPriceCtrl.addListener(_applyFilters);
+    _maxPriceCtrl.addListener(_applyFilters);
   }
 
   @override
@@ -40,10 +45,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   Future<void> _loadProducts() async {
     try {
       final products = await ProductService.fetchAllProducts();
+      final brands     = await ProductService.fetchAllBrand();
+      final categories = await ProductService.fetchAllCategory();
+
       setState(() {
         _allProducts.clear();
         _allProducts.addAll(products);
         _filteredProducts = List.from(products);
+        _brands           = [Brand(id: '', name: 'Tất cả'), ...brands];
+        _categories       = [Category(id: '', name: 'Tất cả'), ...categories];
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải sản phẩm: $e')));
@@ -54,6 +64,30 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     final query = _searchCtrl.text.toLowerCase();
     setState(() {
       _filteredProducts = _allProducts.where((p) => p.name.toLowerCase().contains(query)).toList();
+    });
+  }
+
+  void _applyFilters() {
+    final q      = _searchCtrl.text.toLowerCase();
+    final minP   = double.tryParse(_minPriceCtrl.text) ?? 0;
+    final maxP   = double.tryParse(_maxPriceCtrl.text) ?? double.infinity;
+
+    // Lấy id của brand/category, nếu null thì thành chuỗi rỗng
+    final selectedBrandId    = _selectedBrand?.id ?? '';
+    final selectedCategoryId = _selectedCategory?.id ?? '';
+
+    setState(() {
+      _filteredProducts = _allProducts.where((p) {
+        final nameMatch     = p.name.toLowerCase().contains(q);
+
+        // Nếu chưa chọn (id == '') thì luôn match, ngược lại so với p.brandId
+        final brandMatch    = selectedBrandId.isEmpty || p.brandId == selectedBrandId;
+        final categoryMatch = selectedCategoryId.isEmpty || p.categoryId == selectedCategoryId;
+
+        final price         = p.lowestPrice ?? 0;
+        final priceMatch    = price >= minP && price <= maxP;
+        return nameMatch && brandMatch && categoryMatch && priceMatch;
+      }).toList();
     });
   }
 
@@ -107,7 +141,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader('Quản lý sản phẩm'), // thêm SectionHeader :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+            const SectionHeader('Quản lý sản phẩm'), // thêm SectionHeader
             const SizedBox(height: 16),
 
             // Search bar
@@ -121,7 +155,72 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            // --- FILTERS ---
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<Brand>(
+                    value: _selectedBrand,
+                    items: _brands
+                        .map((b) => DropdownMenuItem(value: b, child: Text(b.name)))
+                        .toList(),
+                    decoration: InputDecoration(
+                      labelText: 'Nhãn hiệu',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onChanged: (b) {
+                      _selectedBrand = b;
+                      _applyFilters();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: DropdownButtonFormField<Category>(
+                    value: _selectedCategory,
+                    items: _categories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                        .toList(),
+                    decoration: InputDecoration(
+                      labelText: 'Danh mục',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onChanged: (c) {
+                      _selectedCategory = c;
+                      _applyFilters();
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
 
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _minPriceCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Giá từ',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _maxPriceCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Giá đến',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             // Product grid
             Expanded(
               child: LayoutBuilder(
