@@ -261,7 +261,7 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
                         Row(
                           children: [
                             Text(
-                              'Giá: ${formatPrice(p.lowestPrice ?? 0)}',
+                              'Giá: ${formatPrice((p.lowestPrice ?? 0).toDouble())}',
                               style: const TextStyle(fontSize: 12),
                             ),
                             const SizedBox(width: 12),

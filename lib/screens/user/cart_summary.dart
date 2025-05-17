@@ -4,6 +4,8 @@ import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:cpmad_final/service/OrderService.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../service/CartService.dart';
 import '../../utils/format_utils.dart';
 
 import '../../models/selectedproduct.dart';
@@ -57,10 +59,7 @@ class _CheckoutPageState extends State<CartSummary> {
 
     if (defaultAddr == null) return 'Không có địa chỉ mặc định';
 
-    return '${defaultAddr['address']}, '
-        '${defaultAddr['commune']}, '
-        '${defaultAddr['district']}, '
-        '${defaultAddr['city']}';
+    return '${defaultAddr['address']}';
   }
 
   void _loadUserInfo() async {
@@ -172,14 +171,17 @@ class _CheckoutPageState extends State<CartSummary> {
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                    Form(
+                      key: _formKey,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: _buildShippingForm(),
                       ),
-                      child: _buildShippingForm(),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
@@ -215,14 +217,17 @@ class _CheckoutPageState extends State<CartSummary> {
                     .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
+              Form(
+                key: _formKey,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: _buildShippingForm(),
                 ),
-                child: _buildShippingForm(),
               ),
             ],
           ),
@@ -517,6 +522,15 @@ class _CheckoutPageState extends State<CartSummary> {
             backgroundColor: Colors.red,
           ));
           return;
+        } else {
+          final oldUserId = await SharedPreferences.getInstance().then((prefs) => prefs.getString('guestId') ?? '');
+          final newUserId = email; // hoặc userId thực tế nếu bạn dùng _id
+          if (oldUserId.isNotEmpty && newUserId.isNotEmpty) {
+            await CartService.updateCartUserId(oldUserId, newUserId);
+            // Cập nhật lại user_id trong SharedPreferences để các thao tác sau dùng user mới
+            final prefs = await SharedPreferences.getInstance();
+            prefs.setString('guestId', newUserId);
+          }
         }
       }
     }

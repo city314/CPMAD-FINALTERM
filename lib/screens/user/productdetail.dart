@@ -962,7 +962,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            formatPrice(selectedVariant?.sellingPrice ?? _product!.lowestPrice ?? 0),
+                            formatPrice((selectedVariant?.sellingPrice ?? _product!.lowestPrice ?? 0).toDouble()),
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
                           ),
                           const SizedBox(height: 24),

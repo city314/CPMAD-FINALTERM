@@ -145,4 +145,23 @@ router.post('/create', async (req, res) => {
   }
 });
 
+// API cập nhật user_id cho cart
+router.put('/update-user', async (req, res) => {
+  const { old_user_id, new_user_id } = req.body;
+  if (!old_user_id || !new_user_id) {
+    return res.status(400).json({ error: 'Thiếu dữ liệu user_id' });
+  }
+
+  try {
+    const cart = await Cart.findOne({ user_id: old_user_id });
+    if (!cart) return res.status(404).json({ error: 'Không tìm thấy giỏ hàng' });
+
+    cart.user_id = new_user_id;
+    await cart.save();
+    res.json(cart);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
 module.exports = router;

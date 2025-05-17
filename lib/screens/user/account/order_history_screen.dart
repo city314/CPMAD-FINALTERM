@@ -26,7 +26,7 @@ class OrderHistoryScreen extends StatelessWidget {
             leading: const Icon(Icons.receipt),
             title: Text('Đơn hàng ${order['id']}'),
             subtitle: Text('Ngày: ${order['date']}'),
-            trailing: Text(formatPrice(order['total'].toDouble())),
+            trailing: Text(formatPrice((order['total'] as num).toDouble())),
             onTap: () {
               // TODO: Xem chi tiết đơn hàng
             },

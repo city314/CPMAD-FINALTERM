@@ -273,7 +273,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               Text('Thương hiệu: ${p.brandName}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 8),
-              Text('Giá: ${formatPrice(p.lowestPrice ?? 0)}',
+              Text('Giá: ${formatPrice((p.lowestPrice ?? 0).toDouble())}',
                   style: const TextStyle(fontSize: 14, color: Colors.green)),
               const SizedBox(height: 8),
               Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
@@ -406,7 +406,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       ],
                       rows: _filteredProducts.map((p) {
                         final priceText = p.lowestPrice != null
-                            ? formatPrice(p.lowestPrice!)
+                            ? formatPrice((p.lowestPrice!).toDouble())
                             : '—';
                         final brandName = _brands
                             .firstWhere((b) => b.id == p.brandId,

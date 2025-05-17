@@ -404,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              formatPrice(product.lowestPrice ?? 0),
+                              formatPrice((product.lowestPrice ?? 0).toDouble()),
                               style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w600,
@@ -508,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              formatPrice(product.lowestPrice ?? 0),
+                              formatPrice((product.lowestPrice ?? 0).toDouble()),
                               style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 15),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -608,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              formatPrice(product.lowestPrice ?? 0),
+                              formatPrice((product.lowestPrice ?? 0).toDouble()),
                               style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 15),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -981,7 +981,7 @@ class ProductSection extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          formatPrice(product.lowestPrice ?? 0),
+                          formatPrice((product.lowestPrice ?? 0).toDouble()),
                           style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 15),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

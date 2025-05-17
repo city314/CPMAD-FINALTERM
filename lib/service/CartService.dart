@@ -136,4 +136,20 @@ class CartService {
       throw Exception('Failed to update cart item');
     }
   }
+
+  static Future<void> updateCartUserId(String oldUserId, String newUserId) async {
+    final uri = Uri.parse('$baseUrl/update-user');
+    final res = await http.put(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'old_user_id': oldUserId,
+        'new_user_id': newUserId,
+      }),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Cập nhật cart user_id thất bại: ${res.body}');
+    }
+  }
+
 }
