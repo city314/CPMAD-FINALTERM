@@ -165,6 +165,14 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/admin/chat',
+      name: 'admin_chat',
+      builder: (context, state) {
+        final email = state.extra as String;
+        return CustomerSupportScreen(email: email);
+      },
+    ),
     ShellRoute(
       // Wrapper duy nhất, quản lý AppBar/Sidebar/BottomNav
       builder: (context, state, child) {
@@ -245,14 +253,6 @@ final GoRouter appRouter = GoRouter(
           path: '/admin/discount',
           name: 'admin_discount',
           builder: (c, s) => const AdminDiscountScreen(),
-        ),
-        GoRoute(
-          path: '/admin/chat',
-          name: 'admin_chat',
-          builder: (context, state) {
-            final email = state.extra as String;
-            return CustomerSupportScreen(email: email);
-          },
         ),
       ],
     ),
