@@ -54,4 +54,21 @@ class Order {
     'status': status.name,
     'time_create': timeCreate.toIso8601String(),
   };
+
+  Order copyWith({ OrderStatus? status }) {
+    return Order(
+      id: this.id,
+      userId: this.userId,
+      sessionId: this.sessionId,
+      totalPrice: this.totalPrice,
+      loyaltyPointUsed: this.loyaltyPointUsed,
+      discount: this.discount,
+      tax: this.tax,
+      shippingFee: this.shippingFee,
+      finalPrice: this.finalPrice,
+      status: status ?? this.status,
+      timeCreate: this.timeCreate,
+    );
+  }
+
 }
