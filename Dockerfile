@@ -1,18 +1,35 @@
-# Stage 1: build Flutter web
+# 1) Builder: pull Flutter from Git (stable channel)
 FROM ubuntu:22.04 AS builder
-RUN apt-get update && apt-get install -y curl unzip xz-utils git libglu1-mesa build-essential
-# Download Flutter SDK
-RUN curl -Lo flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.7.12-stable.tar.xz \
-  && tar xf flutter.tar.xz -C /opt
+
+# install deps
+RUN apt-get update && \
+    apt-get install -y curl git unzip xz-utils libglu1-mesa build-essential
+
+# clone the Flutter repo from stable channel
+RUN git clone --branch stable --depth 1 https://github.com/flutter/flutter.git /opt/flutter
+
+# fix Git “dubious ownership” error inside /opt/flutter
+RUN git config --global --add safe.directory /opt/flutter
+
+# add Flutter to PATH
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
+# enable web
 RUN flutter config --enable-web
 
 WORKDIR /app
-COPY . .
+
+# copy only pubspec to leverage Docker cache
+COPY pubspec.* ./
 RUN flutter pub get
+
+# copy everything else
+COPY . .
+
+# build the web app
 RUN flutter build web --release
 
-# Stage 2: serve via nginx
+# 2) Nginx stage: serve the built web files
 FROM nginx:alpine
 COPY --from=builder /app/build/web /usr/share/nginx/html
 EXPOSE 80
