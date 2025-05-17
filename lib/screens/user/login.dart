@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi đăng nhập: $e')),
       );
-      print('❌ Lỗi đăng nhập: $e');
+      print('Lỗi đăng nhập: $e');
     } finally {
       setState(() => _isLoading = false);
     }
