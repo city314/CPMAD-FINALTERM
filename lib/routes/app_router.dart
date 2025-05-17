@@ -32,9 +32,10 @@ import '../screens/user/account/order_history_screen.dart';
 import '../screens/user/account/change_password_after_login.dart';
 import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
+import '../screens/user/order_done.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/home',
+  initialLocation: '/orderdone',
   routes: [
     GoRoute(
       path: '/',
@@ -123,6 +124,11 @@ final GoRouter appRouter = GoRouter(
             .toList();
         return CartSummary(selectedItems: selectedItems);
       },
+    ),
+    GoRoute(
+      path: '/orderdone',
+      name: 'orderdone',
+      builder: (context, state) => OrderSuccessPage(),
     ),
     GoRoute(
       path: '/forgot-password',
