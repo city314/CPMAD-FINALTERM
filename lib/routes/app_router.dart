@@ -1,6 +1,7 @@
 import 'package:cpmad_final/screens/user/cart_summary.dart';
 import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:cpmad_final/screens/user/account/user_cart.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../screens/user/login.dart';
@@ -36,7 +37,7 @@ import '../screens/user/check_out.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/account/cart/cartsummary/checkout',
+  initialLocation: '/account/cart/summary',
   routes: [
     GoRoute(
       path: '/',
@@ -114,20 +115,47 @@ final GoRouter appRouter = GoRouter(
       name: 'cart',
       builder: (context, state) => UserCartPage(),
     ),
-    // GoRoute(
-    //   path: '/account/cart/cartsummary',
-    //   name: 'cartsummary',
-    //   builder: (context, state) => CartSummaryPage(),
-    // ),
     GoRoute(
       path: '/account/cart/summary',
       name: 'cartsummary',
       builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>;
-        final List<dynamic> rawItems = extra['items'];
-        final List<SelectedProduct> selectedItems = rawItems
+        // 1) Dữ liệu thật từ navigation (nếu có)
+        final extra = state.extra as Map<String, dynamic>?;
+        final hasRealData = extra != null && extra['items'] != null;
+
+        // 2) Dữ liệu test hard-code: luôn có đủ String, int, double...
+        final testItems = <SelectedProduct>[
+          SelectedProduct(
+            variant: Variant(
+              id: 'v1',
+              productId: 'p1',
+              variantName: 'Red – Size M',
+              sellingPrice: 1000000.0,
+              images: [
+                {'base64': ''},  // chuỗi rỗng vẫn hợp lệ
+              ], attributes: '', importPrice: 100, stock: 1,
+            ),
+            quantity: 2, discount: 10,
+          ),
+          SelectedProduct(
+            variant: Variant(
+              id: 'v2',
+              productId: 'p2',
+              variantName: 'Blue – Size L',
+              sellingPrice: 500000.0,
+              images: [], attributes: '', importPrice: 1000, stock: 1,       // không có ảnh cũng ok
+            ),
+            quantity: 1, discount: 10,
+          ),
+        ];
+
+        // 3) Chọn dùng dữ liệu thật hay test
+        final selectedItems = hasRealData
+            ? (extra!['items'] as List<dynamic>)
             .map((e) => SelectedProduct.fromJson(e as Map<String, dynamic>))
-            .toList();
+            .toList()
+            : testItems;
+
         return CartSummary(selectedItems: selectedItems);
       },
     ),
