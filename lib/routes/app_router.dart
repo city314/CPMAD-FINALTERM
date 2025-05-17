@@ -165,6 +165,14 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/admin/chat',
+      name: 'admin_chat',
+      builder: (context, state) {
+        final email = state.extra as String;
+        return CustomerSupportScreen(email: email);
+      },
+    ),
     ShellRoute(
       // Wrapper duy nhất, quản lý AppBar/Sidebar/BottomNav
       builder: (context, state, child) {
@@ -178,7 +186,7 @@ final GoRouter appRouter = GoRouter(
           if (loc.startsWith('/admin/orders'))    return 5;
           if (loc.startsWith('/admin/coupons'))   return 6;
           if (loc.startsWith('/admin/discount'))  return 7;
-          if (loc.startsWith('/admin/chat'))      return 8;
+          if (loc.startsWith('/admin/support'))      return 8;
           return 0;
         }
 
@@ -195,7 +203,7 @@ final GoRouter appRouter = GoRouter(
               case 5: context.go('/admin/orders');    break;
               case 6: context.go('/admin/coupons');   break;
               case 7: context.go('/admin/discount');  break;
-              case 8: context.go('/admin/chat');      break;
+              case 8: context.go('/admin/support');   break;
             }
           },
         );
@@ -245,14 +253,6 @@ final GoRouter appRouter = GoRouter(
           path: '/admin/discount',
           name: 'admin_discount',
           builder: (c, s) => const AdminDiscountScreen(),
-        ),
-        GoRoute(
-          path: '/admin/chat',
-          name: 'admin_chat',
-          builder: (context, state) {
-            final email = state.extra as String;
-            return CustomerSupportScreen(email: email);
-          },
         ),
       ],
     ),

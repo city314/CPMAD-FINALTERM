@@ -3,6 +3,7 @@ import '../../models/order.dart';
 import '../../models/orderDetail.dart';
 import '../../models/user.dart';
 import 'component/SectionHeader.dart';
+import '../../utils/format_utils.dart';
 
 // Color palette
 const Color kDark1    = Color.fromRGBO(11,  36,  51, 1);
@@ -280,7 +281,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 children: [
                   Text(d.productId, style: const TextStyle(color: kDark3)),
                   Text('x${d.quantity}', style: const TextStyle(color: kDark3)),
-                  Text('₫${d.total.toStringAsFixed(0)}', style: const TextStyle(color: kDark3)),
+                  Text(formatPrice(d.total.toDouble()), style: const TextStyle(color: kDark3)),
                 ],
               ),
             )),
@@ -289,7 +290,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Tổng cộng', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('₫${o.finalPrice.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(formatPrice(o.finalPrice.toDouble()), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 16),

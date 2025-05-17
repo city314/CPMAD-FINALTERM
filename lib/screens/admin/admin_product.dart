@@ -5,6 +5,7 @@ import 'package:cpmad_final/models/product.dart';
 import 'package:cpmad_final/models/category.dart';
 import 'package:cpmad_final/models/brand.dart';
 import 'component/SectionHeader.dart';
+import '../../utils/format_utils.dart';
 
 class AdminProductScreen extends StatefulWidget {
   const AdminProductScreen({Key? key}) : super(key: key);
@@ -272,7 +273,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               Text('Thương hiệu: ${p.brandName}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 8),
-              Text('Giá: ₫${p.lowestPrice?.toStringAsFixed(0)}',
+              Text('Giá: ${formatPrice(p.lowestPrice ?? 0)}',
                   style: const TextStyle(fontSize: 14, color: Colors.green)),
               const SizedBox(height: 8),
               Text('Kho: ${p.stock}', style: const TextStyle(fontSize: 12)),
@@ -405,7 +406,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       ],
                       rows: _filteredProducts.map((p) {
                         final priceText = p.lowestPrice != null
-                            ? '₫${p.lowestPrice!.toStringAsFixed(0)}'
+                            ? formatPrice(p.lowestPrice!)
                             : '—';
                         final brandName = _brands
                             .firstWhere((b) => b.id == p.brandId,
@@ -486,7 +487,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             child: SingleChildScrollView(
               controller: _horizontalController,
               scrollDirection: Axis.horizontal,
-              // một container rỗng để Scrollbar “có gì mà vẽ”
+              // một container rỗng để Scrollbar "có gì mà vẽ"
               child: SizedBox(width: screenWidth),
             ),
           ),

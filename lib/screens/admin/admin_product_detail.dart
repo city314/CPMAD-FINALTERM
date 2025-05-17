@@ -10,6 +10,7 @@ import 'package:cpmad_final/models/variant.dart';
 import 'package:go_router/go_router.dart';
 import '../../service/ProductService.dart';
 import 'component/variant_detail.dart';
+import '../../utils/format_utils.dart';
 
 // TODO: replace with dynamic data sources
 
@@ -165,9 +166,9 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     const SizedBox(height: 8),
                     Text('Thuộc tính: ${variant.attributes}'),
                     const SizedBox(height: 8),
-                    Text('Giá nhập: ₫${variant.importPrice.toStringAsFixed(0)}'),
+                    Text('Giá nhập: ${formatPrice(variant.importPrice)}'),
                     const SizedBox(height: 8),
-                    Text('Giá bán: ₫${variant.sellingPrice.toStringAsFixed(0)}'),
+                    Text('Giá bán: ${formatPrice(variant.sellingPrice)}'),
                     const SizedBox(height: 8),
                     Text('Tồn kho: ${variant.stock}'),
                     const SizedBox(height: 16),
@@ -448,7 +449,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _images.length + 1,     // +1 để hiển thị nút “thêm ảnh”
+                      itemCount: _images.length + 1,     // +1 để hiển thị nút "thêm ảnh"
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4,
                         crossAxisSpacing: 8,
@@ -642,7 +643,7 @@ class _AdminProductDetailState extends State<AdminProductDetail> {
                         return Card(
                           child: ListTile(
                             title: Text(v.variantName.isNotEmpty ? v.variantName : '(Chưa đặt tên)'),
-                            subtitle: Text('Giá: ₫${v.sellingPrice.toStringAsFixed(0)}  •  Kho: ${v.stock}'),
+                            subtitle: Text('Giá: ${formatPrice(v.sellingPrice)}  •  Kho: ${v.stock}'),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

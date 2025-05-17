@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'CustomNavbar.dart';
+import '../../utils/format_utils.dart';
 
 class OrderHistory extends StatefulWidget {
   const OrderHistory({super.key});
@@ -359,7 +360,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        '${order['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ',
+                                        formatPrice(order['price'].toDouble()),
                                         style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),
                                       ),
                                     ],

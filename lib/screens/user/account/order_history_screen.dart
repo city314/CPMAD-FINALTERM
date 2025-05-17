@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/format_utils.dart';
 
 class OrderHistoryScreen extends StatelessWidget {
   const OrderHistoryScreen({super.key});
@@ -6,8 +7,8 @@ class OrderHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final orders = [
-      {'id': '#001', 'date': '2024-05-01', 'total': '\$1,200'},
-      {'id': '#002', 'date': '2024-05-05', 'total': '\$980'},
+      {'id': '#001', 'date': '2024-05-01', 'total': 1200000},
+      {'id': '#002', 'date': '2024-05-05', 'total': 980000},
     ];
 
     return Scaffold(
@@ -25,7 +26,7 @@ class OrderHistoryScreen extends StatelessWidget {
             leading: const Icon(Icons.receipt),
             title: Text('Đơn hàng ${order['id']}'),
             subtitle: Text('Ngày: ${order['date']}'),
-            trailing: Text('${order['total']}'),
+            trailing: Text(formatPrice(order['total'].toDouble())),
             onTap: () {
               // TODO: Xem chi tiết đơn hàng
             },

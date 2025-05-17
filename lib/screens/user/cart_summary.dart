@@ -4,6 +4,7 @@ import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:cpmad_final/service/OrderService.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
+import '../../utils/format_utils.dart';
 
 import '../../models/selectedproduct.dart';
 import 'CustomNavbar.dart';
@@ -269,9 +270,10 @@ class _CheckoutPageState extends State<CartSummary> {
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('${variant.sellingPrice.toStringAsFixed(0)} đ',
-                    style: const TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.w600)),
+                Text(
+                  formatPrice(variant.sellingPrice),
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600)
+                ),
               ],
             ),
           ),

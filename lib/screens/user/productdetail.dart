@@ -15,6 +15,7 @@ import '../../service/ProductService.dart';
 import '../../service/UserService.dart';
 import '../../service/WebSocketService.dart';
 import 'CustomNavbar.dart';
+import '../../utils/format_utils.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -394,7 +395,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
               children: [
                 Text(
                   selectedVariant?.variantName ?? _product!.name,
-                  semanticsLabel: '${_variants[selectedVariantIndex].sellingPrice.toStringAsFixed(0)} đ',
+                  semanticsLabel: formatPrice(_variants[selectedVariantIndex].sellingPrice),
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
                 ),
                 Row(
@@ -961,7 +962,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '${(selectedVariant?.sellingPrice ?? _product!.lowestPrice)?.toStringAsFixed(0)} đ',
+                            formatPrice(selectedVariant?.sellingPrice ?? _product!.lowestPrice ?? 0),
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.red),
                           ),
                           const SizedBox(height: 24),

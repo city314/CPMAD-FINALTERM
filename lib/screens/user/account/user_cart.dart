@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
+import '../../../utils/format_utils.dart';
 
 // Models của bạn
 import 'package:cpmad_final/models/cart.dart';     // Cart(id, productId, variantId, quantity…) :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
@@ -285,11 +286,11 @@ class _UserCartPageState extends State<UserCartPage> {
           children: [
             Text('Tổng sản phẩm: $_totalQuantity'),
             const SizedBox(height: 4),
-            Text('Tổng tiền hàng: ${(_totalPrice + _totalDiscount).toStringAsFixed(0)} đ'),
-            Text('Tiết kiệm được: -${_totalDiscount.toStringAsFixed(0)} đ', style: const TextStyle(color: Colors.green)),
+            Text('Tổng tiền hàng: ${formatPrice(_totalPrice + _totalDiscount)}'),
+            Text('Tiết kiệm được: -${formatPrice(_totalDiscount)}', style: const TextStyle(color: Colors.green)),
             const SizedBox(height: 4),
             Text('Tổng thanh toán:', style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text('${_totalPrice.toStringAsFixed(0)} đ', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
+            Text(formatPrice(_totalPrice), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
           ],
         ),
         const Spacer(),

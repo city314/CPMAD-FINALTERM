@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/product.dart';
 import '../../service/ProductService.dart';
 import 'CustomNavbar.dart';
+import '../../utils/format_utils.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -402,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              product.lowestPrice.toString(),
+                              formatPrice(product.lowestPrice ?? 0),
                               style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w600,
@@ -506,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              product.lowestPrice.toString(),
+                              formatPrice(product.lowestPrice ?? 0),
                               style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 15),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -606,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              product.lowestPrice.toString(),
+                              formatPrice(product.lowestPrice ?? 0),
                               style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 15),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -979,7 +981,7 @@ class ProductSection extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          product.lowestPrice.toString(),
+                          formatPrice(product.lowestPrice ?? 0),
                           style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600, fontSize: 15),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io' show Platform;
 import 'CustomNavbar.dart';
+import '../../utils/format_utils.dart';
 
 class OrderDetail extends StatelessWidget {
   const OrderDetail({super.key});
@@ -198,7 +199,7 @@ class OrderDetail extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${p['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ',
+                          formatPrice(p['price'].toDouble()),
                           style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ],
@@ -538,7 +539,7 @@ class OrderDetail extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${p['price'].toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ',
+                            formatPrice(p['price'].toDouble()),
                             style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                         ],
@@ -774,7 +775,7 @@ class OrderDetail extends StatelessWidget {
           Text(label),
           value is int
               ? Text(
-                  '${value >= 0 ? '' : '-'}${value.abs().toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}đ',
+                  '${value >= 0 ? '' : '-'}${formatPrice(value.abs().toDouble())}',
                   style: TextStyle(
                     fontWeight: bold ? FontWeight.bold : FontWeight.normal,
                     color: green
