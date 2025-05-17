@@ -94,6 +94,16 @@ class ProductService {
     }
   }
 
+  static Future<List<Variant>> fetchAllVariants() async {
+    final response = await http.get(Uri.parse(_urlVariants));
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => Variant.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
   static Future<List<Variant>> fetchVariantsByProduct(String productId) async {
     final response = await http.get(Uri.parse('$_urlVariants/by-product/$productId'));
 

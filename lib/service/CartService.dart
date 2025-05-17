@@ -116,4 +116,24 @@ class CartService {
     // Nếu đã có guestId
     return prefs.getString('guestId')!;
   }
+
+  static Future<void> updateCartItemQuantity({
+    required String userId,
+    required String variantId,
+    required int quantity,
+  }) async {
+    final url = Uri.parse('$baseUrl/update');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'user_id': userId,
+        'variant_id': variantId,
+        'quantity': quantity,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update cart item');
+    }
+  }
 }

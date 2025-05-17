@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-  session_id: String,
   total_price: Number,
   loyalty_point_used: Number,
   discount: Number,
