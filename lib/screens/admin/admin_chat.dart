@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:go_router/go_router.dart';
 
 class CustomerSupportScreen extends StatefulWidget {
   final String email;
@@ -113,6 +114,7 @@ class _ChatScreenState extends State<CustomerSupportScreen> {
     final Color themeColor = const Color(0xFF3F51B5); // Indigo
     final Color accentColor = const Color(0xFFFFC107); // Amber
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final goRouter = GoRouter.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -128,6 +130,24 @@ class _ChatScreenState extends State<CustomerSupportScreen> {
               child: Text(widget.email),
             ),
           ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (goRouter.canPop()) {
+              // Nếu còn stack thì quay lại màn trước
+              goRouter.pop();
+            } else {
+              // Nếu không còn stack, điều hướng theo role
+              if (currentUserRole == 'customer') {
+                goRouter.goNamed('home');  // tên route home customer
+              } else if (currentUserRole == 'admin') {
+                goRouter.goNamed('admin_support');  // tên route admin support
+              } else {
+                goRouter.goNamed('login');         // fallback về login
+              }
+            }
+          },
         ),
       ),
       body: Column(
@@ -147,7 +167,7 @@ class _ChatScreenState extends State<CustomerSupportScreen> {
                     padding: EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isMe
-                          ? themeColor.withOpacity(0.85)
+                          ? themeColor.withValues(alpha: 0.85)
                           : (isDark ? Colors.grey[700] : Colors.grey[300]),
                       borderRadius: BorderRadius.circular(10),
                     ),
