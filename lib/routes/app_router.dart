@@ -1,3 +1,4 @@
+import 'package:cpmad_final/screens/user/cart_summary.dart';
 import 'package:cpmad_final/screens/user/productdetail.dart';
 import 'package:cpmad_final/screens/user/account/user_cart.dart';
 import 'package:go_router/go_router.dart';
@@ -121,7 +122,7 @@ final GoRouter appRouter = GoRouter(
         final List<SelectedProduct> selectedItems = rawItems
             .map((e) => SelectedProduct.fromJson(e as Map<String, dynamic>))
             .toList();
-        return CheckoutPage(selectedItems: selectedItems);
+        return CartSummary(selectedItems: selectedItems);
       },
     ),
     GoRoute(
