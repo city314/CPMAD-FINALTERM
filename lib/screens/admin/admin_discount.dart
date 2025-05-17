@@ -3,6 +3,7 @@ import '../../models/product.dart';
 import '../../models/productDiscount.dart';
 import '../../service/ProductService.dart';
 import 'component/SectionHeader.dart';
+import '../../utils/format_utils.dart';
 
 class AdminDiscountScreen extends StatefulWidget {
   const AdminDiscountScreen({Key? key}) : super(key: key);
@@ -260,7 +261,7 @@ class _AdminDiscountScreenState extends State<AdminDiscountScreen> {
                         Row(
                           children: [
                             Text(
-                              'Giá: ₫${p.lowestPrice?.toStringAsFixed(0)}',
+                              'Giá: ${formatPrice(p.lowestPrice ?? 0)}',
                               style: const TextStyle(fontSize: 12),
                             ),
                             const SizedBox(width: 12),
