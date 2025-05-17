@@ -5,9 +5,6 @@ const addressSchema = new mongoose.Schema({
   receiver_name: { type: String },
   phone: { type: String },
   address: { type: String },
-  commune: { type: String },
-  district: { type: String },
-  city: { type: String },
   default: { type: Boolean, default: false },
 }, { _id: false });
 

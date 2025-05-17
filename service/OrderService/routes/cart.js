@@ -102,22 +102,45 @@ router.post('/create', async (req, res) => {
   }
 
   try {
-    // Kiểm tra nếu đã có giỏ hàng thì không tạo lại
-    const existingCart = await Cart.findOne({ user_id });
-    if (existingCart) {
-      return res.status(409).json({ error: 'Giỏ hàng đã tồn tại' });
+    let cart = await Cart.findOne({ user_id });
+
+    if (cart) {
+      // Nếu giỏ hàng đã tồn tại → cập nhật hoặc gộp items
+      const variantMap = new Map();
+
+      // Thêm item cũ
+      for (const item of cart.items) {
+        variantMap.set(item.variant_id.toString(), item.quantity);
+      }
+
+      // Gộp item mới
+      for (const item of items) {
+        const vid = item.variant_id.toString();
+        const qty = item.quantity || 1;
+        variantMap.set(vid, (variantMap.get(vid) || 0) + qty);
+      }
+
+      // Chuyển map lại thành mảng
+      cart.items = Array.from(variantMap.entries()).map(([variant_id, quantity]) => ({
+        variant_id,
+        quantity,
+      }));
+
+      await cart.save();
+      return res.status(200).json(cart);
+    } else {
+      // Nếu chưa có → tạo mới
+      cart = new Cart({
+        user_id,
+        items,
+        time_add: new Date()
+      });
+
+      await cart.save();
+      return res.status(201).json(cart);
     }
-
-    const cart = new Cart({
-      user_id,
-      items, // [{ variant_id, quantity }]
-      time_add: new Date()
-    });
-
-    await cart.save();
-    return res.status(201).json(cart);
   } catch (error) {
-    console.error('❌ Lỗi tạo giỏ hàng:', error);
+    console.error('❌ Lỗi tạo/cập nhật giỏ hàng:', error);
     return res.status(500).json({ error: 'Lỗi server' });
   }
 });

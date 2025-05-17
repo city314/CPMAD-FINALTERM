@@ -106,7 +106,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                 Text('SĐT: ${user.phone}'),
                 const SizedBox(height: 8),
                 Text('Địa chỉ mặc định:', style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(defaultAddr.isEmpty ? 'Chưa có địa chỉ' : defaultAddr.fullAddress),
+                Text(defaultAddr.isEmpty ? 'Chưa có địa chỉ' : defaultAddr.address),
                 const SizedBox(height: 8),
                 Text('Vai trò: ${user.role == 'admin' ? 'Quản trị' : 'Khách hàng'}'),
                 Text('Trạng thái: ${user.status == 'active' ? 'Hoạt động' : 'Đã cấm'}'),

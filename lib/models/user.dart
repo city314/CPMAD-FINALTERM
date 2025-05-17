@@ -3,9 +3,6 @@ class Address {
   final String receiverName;
   final String phone;
   final String address;
-  final String commune;
-  final String district;
-  final String city;
   final bool isDefault;
 
   Address({
@@ -13,9 +10,6 @@ class Address {
     required this.receiverName,
     required this.phone,
     required this.address,
-    required this.commune,
-    required this.district,
-    required this.city,
     required this.isDefault,
   });
 
@@ -24,9 +18,6 @@ class Address {
     receiverName: '',
     phone: '',
     address: '',
-    commune: '',
-    district: '',
-    city: '',
     isDefault: false,
   );
 
@@ -37,22 +28,14 @@ class Address {
     receiverName: json['receiver_name'] ?? '',
     phone: json['phone'] ?? '',
     address: json['address'] ?? '',
-    commune: json['commune'] ?? '',
-    district: json['district'] ?? '',
-    city: json['city'] ?? '',
     isDefault: json['default'] ?? false,
   );
-
-  get fullAddress => '$address, $commune, $district, $city';
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'receiver_name': receiverName,
     'phone': phone,
     'address': address,
-    'commune': commune,
-    'district': district,
-    'city': city,
     'default': isDefault,
   };
 }

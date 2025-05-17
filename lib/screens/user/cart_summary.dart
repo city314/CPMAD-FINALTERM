@@ -33,6 +33,7 @@ class _CheckoutPageState extends State<CartSummary> {
   // Controllers
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
 
   // Khai báo form key để validate
@@ -41,22 +42,46 @@ class _CheckoutPageState extends State<CartSummary> {
   @override
   void initState() {
     super.initState();
-    _loadExternalData();
+    if (CurrentUser().isLogin) {
+      _loadUserInfo();
+    }
   }
 
-  void _loadExternalData() async {
+  String getDefaultFullAddress(Map<String, dynamic> user) {
+    final addresses = user['address'] as List<dynamic>? ?? [];
+    final defaultAddr = addresses.firstWhere(
+          (addr) => addr['default'] == true,
+      orElse: () => null,
+    );
+
+    if (defaultAddr == null) return 'Không có địa chỉ mặc định';
+
+    return '${defaultAddr['address']}, '
+        '${defaultAddr['commune']}, '
+        '${defaultAddr['district']}, '
+        '${defaultAddr['city']}';
+  }
+
+  void _loadUserInfo() async {
+    if (!CurrentUser().isLogin) return;
+
     try {
       final productIds = widget.selectedItems
           .map((e) => e.variant.productId)
           .toList();
-
-      loyalty = await UserService.getLoyaltyPoint(CurrentUser().email ?? '');
+      final user = await UserService.fetchUserByEmail(CurrentUser().email ?? '');
+      loyalty = user['loyalty_point'];
       lyt = loyalty;
-      setState(() {
-        _coinController.text = loyalty.toString();
-      });
+      if (user != null) {
+        setState(() {
+          _nameCtrl.text = user['address']['receiver_name'] ?? '';
+          _phoneCtrl.text = user['phone'] ?? '';
+          _emailCtrl.text = user['email'] ?? '';
+          _addressCtrl.text = getDefaultFullAddress(user);
+        });
+      }
     } catch (e) {
-      print('❌ Lỗi khi load dữ liệu checkout: $e');
+      print('❌ Lỗi khi load thông tin người dùng: $e');
     }
   }
 
@@ -65,13 +90,14 @@ class _CheckoutPageState extends State<CartSummary> {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
+    _emailCtrl.dispose();
   }
 
   InputDecoration _inputDecoration(String label, IconData icon) =>
       InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: Colors.white,
         prefixIcon: Icon(icon, color: Theme
             .of(context)
             .primaryColor),
@@ -96,7 +122,9 @@ class _CheckoutPageState extends State<CartSummary> {
       totalDiscount += price * item.quantity * (discount / 100);
     }
 
-    double finalAmount = totalPrice - totalDiscount - loyalty * 1000 - _voucherDiscount;
+    final shippingFee = 20000.0;
+    final tax = totalPrice * 0.03;
+    double finalAmount = totalPrice - totalDiscount - loyalty * 1000 - _voucherDiscount + tax + shippingFee;
 
     // Xác định layout rộng hay hẹp
     final isWide = MediaQuery.of(context).size.width >= 800;
@@ -133,7 +161,7 @@ class _CheckoutPageState extends State<CartSummary> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildSummary(totalPrice, totalDiscount, finalAmount),
+                    _buildSummary(totalPrice, totalDiscount, finalAmount, shippingFee, tax),
                     const SizedBox(height: 24),
                     Text(
                       'Thông tin giao hàng',
@@ -143,7 +171,15 @@ class _CheckoutPageState extends State<CartSummary> {
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    _buildShippingForm(),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: _buildShippingForm(),
+                    ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _onConfirmPressed,
@@ -168,7 +204,7 @@ class _CheckoutPageState extends State<CartSummary> {
                 child: _buildProductList(),
               ),
               const SizedBox(height: 24),
-              _buildSummary(totalPrice, totalDiscount, finalAmount),
+              _buildSummary(totalPrice, totalDiscount, finalAmount, shippingFee, tax),
               const SizedBox(height: 24),
               Text(
                 'Thông tin giao hàng',
@@ -178,14 +214,14 @@ class _CheckoutPageState extends State<CartSummary> {
                     .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              _buildShippingForm(),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _onConfirmPressed,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Xác nhận thanh toán'),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
+                child: _buildShippingForm(),
               ),
             ],
           ),
@@ -244,7 +280,7 @@ class _CheckoutPageState extends State<CartSummary> {
     );
   }
 
-  Widget _buildSummary(double total, double discount, double finalAmount) {
+  Widget _buildSummary(double total, double discount, double finalAmount, double shippingFee, double tax) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -374,21 +410,10 @@ class _CheckoutPageState extends State<CartSummary> {
           _priceRow('Giảm giá ($discount%)', discount),
           _priceRow('Giảm từ điểm KHTT', loyalty * 1000 as double),
           _priceRow('Giảm từ mã phiếu', _voucherDiscount),
+          _priceRow('Thuế (3%)', tax),
+          _priceRow('Phí vận chuyển', shippingFee),
           const Divider(),
           _priceRow('Thành tiền', finalAmount, bold: true),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigo,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text(
-                'Xác nhận thanh toán', style: TextStyle(fontSize: 16)),
-          ),
         ],
       ),
     );
@@ -431,6 +456,24 @@ class _CheckoutPageState extends State<CartSummary> {
         ),
         const SizedBox(height: 16),
         TextFormField(
+          controller: _emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: _inputDecoration('Email', Icons.email),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập email';
+              }
+
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Email không hợp lệ';
+              }
+
+              return null;
+            }
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
           controller: _addressCtrl,
           decoration: _inputDecoration('Địa chỉ', Icons.location_on),
           maxLines: 2,
@@ -440,33 +483,41 @@ class _CheckoutPageState extends State<CartSummary> {
     );
   }
 
-  void _onConfirmPressed() {
-    // 1) Validate form
-    if (!_formKey.currentState!.validate()) {
-      // nếu còn lỗi validate thì dừng, các TextFormField sẽ show message
-      return;
-    }
+  void _onConfirmPressed() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    // 2) Thu thập dữ liệu giao hàng
     final name = _nameCtrl.text.trim();
-    final phone = _phoneCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
     final address = _addressCtrl.text.trim();
 
-    // 3) Tạo payload đơn hàng
-    final orderPayload = {
-      'customerName': name,
-      'phone': phone,
-      'address': address,
-      'items': widget.selectedItems
-          .map((p) =>
-      {
-        'variantId': p.variant.id,
-        'quantity': p.quantity,
-      })
-          .toList(),
-      'voucherDiscount': _voucherDiscount,
-      'loyaltyPointsUsed': loyalty,
-      // ... thêm các trường cần thiết như totalPrice, finalAmount
-    };
+    if (!CurrentUser().isLogin) {
+      final existing = await UserService.checkIfEmailExists(email);
+      if (existing) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Email đã được đăng ký. Vui lòng đăng nhập để tiếp tục.'),
+          backgroundColor: Colors.red,
+        ));
+        return;
+      } else {
+        final password = 'user123';
+        print(name);
+        print(email);
+        print(address);
+        final success = await UserService.registerGuest(
+          email,
+          name,
+          password,
+          address,
+        );
+        if (!success) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Tạo tài khoản thất bại.'),
+            backgroundColor: Colors.red,
+          ));
+          return;
+        }
+      }
+    }
+    // TODO: Gửi orderPayload đến OrderService
   }
 }

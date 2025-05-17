@@ -14,6 +14,7 @@ class UserService {
     required String email,
     required String fullName,
     required String password,
+    required String address,
   }) async {
     final url = Uri.parse('$_url/register');
 
@@ -24,6 +25,10 @@ class UserService {
         'email': email,
         'name': fullName,
         'password': password,
+        'address': {
+          'receiver_name': fullName,
+          'address': address,
+        }
       }),
     );
 
@@ -312,5 +317,33 @@ class UserService {
     } else {
       throw Exception('Lỗi khi lấy điểm khách hàng');
     }
+  }
+
+  static Future<bool> checkIfEmailExists(String email) async {
+    final resp = await http.get(Uri.parse('$_url/check-email/$email'));
+    if (resp.statusCode == 200) {
+      final jsonData = json.decode(resp.body);
+      return jsonData['exists'] ?? false;
+    }
+    return false;
+  }
+
+  static Future<bool> registerGuest(String email, String name, String password, String fullAddress) async {
+    final body = json.encode({
+      'email': email,
+      'name': name,
+      'password': password,
+      'address': {
+        'receiver_name': name,
+        'address': fullAddress,
+      }
+    });
+
+    final resp = await http.post(
+      Uri.parse('$_url/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    return resp.statusCode == 201;
   }
 }

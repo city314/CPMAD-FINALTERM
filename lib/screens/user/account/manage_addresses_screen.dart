@@ -85,9 +85,6 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
   Future<Address?> _showAddressDialog({Address? initial}) {
     final nameController = TextEditingController(text: initial?.receiverName ?? '');
     final phoneController = TextEditingController(text: initial?.phone ?? '');
-    final provinceController = TextEditingController(text: initial?.city ?? '');
-    final districtController = TextEditingController(text: initial?.district ?? '');
-    final wardController = TextEditingController(text: initial?.commune ?? '');
     final streetController = TextEditingController(text: initial?.address ?? '');
 
     return showDialog<Address>(
@@ -108,20 +105,8 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
                 keyboardType: TextInputType.phone,
               ),
               TextField(
-                controller: provinceController,
-                decoration: const InputDecoration(labelText: 'Tỉnh/Thành phố'),
-              ),
-              TextField(
-                controller: districtController,
-                decoration: const InputDecoration(labelText: 'Quận/Huyện'),
-              ),
-              TextField(
-                controller: wardController,
-                decoration: const InputDecoration(labelText: 'Phường/Xã'),
-              ),
-              TextField(
                 controller: streetController,
-                decoration: const InputDecoration(labelText: 'Số nhà / Chi tiết'),
+                decoration: const InputDecoration(labelText: 'Địa chỉ'),
               ),
             ],
           ),
@@ -134,9 +119,6 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
                 id: initial?.id ?? const Uuid().v4(),
                 receiverName: nameController.text.trim(),
                 phone: phoneController.text.trim(),
-                city: provinceController.text.trim(),
-                district: districtController.text.trim(),
-                commune: wardController.text.trim(),
                 address: streetController.text.trim(),
                 isDefault: initial?.isDefault ?? false,
               );
@@ -173,7 +155,7 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('SĐT: ${address.phone}'),
-                Text('Địa chỉ: ${address.fullAddress}'),
+                Text('Địa chỉ: ${address.address}'),
                 if (isDefault)
                   const Text('Địa chỉ mặc định', style: TextStyle(color: Colors.green)),
               ],
@@ -210,9 +192,6 @@ extension on Address {
     String? id,
     String? receiverName,
     String? phoneNumber,
-    String? province,
-    String? district,
-    String? ward,
     String? streetDetail,
     bool? isDefault,
   }) {
@@ -220,9 +199,6 @@ extension on Address {
       id: id ?? this.id,
       receiverName: receiverName ?? this.receiverName,
       phone: phoneNumber ?? this.phone,
-      city: province ?? this.city,
-      district: district ?? this.district,
-      commune: ward ?? this.commune,
       address: streetDetail ?? this.address,
       isDefault: isDefault ?? this.isDefault,
     );

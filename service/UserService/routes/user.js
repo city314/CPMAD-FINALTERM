@@ -6,9 +6,9 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
 router.post('/register', async (req, res) => {
-  const { email, name, password } = req.body;
+  const { email, name, password, address } = req.body;
 
-  if (!email || !name || !password) {
+  if (!email || !name || !password || !address) {
     return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin' });
   }
 
@@ -19,11 +19,23 @@ router.post('/register', async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Tạo ID cho địa chỉ mới theo định dạng AD001
+  const formattedId = 'AD001';
+
+  const defaultAddress = {
+    id: formattedId,
+    receiver_name: name,
+    phone: address.phone,
+    address: address.address,
+    default: true
+  };
+
   const newUser = new User({
     email,
     name,
     password: hashedPassword,
     role: 'customer',
+    address: [defaultAddress]
   });
 
   await newUser.save();
@@ -143,14 +155,7 @@ router.get('/profile/:email', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy người dùng' });
     }
 
-    res.json({
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      status: user.status,
-      address: user.address,
-    });
+    res.json(user);
   } catch (error) {
     console.error('Lỗi khi lấy thông tin người dùng:', error);
     res.status(500).json({ message: 'Lỗi server' });
@@ -353,6 +358,11 @@ router.get('/loyalty-point', async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: 'User not found' });
   res.json({ loyalty_point: user.loyalty_point });
+});
+
+router.get('/check-email/:email', async (req, res) => {
+  const user = await User.findOne({ email: req.params.email });
+  res.json({ exists: !!user });
 });
 
 module.exports = router;

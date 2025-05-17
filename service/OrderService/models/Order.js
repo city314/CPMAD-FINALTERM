@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  user_id: { type: String, required: true },
   total_price: Number,
   loyalty_point_used: Number,
   discount: Number,
+  coupon: Number,
   tax: Number,
   shipping_fee: Number,
   final_price: Number,

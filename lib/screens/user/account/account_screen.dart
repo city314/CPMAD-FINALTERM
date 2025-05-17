@@ -25,7 +25,7 @@ class _AccountScreenState  extends State<AccountScreen> {
 
   Future<void> _loadUserInfo() async {
     try {
-      final data = await UserService.fetchUserByEmail(currentUser ?? 'thonglinhiq@gmail.com');
+      final data = await UserService.fetchUserByEmail(currentUser ?? '');
       setState(() => userInfo = data);
     } catch (e) {
       print('❌ Lỗi lấy user info: $e');

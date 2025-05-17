@@ -68,7 +68,7 @@ class _UserCartPageState extends State<UserCartPage> {
     final prefs = await SharedPreferences.getInstance();
     final cartId = prefs.getString('cartId');
     final id = CurrentUser().isLogin ? CurrentUser().email : cartId;
-
+    print(id);
     final cart = await CartService.fetchCart(id ?? '');
     final products = await ProductService.fetchAllProducts();
     final variants = await ProductService.fetchAllVariants();

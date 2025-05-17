@@ -62,7 +62,7 @@ class CartService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final cartId = jsonDecode(response.body)['_id'];
+      final cartId = userId;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cartId', cartId);
     } else {
@@ -94,7 +94,7 @@ class CartService {
 
   static Future<bool> isCartCreated() async {
     final prefs = await SharedPreferences.getInstance();
-    final cartId = prefs.getString('cartId');
+    final cartId = prefs.getString('guestId');
     return cartId != null && cartId.isNotEmpty;
   }
 
