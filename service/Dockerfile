@@ -1,7 +1,7 @@
 FROM node:18-alpine
 WORKDIR /app
 
-COPY service/package*.json ./
+COPY service/package.json ./
 RUN npm install --production
 
 COPY service/ ./
