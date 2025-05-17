@@ -24,6 +24,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   Brand? _selectedBrand;
   Category? _selectedCategory;
+  //Scroll
+  late final ScrollController _verticalController;
+  late final ScrollController _horizontalController;
 
   @override
   void initState() {
@@ -33,12 +36,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _searchCtrl.addListener(_onSearch);
     _minPriceCtrl.addListener(_applyFilters);
     _maxPriceCtrl.addListener(_applyFilters);
+    _verticalController   = ScrollController();
+    _horizontalController = ScrollController();
   }
 
   @override
   void dispose() {
     _searchCtrl.removeListener(_onSearch);
     _searchCtrl.dispose();
+    _verticalController.dispose();
+    _horizontalController.dispose();
     super.dispose();
   }
 
@@ -135,6 +142,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -221,33 +230,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            // Product grid
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final totalWidth = constraints.maxWidth;
-                  int crossCount =
-                  (totalWidth / 250).floor().clamp(1, 6);
-                  final itemWidth =
-                      (totalWidth - (crossCount - 1) * 16) /
-                          crossCount;
-
-                  return SingleChildScrollView(
-                    padding:
-                    const EdgeInsets.symmetric(vertical: 20),
-                    child: Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: _filteredProducts.map((p) {
-                        return SizedBox(
-                          width: itemWidth,
-                          child: _buildProductCard(p),
-                        );
-                      }).toList(),
-                    ),
-                  );
-                },
-              ),
+              child: screenWidth < 1000
+                  ? _buildProductListMobile()
+                  : _buildProductTableDesktop(context),
             ),
           ],
         ),
@@ -261,7 +247,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   // Trong class _AdminProductScreenState:
   Widget _buildProductCard(Product p) {
-
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -345,6 +330,167 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // Khi màn hình nhỏ (mobile): hiển thị card list
+  Widget _buildProductListMobile() {
+    return Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final totalWidth = constraints.maxWidth;
+              int crossCount =
+              (totalWidth / 250).floor().clamp(1, 6);
+              final itemWidth =
+                  (totalWidth - (crossCount - 1) * 16) /
+                      crossCount;
+
+              return SingleChildScrollView(
+                padding:
+                const EdgeInsets.symmetric(vertical: 20),
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: _filteredProducts.map((p) {
+                    return SizedBox(
+                      width: itemWidth,
+                      child: _buildProductCard(p),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Khi màn hình to (desktop/tablet): hiển thị DataTable
+  Widget _buildProductTableDesktop(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width - 300;
+
+    return Column(
+      children: [
+        Expanded(
+          child: Scrollbar(
+            controller: _verticalController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _verticalController,
+              scrollDirection: Axis.vertical,
+              child: Scrollbar(
+                controller: _horizontalController,
+                thumbVisibility: true,
+                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                child: SingleChildScrollView(
+                  controller: _horizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: screenWidth),
+                    child: DataTable(
+                      columnSpacing: 24,
+                      headingRowColor: WidgetStateProperty.resolveWith((_) =>
+                          Theme.of(context).dividerColor..withValues(alpha: 0.1)),
+                      columns: const [
+                        DataColumn(label: Text('Tên SP')),
+                        DataColumn(label: Text('Thương hiệu')),
+                        DataColumn(label: Text('Danh mục')),
+                        DataColumn(label: Text('Giá')),
+                        DataColumn(label: Text('Số lượng')),
+                        DataColumn(label: Text('Thao tác')),
+                      ],
+                      rows: _filteredProducts.map((p) {
+                        final priceText = p.lowestPrice != null
+                            ? '₫${p.lowestPrice!.toStringAsFixed(0)}'
+                            : '—';
+                        final brandName = _brands
+                            .firstWhere((b) => b.id == p.brandId,
+                            orElse: () => Brand(id: '', name: '—'))
+                            .name;
+                        final categoryName = _categories
+                            .firstWhere((c) => c.id == p.categoryId,
+                            orElse: () => Category(id: '', name: '—'))
+                            .name;
+
+                        return DataRow(cells: [
+                          DataCell(Text(p.name)),
+                          DataCell(Text(brandName)),
+                          DataCell(Text(categoryName)),
+                          DataCell(Text(priceText)),
+                          DataCell(Text(p.stock.toString())),
+                          DataCell(Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _openDetail(product: p),
+                                tooltip: 'Chỉnh sửa',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text('Xác nhận xoá'),
+                                      content: Text('Bạn có chắc muốn xoá sản phẩm "${p.name}" không?'),
+                                      actions: [
+                                        TextButton(onPressed: () => context.pop(false), child: const Text('Huỷ')),
+                                        ElevatedButton(onPressed: () => context.pop(true), child: const Text('Xoá')),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    try {
+                                      await ProductService.deleteProduct(p.id!);
+                                      setState(() {
+                                        _allProducts.remove(p);
+                                        _onSearch();
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Đã xoá sản phẩm.')),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Lỗi xoá sản phẩm: $e')),
+                                      );
+                                    }
+                                  }
+                                },
+                                tooltip: 'Xóa',
+                              ),
+                            ],
+                          )),
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // 2. Thanh cuộn ngang luôn hiển thị ở dưới cùng
+        SizedBox(
+          height: 12, // độ dày của thanh scroll
+          child: Scrollbar(
+            controller: _horizontalController,
+            thumbVisibility: true,
+            notificationPredicate: (notif) =>
+            notif.metrics.axis == Axis.horizontal,
+            child: SingleChildScrollView(
+              controller: _horizontalController,
+              scrollDirection: Axis.horizontal,
+              // một container rỗng để Scrollbar “có gì mà vẽ”
+              child: SizedBox(width: screenWidth),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
