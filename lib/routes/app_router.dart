@@ -28,12 +28,13 @@ import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
 import '../screens/user/account/order_history_screen.dart';
 import '../screens/user/account/change_password_after_login.dart';
+import '../screens/user/cart_summary.dart';
 import '../screens/user/change_password.dart';
 import '../screens/user/check_out.dart';
 import '../screens/user/forgot_password.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/home',
+  initialLocation: '/account/cart/cartsummary/checkout',
   routes: [
     GoRoute(
       path: '/',
@@ -111,6 +112,11 @@ final GoRouter appRouter = GoRouter(
       name: 'cart',
       builder: (context, state) => UserCartPage(),
     ),
+    // GoRoute(
+    //   path: '/account/cart/cartsummary',
+    //   name: 'cartsummary',
+    //   builder: (context, state) => CartSummaryPage(),
+    // ),
     GoRoute(
       path: '/account/cart/cartsummary/checkout',
       name: 'checkout',
