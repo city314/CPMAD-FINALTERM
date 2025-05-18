@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/coupon.dart';
+import '../models/order.dart';
 
 class OrderService {
   static const String baseUrl = 'http://localhost:3003/api/coupons'; // đổi lại IP nếu chạy thật
@@ -151,5 +152,17 @@ class OrderService {
       }),
     );
     return response.statusCode == 201;
+  }
+
+  Future<List<Order>> fetchAllOrders() async {
+    final uri = Uri.parse('baseUrl/orders');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Order.fromJson(json)).toList();
+    } else {
+      throw Exception('Fetch orders failed with status: \${response.statusCode}');
+    }
   }
 }
