@@ -205,11 +205,11 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
                     title: Text(c.code, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
                       'Giảm ${c.discountAmount}đ • ${c.usageTimes}/${c.usageMax} lượt\n'
-                          'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}\n'
-                          'Đơn hàng đã dùng: (giả lập...)',
+                          'Ngày tạo: ${c.timeCreate.toLocal().toString().split(' ')[0]}',
                       style: const TextStyle(height: 1.4),
                     ),
                     isThreeLine: true,
+                    onTap: () => _showCouponUsageDialog(c.code), // 👈 Thêm dòng này
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -234,6 +234,54 @@ class _AdminCouponScreenState extends State<AdminCouponScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCouponUsageDialog(String code) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Đơn hàng đã dùng mã $code'),
+        content: SizedBox(
+          width: 400, // 👈 đảm bảo có chiều rộng cố định
+          child: FutureBuilder<List<String>>(
+            future: OrderService.fetchOrdersUsedCoupon(code),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snapshot.hasError) {
+                return Text('Lỗi: ${snapshot.error}');
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Text('Chưa có đơn hàng nào sử dụng mã này.');
+              }
+
+              final orderIds = snapshot.data!;
+              return SizedBox(
+                height: 300,
+                child: ListView.separated(
+                  itemCount: orderIds.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (_, i) => ListTile(
+                    leading: const Icon(Icons.receipt_long),
+                    title: Text('Đơn hàng #${orderIds[i]}'),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
       ),
     );
   }

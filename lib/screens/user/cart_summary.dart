@@ -644,11 +644,11 @@ class _CheckoutPageState extends State<CartSummary> {
         }
 
         // Xoá khỏi giỏ hàng
-        // await CartService.removeItemsFromCart(widget.selectedItems.map((e) => e.variant.id ?? '').toList(), email);
-        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        //   content: Text('Đặt hàng thành công!'),
-        //   backgroundColor: Colors.green,
-        // ));
+        await CartService.removeItemsFromCart(widget.selectedItems.map((e) => e.variant.id ?? '').toList(), email);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Đặt hàng thành công!'),
+          backgroundColor: Colors.green,
+        ));
 
         await OrderService.sendConfirmationEmail(
           email: email,

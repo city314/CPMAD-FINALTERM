@@ -1,21 +1,21 @@
 enum OrderStatus { pending, complete, canceled, shipped, paid }
 
 class Order {
-  final String? id;
-  final String? userId;
-  final num totalPrice;
-  final num loyaltyPointUsed;
-  final num discount;
-  final num coupon;
-  final num tax;
-  final num shippingFee;
-  final num finalPrice;
+  final String id;
+  final String userId;
+  final double totalPrice;
+  final double loyaltyPointUsed;
+  final double discount;
+  final double coupon;
+  final double tax;
+  final double shippingFee;
+  final double finalPrice;
   final OrderStatus status;
   final DateTime timeCreate;
 
   Order({
-    this.id,
-    this.userId,
+    required this.id,
+    required this.userId,
     required this.totalPrice,
     required this.loyaltyPointUsed,
     required this.discount,
@@ -27,19 +27,38 @@ class Order {
     required this.timeCreate,
   });
 
-  factory Order.fromJson(Map<String, dynamic> json) => Order(
-    id: json['_id'] as String?,
-    userId: json['user_id'] as String?,
-    totalPrice: json['total_price'] as num,
-    loyaltyPointUsed: json['loyalty_point_used'] as num,
-    discount: json['discount'] as num,
-    coupon: json['coupon'] as num,
-    tax: json['tax'] as num,
-    shippingFee: json['shipping_fee'] as num,
-    finalPrice: json['final_price'] as num,
-    status: OrderStatus.values.firstWhere((e) => e.name == (json['status'] as String)),
-    timeCreate: DateTime.parse(json['time_create'] as String),
-  );
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['_id'] ?? '',
+      userId: json['user_id'] ?? '',
+      totalPrice: (json['total_price'] ?? 0).toDouble(),
+      loyaltyPointUsed: (json['loyalty_point_used'] ?? 0).toDouble(),
+      discount: (json['discount'] ?? 0).toDouble(),
+      coupon: (json['coupon'] ?? 0).toDouble(),
+      tax: (json['tax'] ?? 0).toDouble(),
+      shippingFee: (json['shipping_fee'] ?? 0).toDouble(),
+      finalPrice: (json['final_price'] ?? 0).toDouble(),
+      status: _parseStatus(json['status']),
+      timeCreate: DateTime.tryParse(json['time_create'] ?? '') ?? DateTime.now(),
+    );
+  }
+
+  static OrderStatus _parseStatus(String? status) {
+    switch (status) {
+      case 'pending':
+        return OrderStatus.pending;
+      case 'paid':
+        return OrderStatus.paid;
+      case 'shipped':
+        return OrderStatus.shipped;
+      case 'complete':
+        return OrderStatus.complete;
+      case 'canceled':
+        return OrderStatus.canceled;
+      default:
+        return OrderStatus.pending;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
     if (id != null) '_id': id,

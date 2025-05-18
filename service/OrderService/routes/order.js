@@ -57,4 +57,29 @@ router.post('/send-confirmation', async (req, res) => {
   }
 });
 
+// Lấy tất cả đơn hàng
+router.get('/', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ time_create: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error('❌ Error fetching orders:', err);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const updated = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: req.body.status },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    console.error('❌ Error updating order status:', err);
+    res.status(500).json({ message: 'Update failed' });
+  }
+});
+
 module.exports = router;

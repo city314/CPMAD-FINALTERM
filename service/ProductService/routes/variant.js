@@ -84,4 +84,18 @@ router.patch('/stock/:id', async (req, res) => {
   res.json({ message: 'Đã cập nhật tồn kho', newStock: variant.stock });
 });
 
+// GET /api/variants/:id
+router.get('/order/:id', async (req, res) => {
+  try {
+    const variant = await Variant.findById(req.params.id);
+    console.log(variant.id);
+    if (!variant) {
+      return res.status(404).json({ message: 'Variant not found' });
+    }
+    res.json(variant);
+  } catch (err) {
+    console.error('❌ Error fetching variant:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;

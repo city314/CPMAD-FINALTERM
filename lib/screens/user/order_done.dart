@@ -9,7 +9,6 @@ class OrderSuccessPage extends StatelessWidget {
   final order = Order(
     id: 'ORD123456',
     userId: 'USER987',
-    sessionId: 'SESSION123',
     totalPrice: 100000,
     loyaltyPointUsed: 500,
     discount: 5000,
@@ -17,7 +16,7 @@ class OrderSuccessPage extends StatelessWidget {
     shippingFee: 10000,
     finalPrice: 106500,
     status: OrderStatus.complete,
-    timeCreate: DateTime.now(),
+    timeCreate: DateTime.now(), coupon: 0,
   );
   final orderDetails = [
     OrderDetail(
@@ -26,7 +25,6 @@ class OrderSuccessPage extends StatelessWidget {
       productId: 'PRD001',
       quantity: 2,
       price: 30000,
-      total: 60000,
     ),
     OrderDetail(
       id: 'OD2',
@@ -34,7 +32,6 @@ class OrderSuccessPage extends StatelessWidget {
       productId: 'PRD002',
       quantity: 1,
       price: 40000,
-      total: 40000,
     ),
   ];
   // const OrderSuccessPage({
@@ -82,7 +79,6 @@ class OrderSuccessPage extends StatelessWidget {
                 child: Column(
                   children: [
                     InfoRow(label: 'Mã đơn hàng:', value: order.id ?? '-'),
-                    InfoRow(label: 'Mã phiên:', value: order.sessionId),
                     InfoRow(
                       label: 'Thời gian:',
                       value: DateFormat('HH:mm dd/MM/yyyy').format(order.timeCreate),
@@ -112,7 +108,7 @@ class OrderSuccessPage extends StatelessWidget {
                 ),
                 title: Text('Sản phẩm: ${detail.productId}'),
                 subtitle: Text(
-                  'Đơn giá: ${detail.price}\nThành tiền: ${detail.total}',
+                  'Đơn giá: ${detail.price}\nThành tiền: ${detail.price*detail.quantity}',
                 ),
               ),
             )),

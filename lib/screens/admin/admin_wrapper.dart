@@ -34,7 +34,7 @@ class AdminHomeWrapper extends StatelessWidget {
           AdminTopNavbar(
             selectedIndex: selectedIndex,
             onItemSelected: onTabChanged,
-            userAvatarUrl: 'https://your-avatar-url.png',
+            userAvatarUrl: 'assets/images/avt_default.png',
             userName: 'Admin',
             userRole: 'Administrator',
           ),
