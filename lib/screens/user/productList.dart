@@ -9,6 +9,10 @@ import '../../models/category.dart';
 import '../../models/product.dart';
 import '../../service/ProductService.dart';
 import 'CustomNavbar.dart';
+import '../../utils/format_utils.dart';
+import '../../service/CartService.dart';
+import '../../models/variant.dart';
+import '../../pattern/current_user.dart';
 
 class ProductList extends StatefulWidget {
   final String categoryId;
@@ -394,63 +398,94 @@ class _ProductListState extends State<ProductList> {
       imageBytes = null;
     }
 
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 7,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: imageBytes != null
-                  ? Image.memory(imageBytes, fit: BoxFit.contain)
-                  : const Icon(Icons.broken_image),
+    return GestureDetector(
+      onTap: () {
+        context.go('/products/${product.id}');
+      },
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 7,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: imageBytes != null
+                    ? Image.memory(imageBytes, fit: BoxFit.contain)
+                    : const Icon(Icons.broken_image),
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    product.name ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${product.lowestPrice ?? ''}₫',
-                    style: const TextStyle(color: Colors.blueAccent),
-                  ),
-                  const SizedBox(height: 4),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: Thêm vào giỏ hàng
-                      },
-                      icon: const Icon(Icons.add_shopping_cart, size: 18),
-                      label: const Text('Thêm vào giỏ hàng', style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      product.name ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatPrice((product.lowestPrice ?? 0).toDouble()),
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          // Lấy userId hiện tại (kể cả guest)
+                          final userId = await CartService.getEffectiveUserId();
+                          // Lấy variantId đầu tiên của sản phẩm (giả sử có ít nhất 1 variant)
+                          String? variantId;
+                          if (product.variants.isNotEmpty) {
+                            variantId = product.variants.first.id;
+                          }
+                          if (variantId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Sản phẩm chưa có biến thể!')),
+                            );
+                            return;
+                          }
+                          try {
+                            await CartService.updateCartItem(
+                              userId: userId,
+                              variantId: variantId,
+                              quantity: 1,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Đã thêm vào giỏ hàng!')),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Lỗi thêm vào giỏ hàng: $e')),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.add_shopping_cart, size: 18),
+                        label: const Text('Thêm vào giỏ hàng', style: TextStyle(fontSize: 14)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

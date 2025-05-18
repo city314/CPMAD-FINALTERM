@@ -35,3 +35,23 @@ Một ứng dụng chat đa nền tảng được phát triển bằng Flutter, 
    ```bash
    git clone https://github.com/city314/CPMAD-FINALTERM.git
    cd CPMAD-FINALTERM
+
+## Hướng dẫn build & chạy Flutter Web
+
+### 1. Build web
+```bash
+flutter build web --release
+```
+
+### 2. Chạy thử local bằng serve (npm)
+```bash
+npm install -g serve
+serve build/web
+```
+
+- Sau đó truy cập: http://localhost:3000
+- Đảm bảo chạy lệnh ở thư mục gốc dự án (nơi có thư mục build/web)
+
+### 3. Deploy lên server/nginx
+- Copy toàn bộ thư mục `build/web` lên server
+- Cấu hình nginx để trỏ root về thư mục này
