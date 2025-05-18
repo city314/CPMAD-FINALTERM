@@ -8,6 +8,6 @@ RUN flutter pub get
 COPY . .
 RUN flutter build web --release
 
-FROM nginx:alpine
+FROM ghcr.io/nginxinc/nginx-unprivileged:stable-alpine
 COPY --from=builder /app/build/web /usr/share/nginx/html
 

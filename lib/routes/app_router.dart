@@ -28,7 +28,6 @@ import '../screens/admin/admin_wrapper.dart';
 import '../screens/admin/component/variant_detail.dart';
 import '../screens/user/account/account_screen.dart';
 import '../screens/user/account/edit_profile_screen.dart';
-import '../screens/user/account/order_history_screen.dart';
 import '../screens/user/account/change_password_after_login.dart';
 import '../screens/user/change_password.dart';
 import '../screens/user/forgot_password.dart';
@@ -97,11 +96,6 @@ final GoRouter appRouter = GoRouter(
       path: '/account/edit',
       name: 'edit_profile',
       builder: (context, state) => const EditProfileScreen(),
-    ),
-    GoRoute(
-      path: '/account/order-histories',
-      name: 'order_history',
-      builder: (context, state) => const OrderHistoryScreen(),
     ),
     GoRoute(
       path: '/account/change-password-after-login',
