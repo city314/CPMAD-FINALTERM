@@ -241,14 +241,18 @@ class ProductService {
 
   static Future<List<Product>> fetchProductsPanigation({
     String? categoryId,
+    String? brandId,
     String? price,
+    String? rating,
     String? sort,
     int skip = 0,
     int limit = 20,
   }) async {
     final query = {
       if (categoryId != null) 'categoryId': categoryId,
+      if (brandId != null) 'brandId': brandId,
       if (price != null) 'price': price,
+      if (rating != null) 'rating': rating,
       if (sort != null) 'sort': sort,
       'skip': '$skip',
       'limit': '$limit',
