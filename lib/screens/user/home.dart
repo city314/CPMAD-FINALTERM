@@ -28,9 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchKeyword = '';
   late Future<Map<String, List<Product>>> productSummary;
   final List<String> _sliderImages = [
-    'assets/images/product/laptop/acer/acer1.png',
-    'assets/images/product/laptop/acer/acer2.png',
-    'assets/images/product/laptop/acer/acer3.png',
+    'assets/images/slider/slider1.png',
+    'assets/images/slider/slider5.png',
+    'assets/images/slider/slider2.png',
   ];
   List<Product> hotSaleProducts = [];
   List<Product> newProducts = [];
