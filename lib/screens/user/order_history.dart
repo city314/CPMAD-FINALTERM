@@ -140,8 +140,6 @@ class _OrderHistoryState extends State<OrderHistory> {
                   }),
                   _buildMenuItem(Icons.support_agent, 'Hỗ trợ', false, () {}),
                   _buildMenuItem(Icons.logout, 'Đăng xuất', false, () {
-                    // TODO: Xử lý đăng xuất
-                    // Ví dụ: CurrentUser().logout();
                     context.go('/');
                   }),
                 ],
