@@ -1,6 +1,5 @@
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
-import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 import 'manage_addresses_screen.dart';
 import 'package:cpmad_final/service/UserService.dart';
