@@ -85,10 +85,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         );
       }
 
-      // TODO: Khi OrderService có API, tải đơn hàng và doanh thu
+      // // TODO: Khi OrderService có API, tải đơn hàng và doanh thu
       // final orders = await _orderService.fetchAllOrders();
       // totalOrders = orders.length;
-      // totalRevenue = orders.fold(0.0, (sum, o) => sum + o.totalAmount);
+      // totalRevenue = orders.fold(0.0, (sum, o) => sum + o.totalPrice);
 
       setState(() {
         totalUsers = users.length;
