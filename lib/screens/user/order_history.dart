@@ -109,7 +109,6 @@ class _OrderHistoryState extends State<OrderHistory> {
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     return Scaffold(
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () {},
         onCategoriesTap: () {},
         onCartTap: () {},
@@ -235,7 +234,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -326,7 +325,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withValues(alpha: 0.06),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
