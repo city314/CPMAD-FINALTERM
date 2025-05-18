@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/order.dart';
 import '../../models/orderDetail.dart';
+import '../../utils/format_utils.dart';
+
 class OrderSuccessPage extends StatelessWidget {
   // final Order order;
   // final List<OrderDetail> orderDetails;
@@ -84,12 +86,12 @@ class OrderSuccessPage extends StatelessWidget {
                       value: DateFormat('HH:mm dd/MM/yyyy').format(order.timeCreate),
                     ),
                     InfoRow(label: 'Trạng thái:', value: order.status.toString().split('.').last),
-                    InfoRow(label: 'Tổng tiền hàng:', value: '${order.totalPrice}'),
-                    InfoRow(label: 'Điểm tích luỹ đã dùng:', value: '${order.loyaltyPointUsed}'),
-                    InfoRow(label: 'Chiết khấu:', value: '${order.discount}'),
-                    InfoRow(label: 'Thuế:', value: '${order.tax}'),
-                    InfoRow(label: 'Phí vận chuyển:', value: '${order.shippingFee}'),
-                    InfoRow(label: 'Tổng thanh toán:', value: '${order.finalPrice}'),
+                    InfoRow(label: 'Tổng tiền hàng:', value: formatPrice(order.totalPrice.toDouble())),
+                    InfoRow(label: 'Điểm tích luỹ đã dùng:', value: formatPrice(order.loyaltyPointUsed.toDouble())),
+                    InfoRow(label: 'Chiết khấu:', value: formatPrice(order.discount.toDouble())),
+                    InfoRow(label: 'Thuế:', value: formatPrice(order.tax.toDouble())),
+                    InfoRow(label: 'Phí vận chuyển:', value: formatPrice(order.shippingFee.toDouble())),
+                    InfoRow(label: 'Tổng thanh toán:', value: formatPrice(order.finalPrice.toDouble())),
                   ],
                 ),
               ),
@@ -108,7 +110,7 @@ class OrderSuccessPage extends StatelessWidget {
                 ),
                 title: Text('Sản phẩm: ${detail.productId}'),
                 subtitle: Text(
-                  'Đơn giá: ${detail.price}\nThành tiền: ${detail.price*detail.quantity}',
+                  'Đơn giá: ${formatPrice(detail.price.toDouble())}\nThành tiền: ${formatPrice((detail.price*detail.quantity).toDouble())}',
                 ),
               ),
             )),
