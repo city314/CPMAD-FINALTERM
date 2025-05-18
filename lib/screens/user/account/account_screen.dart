@@ -1,6 +1,5 @@
 import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
-import 'order_history_screen.dart';
 import 'edit_profile_screen.dart';
 import 'manage_addresses_screen.dart';
 import 'package:cpmad_final/service/UserService.dart';
@@ -75,7 +74,7 @@ class _AccountScreenState  extends State<AccountScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildOptions(context),
+                            _buildOptions(context, userInfo),
                           ],
                         ),
                       ),
@@ -85,7 +84,7 @@ class _AccountScreenState  extends State<AccountScreen> {
                     children: [
                       _buildProfileCard(context, userInfo),
                       const SizedBox(height: 24),
-                      _buildOptions(context),
+                      _buildOptions(context, userInfo),
                     ],
                   ),
                 ],
@@ -173,8 +172,8 @@ Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback
   );
 }
 // Info Option
-Widget _buildOptions(BuildContext context) {
-  final int points = 280; // hoặc gọi từ user.loyaltyPoints;
+Widget _buildOptions(BuildContext context, Map<String, dynamic>? userInfo) {
+  final int points = userInfo!['loyalty_point'];
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +183,7 @@ Widget _buildOptions(BuildContext context) {
         title: const Text('Xem lịch sử đơn hàng'),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          context.go('/account/order-histories');
+          context.go('/order-history');
         },
       ),
       const SizedBox(height: 24),
@@ -199,14 +198,6 @@ Widget _buildOptions(BuildContext context) {
           leading: const Icon(Icons.star, color: Colors.orange),
           title: Text('$points điểm'),
           subtitle: const Text('Tích lũy từ các đơn hàng trước'),
-          trailing: points > 0
-              ? TextButton(
-            onPressed: () {
-              // TODO: Quy đổi điểm
-            },
-            child: const Text('Quy đổi'),
-          )
-              : null,
         ),
       ),
       const SizedBox(height: 24),

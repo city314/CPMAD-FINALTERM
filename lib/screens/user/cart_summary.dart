@@ -5,6 +5,7 @@ import 'package:cpmad_final/service/OrderService.dart';
 import 'package:cpmad_final/service/ProductService.dart';
 import 'package:cpmad_final/service/UserService.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../service/CartService.dart';
 import '../../utils/format_utils.dart';
@@ -660,6 +661,26 @@ class _CheckoutPageState extends State<CartSummary> {
             'quantity': item.quantity,
             'price': item.variant.sellingPrice,
           }).toList(),
+        );
+        context.pushNamed(
+          'orderDone',
+          extra: {
+            'orderId': orderId,
+            'timeCreate': DateTime.now(),
+            'tax': tax,
+            'discount': totalDiscount,
+            'shippingFee': shippingFee,
+            'selectedItems': widget.selectedItems,
+            'receiverName': _nameCtrl.text,
+            'phoneNumber': _phoneCtrl.text,
+            'email': _emailCtrl.text,
+            'address': _addressCtrl.text,
+            'totalPrice': totalPrice,
+            'finalPrice': finalAmount,
+            'loyaltyUsed': int.tryParse(_coinController.text) ?? 0,
+            'voucherDiscount': _voucherDiscount,
+            'isVoucherApplied': _isVoucherApplied,
+          },
         );
         // Navigate hoặc reset state
       } else {
