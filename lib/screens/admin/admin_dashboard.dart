@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../../service/ProductService.dart';
+import '../../service/UserService.dart';
+import '../../service/WebSocketService.dart';
 import 'component/SectionHeader.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -12,6 +15,12 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String selectedRange = 'Tháng này';
+  int totalUsers = 0;
+  int totalProducts = 0;
+  int totalOrders = 0;
+  double totalRevenue = 0.0;
+
+  final WebSocketService _webSocketService = WebSocketService();
 
   final List<String> ranges = [
     'Hôm nay',
@@ -19,8 +28,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     'Tháng này',
     'Quý này',
     'Năm nay',
-    'Tuỳ chỉnh'
+    'Tùy chỉnh',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+    _webSocketService.connect((review) {
+      // TODO: Handle new review events if needed
+    });
+  }
+
+  Future<void> _loadDashboardData() async {
+    try {
+      final users = await UserService.fetchUsers();
+      final products = await ProductService.fetchAllProducts();
+      // TODO: Fetch orders and calculate revenue when OrderService methods are available
+      setState(() {
+        totalUsers = users.length;
+        totalProducts = products.length;
+        // totalOrders = orders.length;
+        // totalRevenue = calculate revenue from orders;
+      });
+    } catch (e) {
+      debugPrint('Error loading dashboard data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +63,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final width = constraints.maxWidth;
         final isMobile = width < 600;
         final isTablet = width >= 600 && width < 1200;
-        final isDesktop = width >= 1200;
 
         if (isMobile || isTablet) {
           return Container(
@@ -50,33 +83,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         } else {
           return Container(
             color: const Color(0xFFF5F6FA),
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(),
                   const SizedBox(height: 16),
                   _buildOverviewGrid(crossAxisCount: 4),
                   const SizedBox(height: 32),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildChartCard(
-                          '📈 Doanh thu theo thời gian',
-                          _buildLineChart(),
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: _buildChartCard(
-                          '📊 Tỷ lệ loại sản phẩm bán chạy',
-                          _buildPieChart(),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildChartCard('📈 Doanh thu theo thời gian', _buildLineChart()),
+                  const SizedBox(height: 32),
+                  _buildChartCard('📊 Tỷ lệ loại sản phẩm bán chạy', _buildPieChart()),
                 ],
               ),
             ),
@@ -92,7 +109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Row(
         children: [
           const SectionHeader('Tổng quan'),
-          const Spacer(),     // Dropdown hộp viền bo tròn
+          const Spacer(),
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -106,9 +123,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 underline: const SizedBox(),
                 items: ranges
                     .map((range) => DropdownMenuItem(
-                        value: range, child: Text(range)))
+                  value: range,
+                  child: Text(range),
+                ))
                     .toList(),
-                onChanged: (value) => setState(() => selectedRange = value!),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selectedRange = value);
+                    // TODO: reload data based on selectedRange
+                  }
+                },
               ),
             ),
           ),
@@ -117,10 +141,43 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Widget _buildOverviewGrid({required int crossAxisCount}) {
+    return GridView.count(
+      crossAxisCount: crossAxisCount,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.6,
+      children: [
+        _DashboardCard(
+          title: 'Tổng người dùng',
+          value: '$totalUsers',
+          icon: Icons.people,
+        ),
+        _DashboardCard(
+          title: 'Tổng sản phẩm',
+          value: '$totalProducts',
+          icon: Icons.shopping_bag,
+        ),
+        _DashboardCard(
+          title: 'Đơn hàng',
+          value: '$totalOrders',
+          icon: Icons.shopping_cart,
+        ),
+        _DashboardCard(
+          title: 'Doanh thu',
+          value: '₫${totalRevenue.toStringAsFixed(0)}',
+          icon: Icons.bar_chart,
+        ),
+      ],
+    );
+  }
+
   Widget _buildChartCard(String title, Widget chart) {
     return Card(
-      elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -141,23 +198,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildOverviewGrid({required int crossAxisCount}) {
-    return GridView.count(
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.6,
-      children: const [
-        _DashboardCard(title: 'Tổng người dùng', value: '1,250', icon: Icons.people),
-        _DashboardCard(title: 'Người dùng mới', value: '120', icon: Icons.person_add),
-        _DashboardCard(title: 'Đơn hàng', value: '3,400', icon: Icons.shopping_cart),
-        _DashboardCard(title: 'Doanh thu', value: '₫850,000,000', icon: Icons.bar_chart),
-      ],
-    );
-  }
-
   Widget _buildLineChart() {
     return LineChart(
       LineChartData(
@@ -168,14 +208,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             spots: const [
               FlSpot(0, 5),
               FlSpot(1, 6.2),
-              FlSpot(2, 5.5),
-              FlSpot(3, 8),
-              FlSpot(4, 6.5),
-              FlSpot(5, 7),
+              FlSpot(2, 4.8),
+              FlSpot(3, 7),
+              FlSpot(4, 6.1),
+              FlSpot(5, 6.8),
+              FlSpot(6, 7.2),
             ],
-            isCurved: true,
-            barWidth: 3,
-            gradient: LinearGradient(colors: [Colors.blue, Colors.blueAccent]),
           ),
         ],
       ),
