@@ -143,7 +143,8 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                     leading: const Icon(Icons.logout),
                     title: const Text('Đăng xuất'),
                     onTap: () {
-                      Navigator.pop(context);
+                      CurrentUser().logout();
+                      context.go('/');
                       if (onLogoutTap != null) onLogoutTap!();
                     },
                   ),
