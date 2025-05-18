@@ -74,7 +74,7 @@ class _AccountScreenState  extends State<AccountScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildOptions(context),
+                            _buildOptions(context, userInfo),
                           ],
                         ),
                       ),
@@ -84,7 +84,7 @@ class _AccountScreenState  extends State<AccountScreen> {
                     children: [
                       _buildProfileCard(context, userInfo),
                       const SizedBox(height: 24),
-                      _buildOptions(context),
+                      _buildOptions(context, userInfo),
                     ],
                   ),
                 ],
@@ -172,8 +172,8 @@ Widget buildInfoRow(IconData icon, String title, String? subtitle, {VoidCallback
   );
 }
 // Info Option
-Widget _buildOptions(BuildContext context) {
-  final int points = 280; // hoặc gọi từ user.loyaltyPoints;
+Widget _buildOptions(BuildContext context, Map<String, dynamic>? userInfo) {
+  final int points = userInfo!['loyalty_point'];
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,14 +198,6 @@ Widget _buildOptions(BuildContext context) {
           leading: const Icon(Icons.star, color: Colors.orange),
           title: Text('$points điểm'),
           subtitle: const Text('Tích lũy từ các đơn hàng trước'),
-          trailing: points > 0
-              ? TextButton(
-            onPressed: () {
-              // TODO: Quy đổi điểm
-            },
-            child: const Text('Quy đổi'),
-          )
-              : null,
         ),
       ),
       const SizedBox(height: 24),
