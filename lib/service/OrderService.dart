@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/coupon.dart';
 import '../models/order.dart';
+import '../models/orderDetail.dart';
 
 class OrderService {
   static const String baseUrl = 'http://localhost:3003/api/coupons'; // đổi lại IP nếu chạy thật
@@ -154,15 +155,65 @@ class OrderService {
     return response.statusCode == 201;
   }
 
-  Future<List<Order>> fetchAllOrders() async {
-    final uri = Uri.parse('baseUrl/orders');
-    final response = await http.get(uri);
-
+  static Future<List<Order>> fetchOrders() async {
+    final response = await http.get(Uri.parse(_urlOrder));
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Order.fromJson(json)).toList();
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Order.fromJson(e)).toList();
     } else {
-      throw Exception('Fetch orders failed with status: \${response.statusCode}');
+      throw Exception('Failed to fetch orders');
+    }
+  }
+
+  static Future<List<OrderDetail>> fetchOrderDetails(String orderId) async {
+    final response = await http.get(Uri.parse('$_urlOrderDetails/$orderId'));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => OrderDetail.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch order details');
+    }
+  }
+
+  static Future<void> updateOrderStatus(String orderId, String status) async {
+    final uri = Uri.parse('$_urlOrder/$orderId');
+    final response = await http.put(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'status': status}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Cập nhật trạng thái thất bại');
+    }
+  }
+
+  static Future<void> createOrderStatusHistory(String orderId, String status) async {
+    final uri = Uri.parse(_urlOrderStatus);
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'order_id': orderId, 'status': status}),
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Không thể lưu lịch sử trạng thái');
+    }
+  }
+
+  /// Lấy tất cả đơn hàng (tương đương fetchOrders) - Dashboard
+  static Future<List<Order>> fetchAllOrders() async {
+    // Nếu backend của bạn có route GET /api/orders/all thì dùng:
+    final uri = Uri.parse('$_urlOrder/all');
+    // Nếu backend chỉ có GET /api/orders thì thay thành:
+    // final uri = Uri.parse(_urlOrder);
+
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Order.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Không thể tải danh sách đơn hàng (status: ${response.statusCode})'
+      );
     }
   }
 }
