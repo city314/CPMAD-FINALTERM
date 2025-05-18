@@ -651,37 +651,37 @@ class _CheckoutPageState extends State<CartSummary> {
           backgroundColor: Colors.green,
         ));
 
-        // await OrderService.sendConfirmationEmail(
-        //   email: email,
-        //   name: name,
-        //   orderId: orderId,
-        //   finalAmount: finalAmount,
-        //   items: widget.selectedItems.map((item) => {
-        //     'variantName': item.variant.variantName,
-        //     'quantity': item.quantity,
-        //     'price': item.variant.sellingPrice,
-        //   }).toList(),
-        // );
-        // context.pushNamed(
-        //   'orderDone',
-        //   extra: {
-        //     'orderId': orderId,
-        //     'timeCreate': DateTime.now(),
-        //     'tax': tax,
-        //     'discount': totalDiscount,
-        //     'shippingFee': shippingFee,
-        //     'selectedItems': widget.selectedItems,
-        //     'receiverName': _nameCtrl.text,
-        //     'phoneNumber': _phoneCtrl.text,
-        //     'email': _emailCtrl.text,
-        //     'address': _addressCtrl.text,
-        //     'totalPrice': totalPrice,
-        //     'finalPrice': finalAmount,
-        //     'loyaltyUsed': int.tryParse(_coinController.text) ?? 0,
-        //     'voucherDiscount': _voucherDiscount,
-        //     'isVoucherApplied': _isVoucherApplied,
-        //   },
-        // );
+        await OrderService.sendConfirmationEmail(
+          email: email,
+          name: name,
+          orderId: orderId,
+          finalAmount: finalAmount,
+          items: widget.selectedItems.map((item) => {
+            'variantName': item.variant.variantName,
+            'quantity': item.quantity,
+            'price': item.variant.sellingPrice,
+          }).toList(),
+        );
+        context.pushNamed(
+          'orderDone',
+          extra: {
+            'orderId': orderId,
+            'timeCreate': DateTime.now(),
+            'tax': tax,
+            'discount': totalDiscount,
+            'shippingFee': shippingFee,
+            'selectedItems': widget.selectedItems,
+            'receiverName': _nameCtrl.text,
+            'phoneNumber': _phoneCtrl.text,
+            'email': _emailCtrl.text,
+            'address': _addressCtrl.text,
+            'totalPrice': totalPrice,
+            'finalPrice': finalAmount,
+            'loyaltyUsed': int.tryParse(_coinController.text) ?? 0,
+            'voucherDiscount': _voucherDiscount,
+            'isVoucherApplied': _isVoucherApplied,
+          },
+        );
         // Navigate hoặc reset state
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
