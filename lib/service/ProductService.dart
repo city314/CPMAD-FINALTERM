@@ -325,4 +325,25 @@ class ProductService {
     );
     return response.statusCode == 200;
   }
+
+  static Future<Variant> fetchVariantById(String id) async {
+    final response = await http.get(Uri.parse('$_urlVariants/order/$id'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      // Nếu backend trả về List (thường là do Mongo hoặc find), lấy phần tử đầu tiên
+      if (data is List && data.isNotEmpty) {
+        return Variant.fromJson(data.first as Map<String, dynamic>);
+      }
+
+      // Nếu là object Map, dùng trực tiếp
+      if (data is Map<String, dynamic>) {
+        return Variant.fromJson(data);
+      }
+
+      throw Exception('Dữ liệu không hợp lệ: $data');
+    } else {
+      throw Exception('❌ Không tải được variant với id $id');
+    }
+  }
 }

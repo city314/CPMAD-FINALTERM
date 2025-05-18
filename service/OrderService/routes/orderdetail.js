@@ -18,4 +18,15 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Lấy chi tiết đơn hàng theo orderId
+router.get('/:orderId', async (req, res) => {
+  try {
+    const details = await OrderDetail.find({ order_id: req.params.orderId });
+    res.json(details);
+  } catch (err) {
+    console.error('❌ Error fetching order details:', err);
+    res.status(500).json({ message: 'Failed to fetch order details' });
+  }
+});
+
 module.exports = router;

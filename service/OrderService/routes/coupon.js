@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Coupon = require('../models/Coupon');
-
+const CouponUsageOrder = require('../models/CouponUsageOrder');
+const Order = require('../models/Order');
 // GET all coupons
 router.get('/', async (req, res) => {
   try {
@@ -87,5 +88,52 @@ router.patch('/use/:code', async (req, res) => {
   await coupon.save();
   res.json({ message: 'Cập nhật mã thành công' });
 });
+
+// GET: lấy danh sách đơn hàng đã dùng mã coupon
+router.get('/by-coupon/:code', async (req, res) => {
+  try {
+    const code = req.params.code;
+    const coupon = await Coupon.findOne({ code });
+    if (!coupon) return res.status(404).json({ message: 'Không tìm thấy coupon' });
+
+    const usages = await CouponUsageOrder.find({ coupon_id: coupon._id });
+    res.json(usages); // hoặc populate thêm order nếu cần chi tiết
+  } catch (err) {
+    console.error('❌ Lỗi khi lấy usage:', err);
+    res.status(500).json({ message: 'Lỗi server', error: err.message });
+  }
+});
+
+router.get('/:code/orders', async (req, res) => {
+  try {
+    const code = req.params.code;
+
+    // Lấy đơn hàng có sử dụng coupon
+    const orders = await Order.find({ couponCode: code }).sort({ timeCreate: -1 });
+
+    // Lấy thông tin người dùng tương ứng
+    const userMap = {};
+    for (const order of orders) {
+      if (order.userId && !userMap[order.userId]) {
+        const user = await User.findById(order.userId).select('name');
+        userMap[order.userId] = user?.name || 'Không rõ';
+      }
+    }
+
+    // Trả về danh sách order với thông tin người dùng
+    const result = orders.map(o => ({
+      id: o._id,
+      totalPrice: o.finalPrice || o.totalPrice,
+      timeCreate: o.timeCreate,
+      userName: userMap[o.userId] || 'Khách',
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Lỗi khi lấy danh sách đơn hàng theo coupon:', err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
+
 
 module.exports = router;

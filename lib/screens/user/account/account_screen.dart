@@ -184,10 +184,7 @@ Widget _buildOptions(BuildContext context) {
         title: const Text('Xem lịch sử đơn hàng'),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
-          );
+          context.go('/account/order-histories');
         },
       ),
       const SizedBox(height: 24),

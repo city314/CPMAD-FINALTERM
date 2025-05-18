@@ -155,6 +155,24 @@ class OrderService {
     return response.statusCode == 201;
   }
 
+  /// Lấy tất cả đơn hàng (tương đương fetchOrders) - Dashboard
+  static Future<List<Order>> fetchAllOrders() async {
+    // Nếu backend của bạn có route GET /api/orders/all thì dùng:
+    final uri = Uri.parse('$_urlOrder/all');
+    // Nếu backend chỉ có GET /api/orders thì thay thành:
+    // final uri = Uri.parse(_urlOrder);
+
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Order.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Không thể tải danh sách đơn hàng (status: ${response.statusCode})'
+      );
+    }
+  }
+
   static Future<List<Order>> fetchOrders() async {
     final response = await http.get(Uri.parse(_urlOrder));
     if (response.statusCode == 200) {
@@ -199,21 +217,25 @@ class OrderService {
     }
   }
 
-  /// Lấy tất cả đơn hàng (tương đương fetchOrders) - Dashboard
-  static Future<List<Order>> fetchAllOrders() async {
-    // Nếu backend của bạn có route GET /api/orders/all thì dùng:
-    final uri = Uri.parse('$_urlOrder/all');
-    // Nếu backend chỉ có GET /api/orders thì thay thành:
-    // final uri = Uri.parse(_urlOrder);
+  static Future<List<String>> fetchOrdersUsedCoupon(String code) async {
+    final uri = Uri.parse('$baseUrl/by-coupon/$code');
+    final res = await http.get(uri);
 
-    final response = await http.get(uri);
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => Order.fromJson(e)).toList();
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      return List<String>.from(data.map((e) => e['order_id'])); // chỉ lấy order_id
     } else {
-      throw Exception(
-          'Không thể tải danh sách đơn hàng (status: ${response.statusCode})'
-      );
+      throw Exception('Lỗi khi lấy danh sách đơn hàng đã dùng mã $code');
+    }
+  }
+
+  Future<List<Order>> fetchUserOrders(String userId) async {
+    final response = await http.get(Uri.parse('$_urlOrder/user/$userId'));
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((e) => Order.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load orders');
     }
   }
 }

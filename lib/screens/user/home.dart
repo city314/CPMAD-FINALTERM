@@ -132,9 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context.goNamed('admin_chat', extra: 'admin@gmail.com');
         },
         onProfileTap: isAndroid ? () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đi tới trang Profile')),
-          );
+          context.go('/account');
         } : null,
         onLogoutTap: isAndroid ? () {
           setState(() {
@@ -876,8 +874,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
                     leading: const Icon(Icons.person),
                     title: const Text('Xem profile'),
                     onTap: () {
-                      Navigator.pop(context);
-                      if (onProfileTap != null) onProfileTap!();
+                      context.go('/account');
                     },
                   ),
                 ),
