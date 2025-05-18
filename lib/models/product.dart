@@ -39,20 +39,20 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
     id: json['_id'] as String?,
-    name: json['name'] as String,
-    categoryId: json['category_id'] as String,
-    brandId: json['brand_id'] as String,
+    name: json['name'] as String? ?? '',
+    categoryId: json['category_id'] as String? ?? '',
+    brandId: json['brand_id'] as String? ?? '',
     categoryName: json['categoryName'] ?? '',
     brandName: json['brandName'] ?? '',
     variantCount: json['variantCount'] ?? 0,
     lowestPrice: json['lowest_price'] ?? 0,
-    description: json['description'] as String,
-    stock: json['stock'] as int,
-    discountPercent: json['discount_percent'] as int,
-    soldCount: json['soldCount'] as int,
+    description: json['description'] as String? ?? '',
+    stock: json['stock'] as int? ?? 0,
+    discountPercent: json['discount_percent'] as int? ?? 0,
+    soldCount: json['soldCount'] as int? ?? 0,
     images: List<Map<String, String>>.from(
-        (json['images'] as List).map((e) => Map<String, String>.from(e))),
-    timeAdd: DateTime.parse(json['time_create'] as String),
+        (json['images'] as List? ?? []).map((e) => Map<String, String>.from(e))),
+    timeAdd: DateTime.tryParse(json['time_create'] as String? ?? '') ?? DateTime.now(),
     variants: (json['variants'] as List<dynamic>?)
         ?.map((e) => Variant.fromJson(e as Map<String, dynamic>))
         .toList() ?? [],
@@ -105,7 +105,7 @@ class Product {
     );
   }
 
-  /// Named constructor trả về một Product “rỗng” (empty)
+  /// Named constructor trả về một Product "rỗng" (empty)
   factory Product.empty() {
     return Product(
       id: '',

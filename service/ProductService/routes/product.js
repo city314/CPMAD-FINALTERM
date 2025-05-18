@@ -133,7 +133,9 @@ router.get('/pagination', async (req, res) => {
   try {
     const {
       categoryId,
+      brandId,
       price,
+      rating,
       sort,
       skip = 0,
       limit = 20,
@@ -144,6 +146,11 @@ router.get('/pagination', async (req, res) => {
     if (categoryId) {
       const ids = categoryId.split(',');
       query.category_id = { $in: ids };
+    }
+
+    if (brandId) {
+      const ids = brandId.split(',');
+      query.brand_id = { $in: ids };
     }
 
     if (price) {
@@ -161,6 +168,11 @@ router.get('/pagination', async (req, res) => {
           query.lowest_price = { $gt: 20000000 };
           break;
       }
+    }
+
+    if (rating) {
+      const ratingValue = parseInt(rating[0]);
+      query.rating = { $gte: ratingValue };
     }
 
     const sortOption = {};

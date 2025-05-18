@@ -29,11 +29,15 @@ class _ProductListState extends State<ProductList> {
   final List<String> priceRanges = [
     'Dưới 5 triệu', '5-10 triệu', '10-20 triệu', 'Trên 20 triệu'
   ];
+  final List<String> ratingRanges = [
+    '5 sao', '4 sao trở lên', '3 sao trở lên', '2 sao trở lên', '1 sao trở lên'
+  ];
   List<String> selectedCategories = [];
   List<String> selectedCategoriesId = [];
   List<String> selectedBrands = [];
   List<String> selectedBrandsId = [];
   String? selectedPrice;
+  String? selectedRating;
   String sortType = 'Mới nhất';
 
   @override
@@ -236,6 +240,26 @@ class _ProductListState extends State<ProductList> {
                         contentPadding: EdgeInsets.zero,
                       )),
                       const SizedBox(height: 8),
+                      const Text('Theo Thương Hiệu', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ...brands.map((brand) => CheckboxListTile(
+                        value: selectedBrands.contains(brand.name),
+                        onChanged: (v) {
+                          setState(() {
+                            if (v == true) {
+                              selectedBrands.add(brand.name);
+                              selectedBrandsId.add(brand.id!);
+                            } else {
+                              selectedBrands.remove(brand.name);
+                              selectedBrandsId.remove(brand.id);
+                            }
+                          });
+                        },
+                        title: Text(brand.name),
+                        dense: true,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                      )),
+                      const SizedBox(height: 8),
                       const Text('Giá sản phẩm', style: TextStyle(fontWeight: FontWeight.w500)),
                       ...priceRanges.map((price) => RadioListTile<String>(
                         value: price,
@@ -246,6 +270,29 @@ class _ProductListState extends State<ProductList> {
                           });
                         },
                         title: Text(price),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      )),
+                      const SizedBox(height: 8),
+                      const Text('Đánh giá', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ...ratingRanges.map((rating) => RadioListTile<String>(
+                        value: rating,
+                        groupValue: selectedRating,
+                        onChanged: (v) {
+                          setState(() {
+                            selectedRating = v;
+                          });
+                        },
+                        title: Row(
+                          children: [
+                            Text(rating),
+                            const SizedBox(width: 8),
+                            ...List.generate(
+                              int.parse(rating[0]),
+                              (index) => const Icon(Icons.star, color: Colors.amber, size: 16),
+                            ),
+                          ],
+                        ),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       )),
@@ -418,9 +465,11 @@ class _ProductListState extends State<ProductList> {
           children: [
             const Text('BỘ LỌC TÌM KIẾM', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
+            
+            // Lọc theo danh mục
             const Text('Theo Danh Mục', style: TextStyle(fontWeight: FontWeight.w500)),
             ...categories.map((cat) => CheckboxListTile(
-              value: selectedCategories.contains(cat),
+              value: selectedCategories.contains(cat.name),
               onChanged: (v) {
                 setState(() {
                   if (v == true) {
@@ -437,7 +486,33 @@ class _ProductListState extends State<ProductList> {
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             )),
+            
             const SizedBox(height: 8),
+            
+            // Lọc theo thương hiệu
+            const Text('Theo Thương Hiệu', style: TextStyle(fontWeight: FontWeight.w500)),
+            ...brands.map((brand) => CheckboxListTile(
+              value: selectedBrands.contains(brand.name),
+              onChanged: (v) {
+                setState(() {
+                  if (v == true) {
+                    selectedBrands.add(brand.name);
+                    selectedBrandsId.add(brand.id!);
+                  } else {
+                    selectedBrands.remove(brand.name);
+                    selectedBrandsId.remove(brand.id);
+                  }
+                });
+              },
+              title: Text(brand.name),
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            )),
+            
+            const SizedBox(height: 8),
+            
+            // Lọc theo giá
             const Text('Giá sản phẩm', style: TextStyle(fontWeight: FontWeight.w500)),
             ...priceRanges.map((price) => RadioListTile<String>(
               value: price,
@@ -451,10 +526,38 @@ class _ProductListState extends State<ProductList> {
               dense: true,
               contentPadding: EdgeInsets.zero,
             )),
+            
+            const SizedBox(height: 8),
+            
+            // Lọc theo đánh giá
+            const Text('Đánh giá', style: TextStyle(fontWeight: FontWeight.w500)),
+            ...ratingRanges.map((rating) => RadioListTile<String>(
+              value: rating,
+              groupValue: selectedRating,
+              onChanged: (v) {
+                setState(() {
+                  selectedRating = v;
+                });
+              },
+              title: Row(
+                children: [
+                  Text(rating),
+                  const SizedBox(width: 8),
+                  ...List.generate(
+                    int.parse(rating[0]),
+                    (index) => const Icon(Icons.star, color: Colors.amber, size: 16),
+                  ),
+                ],
+              ),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+            )),
+            
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 _applyFilters();
+                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
@@ -479,7 +582,9 @@ class _ProductListState extends State<ProductList> {
     try {
       final filtered = await ProductService.fetchProductsPanigation(
         categoryId: selectedCategoriesId.join(','), // nhiều danh mục
+        brandId: selectedBrandsId.join(','), // nhiều brand
         price: selectedPrice,
+        rating: selectedRating,
         sort: sortType,
         skip: 0,
       );
