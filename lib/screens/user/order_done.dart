@@ -1,5 +1,6 @@
 // Màn hình hiển thị đặt hàng thành công và chi tiết đơn hàng
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../models/order.dart';
 import '../../models/orderDetail.dart';
@@ -116,7 +117,7 @@ class OrderDone extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  context.go('/home');
                 },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
