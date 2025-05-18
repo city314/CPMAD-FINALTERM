@@ -95,7 +95,6 @@ class _UserCartPageState extends State<UserCartPage> {
       // offWhite background
       backgroundColor: const Color(0xFFEEF9FE),
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () {
           // TODO: Chuyển tới trang chủ
           context.go('/home');

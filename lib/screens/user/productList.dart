@@ -108,7 +108,6 @@ class _ProductListState extends State<ProductList> {
 
     return Scaffold(
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () { context.go('/home'); },
         onCategoriesTap: () {},
         onCartTap: () {},

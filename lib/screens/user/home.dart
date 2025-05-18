@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/product.dart';
 import '../../service/ProductService.dart';
-import 'CustomNavbar.dart';
 import '../../utils/format_utils.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -79,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final products = await ProductService().fetchProductsByCategory(id!);
         if (!mounted) return;
         setState(() {
-          _categoryProducts[id!] = products;
+          _categoryProducts[id] = products;
         });
       }
 
@@ -109,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () {
           // TODO: Chuyển tới trang chủ
           context.go('/home');
@@ -368,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : hotSaleDisplayCount,
                 itemBuilder: (context, index) {
                   final product = hotSaleProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -475,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : newProductDisplayCount,
                 itemBuilder: (context, index) {
                   final product = newProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -575,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : promotionDisplayCount,
                 itemBuilder: (context, index) {
                   final product = promotionProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -947,7 +945,7 @@ class ProductSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               catId = product.categoryId;
-              final imageBytes = getImageBytes(product.images!.first);
+              final imageBytes = getImageBytes(product.images.first);
               return InkWell(
                 onTap: () {
                   context.goNamed('product_detail', pathParameters: {'id': product.id!});
