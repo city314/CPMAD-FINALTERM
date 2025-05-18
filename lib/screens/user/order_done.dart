@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../models/order.dart';
 import '../../models/orderDetail.dart';
 import '../../models/selectedproduct.dart';
+import '../../utils/format_utils.dart';
+
 class OrderDone extends StatelessWidget {
   final String orderId;
   final DateTime timeCreate;
@@ -85,12 +87,12 @@ class OrderDone extends StatelessWidget {
                       value: DateFormat('HH:mm dd/MM/yyyy').format(timeCreate),
                     ),
                     InfoRow(label: 'Trạng thái:', value: 'pending'),
-                    InfoRow(label: 'Tổng tiền hàng:', value: '${totalPrice}'),
-                    InfoRow(label: 'Điểm tích luỹ đã dùng:', value: '${loyaltyUsed}'),
-                    InfoRow(label: 'Chiết khấu:', value: '${discount}'),
-                    InfoRow(label: 'Thuế:', value: '${tax}'),
-                    InfoRow(label: 'Phí vận chuyển:', value: '${shippingFee}'),
-                    InfoRow(label: 'Tổng thanh toán:', value: '${finalPrice}'),
+                    InfoRow(label: 'Tổng tiền hàng:', value: formatPrice(totalPrice)),
+                    InfoRow(label: 'Điểm tích luỹ đã dùng:', value: formatPrice(loyaltyUsed.toDouble())),
+                    InfoRow(label: 'Chiết khấu:', value: formatPrice(discount)),
+                    InfoRow(label: 'Thuế:', value: formatPrice(tax)),
+                    InfoRow(label: 'Phí vận chuyển:', value: formatPrice(shippingFee)),
+                    InfoRow(label: 'Tổng thanh toán:', value: formatPrice(finalPrice)),
                   ],
                 ),
               ),
@@ -109,7 +111,7 @@ class OrderDone extends StatelessWidget {
                 ),
                 title: Text('Sản phẩm: ${detail.variant.variantName}'),
                 subtitle: Text(
-                  'Đơn giá: ${detail.variant.sellingPrice}\nThành tiền: ${detail.variant.sellingPrice*detail.quantity}',
+                  'Đơn giá: ${formatPrice(detail.variant.sellingPrice)}\nThành tiền: ${formatPrice(detail.variant.sellingPrice*detail.quantity)}',
                 ),
               ),
             )),
