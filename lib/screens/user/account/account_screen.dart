@@ -117,7 +117,7 @@ Widget _buildProfileCard(BuildContext context, Map<String, dynamic>? userInfo) {
               children: [
                 const CircleAvatar(
                   radius: 45,
-                  backgroundImage: AssetImage('assets/images/product/laptop1.png'),
+                  backgroundImage: AssetImage('assets/images/product/acer/aceracer1.png'),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -183,7 +183,7 @@ Widget _buildOptions(BuildContext context) {
         title: const Text('Xem lịch sử đơn hàng'),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          context.go('/account/order-histories');
+          context.go('/order-history');
         },
       ),
       const SizedBox(height: 24),

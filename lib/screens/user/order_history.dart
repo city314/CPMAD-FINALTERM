@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'CustomNavbar.dart';
 import '../../utils/format_utils.dart';
+import 'package:go_router/go_router.dart';
 
 class OrderHistory extends StatefulWidget {
   const OrderHistory({super.key});
@@ -26,7 +27,7 @@ class _OrderHistoryState extends State<OrderHistory> {
   // Dữ liệu mẫu
   final String userName = 'Mai Nguyễn Phương Trang';
   final String userPhone = '03*****253';
-  final String userAvatar = 'assets/images/avatar1.png';
+  final String userAvatar = 'assets/images/product/laptop/acer/acer1.png';
   final int totalOrders = 2;
   final List<Map<String, dynamic>> orders = [
     {
@@ -128,11 +129,21 @@ class _OrderHistoryState extends State<OrderHistory> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMenuItem(Icons.home, 'Trang chủ', false, () {}),
-                  _buildMenuItem(Icons.history, 'Lịch sử mua hàng', true, () {}),
-                  _buildMenuItem(Icons.person, 'Tài khoản của bạn', false, () {}),
+                  _buildMenuItem(Icons.home, 'Trang chủ', false, () {
+                    context.go('/home');
+                  }),
+                  _buildMenuItem(Icons.history, 'Lịch sử mua hàng', true, () {
+                    context.go('/order-history');
+                  }),
+                  _buildMenuItem(Icons.person, 'Tài khoản của bạn', false, () {
+                    context.go('/account');
+                  }),
                   _buildMenuItem(Icons.support_agent, 'Hỗ trợ', false, () {}),
-                  _buildMenuItem(Icons.logout, 'Đăng xuất', false, () {}),
+                  _buildMenuItem(Icons.logout, 'Đăng xuất', false, () {
+                    // TODO: Xử lý đăng xuất
+                    // Ví dụ: CurrentUser().logout();
+                    context.go('/');
+                  }),
                 ],
               ),
             ),
@@ -374,7 +385,9 @@ class _OrderHistoryState extends State<OrderHistory> {
                                     Row(
                                       children: [
                                         ElevatedButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            context.go('/order-history/order-detail');
+                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.white,
                                             foregroundColor: Colors.red,
