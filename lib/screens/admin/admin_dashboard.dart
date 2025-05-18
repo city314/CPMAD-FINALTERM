@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -7,6 +9,7 @@ import '../../service/UserService.dart';
 import '../../service/OrderService.dart';
 import '../../service/CartService.dart';
 import '../../service/WebSocketService.dart';
+import 'package:cpmad_final/models/order.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
@@ -16,14 +19,18 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  String selectedRange = 'Tháng này';
   int totalUsers = 0;
   int totalProducts = 0;
   int totalOrders = 0;
   double totalRevenue = 0.0;
+  // Danh sách đơn hàng
+  List<Order> _ordersList = [];
 
+  // Dữ liệu cho LineChart
+  List<FlSpot> _spots = [];
   // Dữ liệu cho Pie Chart
   List<PieChartSectionData> pieSections = [];
+
   // Bộ màu cho từng phần
   final List<Color> _pieColors = [
     Colors.blue,
@@ -51,6 +58,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     'Năm nay',
     'Tùy chỉnh',
   ];
+  String selectedRange = 'Tháng này';
 
   @override
   void initState() {
@@ -66,6 +74,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       // Tải người dùng và sản phẩm chung
       final users = await UserService.fetchUsers();
       final products = await ProductService.fetchAllProducts();
+      final orders = await OrderService.fetchAllOrders();
 
       // Tải danh mục và tính số sản phẩm mỗi loại
       final categories = await ProductService.fetchAllCategory();
@@ -85,18 +94,67 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         );
       }
 
-      // // TODO: Khi OrderService có API, tải đơn hàng và doanh thu
-      // final orders = await _orderService.fetchAllOrders();
-      // totalOrders = orders.length;
-      // totalRevenue = orders.fold(0.0, (sum, o) => sum + o.totalPrice);
+      final now = DateTime.now();
+      DateTime start;
+      // Xác định start dựa vào selectedRange
+      switch (selectedRange) {
+        case 'Hôm nay':
+          start = DateTime(now.year, now.month, now.day);
+          break;
+        case 'Tuần này':
+          start = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: now.weekday - 1));
+          break;
+        case 'Tháng này':
+          start = DateTime(now.year, now.month, 1);
+          break;
+        case 'Quý này':
+          final quarter    = ((now.month - 1) ~/ 3) + 1;
+          final startMonth = (quarter - 1) * 3 + 1;
+          start = DateTime(now.year, startMonth, 1);
+          break;
+        case 'Năm nay':
+          start = DateTime(now.year, 1, 1);
+          break;
+        default: // 'Tùy chỉnh'
+        // TODO: show DatePicker để người dùng tự chọn
+          start = DateTime(now.year, now.month, now.day);
+      }
+
+      // Lọc orders trong khoảng [start, now]
+      final filteredOrders = orders.where((o) {
+        return o.timeCreate.isAfter(start.subtract(const Duration(seconds: 1)))
+            && o.timeCreate.isBefore(now.add(const Duration(seconds: 1)));
+      }).toList();
+
+      // Tính tổng doanh thu, số đơn
+      final revenue = filteredOrders.fold<double>(
+          0.0, (sum, o) => sum + o.totalPrice);
+
+      // Tính data cho LineChart (theo ngày trong khoảng)
+      final days = now.difference(start).inDays + 1;
+      final dailyRevenue = List<double>.filled(days, 0.0);
+      for (var o in filteredOrders) {
+        final idx = now.difference(o.timeCreate).inDays;
+        if (idx >= 0 && idx < days) {
+          dailyRevenue[days - 1 - idx] += o.totalPrice;
+        }
+      }
+      final spots = List<FlSpot>.generate(
+          days, (i) => FlSpot(i.toDouble(), dailyRevenue[i]));
 
       setState(() {
         totalUsers = users.length;
         totalProducts = products.length;
         pieSections = sections;
+        totalOrders   = filteredOrders.length;
+        totalRevenue  = revenue;
+        _ordersList  = filteredOrders;
+        _spots      = spots;
       });
-    } catch (e) {
-      debugPrint('Error loading dashboard data: \$e');
+    } catch (e, stackTrace) {
+      // Đây phải là string interpolation, không phải raw string
+      debugPrint('Error loading dashboard data: $e\n$stackTrace');
     }
   }
 
@@ -154,11 +212,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: DropdownButton<String>(
-                value: selectedRange,
+                value: selectedRange,     // ← dùng biến state ở đây
                 underline: const SizedBox(),
-                items: ranges.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                items: ranges
+                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                    .toList(),
                 onChanged: (value) {
-                  if (value != null) setState(() => selectedRange = value);
+                  if (value == null) return;
+                  setState(() => selectedRange = value);
+                  _loadDashboardData();      // load lại dữ liệu theo range mới
                 },
               ),
             ),
@@ -179,7 +241,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       children: [
         _DashboardCard(title: 'Tổng người dùng', value: '$totalUsers', icon: Icons.people),
         _DashboardCard(title: 'Tổng sản phẩm', value: '$totalProducts', icon: Icons.shopping_bag),
-        _DashboardCard(title: 'Đơn hàng', value: '$totalOrders', icon: Icons.shopping_cart),
+        _DashboardCard(title: 'Đơn hàng', value: totalOrders.toString(), icon: Icons.shopping_cart),
         _DashboardCard(title: 'Doanh thu', value: '₫${totalRevenue.toStringAsFixed(0)}', icon: Icons.bar_chart),
       ],
     );
@@ -204,16 +266,86 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildLineChart() {
-    return LineChart(LineChartData(
-      titlesData: FlTitlesData(show: true),
-      borderData: FlBorderData(show: false),
-      lineBarsData: [
-        LineChartBarData(spots: const [
-          FlSpot(0, 5), FlSpot(1, 6.2), FlSpot(2, 4.8), FlSpot(3, 7),
-          FlSpot(4, 6.1), FlSpot(5, 6.8), FlSpot(6, 7.2),
-        ]),
-      ],
-    ));
+    // Tính maxY tự động (lấy giá trị lớn nhất trong _spots)
+    final maxY = _spots.isNotEmpty
+        ? _spots.map((e) => e.y).reduce(max) * 1.2
+        : 5.0;
+
+    // 2. Đảm bảo gridInterval là double
+    final double gridInterval = maxY > 0.0 ? maxY / 4.0 : 1.0;
+
+    return SizedBox(
+      height: 250,
+      child: LineChart(
+        LineChartData(
+          minX: 0,
+          maxX: (_spots.length - 1).toDouble(),
+          minY: 0,
+          maxY: maxY > 0 ? maxY : 5,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: gridInterval, // chia 4 khoảng ngang
+            getDrawingHorizontalLine: (value) =>
+                FlLine(color: Colors.grey.withOpacity(0.3), strokeWidth: 1),
+          ),
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(
+              axisNameWidget: const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text('Ngày', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  const labels = ['-6', '-5', '-4', '-3', '-2', '-1', 'Hôm nay'];
+                  final idx = value.toInt();
+                  if (idx >= 0 && idx < labels.length) {
+                    return Text(labels[idx], style: const TextStyle(fontSize: 12));
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              axisNameWidget: const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child:
+                Text('Doanh thu', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 5000000, // mỗi 5 triệu
+                getTitlesWidget: (value, meta) {
+                  // chỉ show khi đúng bội số 5tr
+                  if (value % 5000000 == 0) {
+                    final m = (value / 1000000).toStringAsFixed(0);
+                    return Text('${m}M', style: const TextStyle(fontSize: 10));
+                  }
+                  return const SizedBox.shrink();
+                },
+                reservedSize: 40,
+              ),
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: _spots,
+              isCurved: true,
+              color: Theme.of(context).primaryColor,
+              barWidth: 3,
+              dotData: FlDotData(show: true),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Theme.of(context).primaryColor.withOpacity(0.2),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPieChart() {

@@ -157,6 +157,24 @@ class OrderService {
     return response.statusCode == 201;
   }
 
+  /// Lấy tất cả đơn hàng (tương đương fetchOrders) - Dashboard
+  static Future<List<Order>> fetchAllOrders() async {
+    // Nếu backend của bạn có route GET /api/orders/all thì dùng:
+    final uri = Uri.parse('$_urlOrder/all');
+    // Nếu backend chỉ có GET /api/orders thì thay thành:
+    // final uri = Uri.parse(_urlOrder);
+
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => Order.fromJson(e)).toList();
+    } else {
+      throw Exception(
+          'Không thể tải danh sách đơn hàng (status: ${response.statusCode})'
+      );
+    }
+  }
+
   static Future<List<Order>> fetchOrders() async {
     final response = await http.get(Uri.parse(_urlOrder));
     if (response.statusCode == 200) {

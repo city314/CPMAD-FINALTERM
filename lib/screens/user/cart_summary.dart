@@ -453,7 +453,7 @@ class _CheckoutPageState extends State<CartSummary> {
         children: [
           Text(label),
           Text(
-            '${value.toStringAsFixed(0)} đ',
+            formatPrice(value),
             style: bold
                 ? const TextStyle(
                 fontWeight: FontWeight.bold, color: Colors.red)

@@ -117,7 +117,7 @@ Widget _buildProfileCard(BuildContext context, Map<String, dynamic>? userInfo) {
               children: [
                 const CircleAvatar(
                   radius: 45,
-                  backgroundImage: AssetImage('assets/images/product/laptop1.png'),
+                  backgroundImage: AssetImage('assets/images/product/acer/aceracer1.png'),
                 ),
                 const SizedBox(height: 8),
                 Text(

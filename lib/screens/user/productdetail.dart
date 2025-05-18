@@ -5,7 +5,6 @@ import 'package:cpmad_final/pattern/current_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 import '../../models/product.dart';
 import '../../models/review.dart';
@@ -231,7 +230,6 @@ class _ProductDetailState extends State<ProductDetailScreen> {
     }
     return Scaffold(
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () {},
         onCategoriesTap: () {},
         onCartTap: () { context.go('/account/cart'); },
@@ -437,7 +435,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                             margin: const EdgeInsets.only(right: 12),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                              color: selectedVariantIndex == index ? Colors.blue.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
@@ -806,7 +804,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
             color: const Color(0xFFEEF9FE),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(2, 0),
               ),
@@ -992,7 +990,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                                           margin: const EdgeInsets.only(right: 12),
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                           decoration: BoxDecoration(
-                                            color: selectedVariantIndex == index ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                            color: selectedVariantIndex == index ? Colors.blue.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(20),
                                             border: Border.all(
                                               color: selectedVariantIndex == index ? Colors.blue : Colors.grey,
@@ -1045,7 +1043,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
                                   color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       blurRadius: 6,
                                       offset: Offset(0, 2),
                                     ),
@@ -1359,7 +1357,7 @@ class _ProductDetailState extends State<ProductDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.10),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),

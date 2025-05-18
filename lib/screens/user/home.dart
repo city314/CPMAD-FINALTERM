@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/product.dart';
 import '../../service/ProductService.dart';
-import 'CustomNavbar.dart';
 import '../../utils/format_utils.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,9 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchKeyword = '';
   late Future<Map<String, List<Product>>> productSummary;
   final List<String> _sliderImages = [
-    'assets/images/product/laptop/acer/acer1.png',
-    'assets/images/product/laptop/acer/acer2.png',
-    'assets/images/product/laptop/acer/acer3.png',
+    'assets/images/slider/slider1.png',
+    'assets/images/slider/slider5.png',
+    'assets/images/slider/slider2.png',
   ];
   List<Product> hotSaleProducts = [];
   List<Product> newProducts = [];
@@ -79,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final products = await ProductService().fetchProductsByCategory(id!);
         if (!mounted) return;
         setState(() {
-          _categoryProducts[id!] = products;
+          _categoryProducts[id] = products;
         });
       }
 
@@ -109,23 +108,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: CustomNavbar(
-        cartItemCount: 0,
         onHomeTap: () {
-          // TODO: Chuyển tới trang chủ
           context.go('/home');
         },
         onCategoriesTap: () {
-          // TODO: Chuyển tới trang categories
+          context.go('/products');
         },
         onCartTap: () {
-          // TODO: Chuyển tới trang giỏ hàng
           context.go('/account/cart');
         },
         onRegisterTap: () {
-          // TODO: Chuyển tới trang đăng ký
+          context.go('/signup');
         },
         onLoginTap: () {
-          // TODO: Chuyển tới trang đăng nhập
           context.go('/');
         },
         onSupportTap: () {
@@ -368,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : hotSaleDisplayCount,
                 itemBuilder: (context, index) {
                   final product = hotSaleProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -475,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : newProductDisplayCount,
                 itemBuilder: (context, index) {
                   final product = newProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -575,7 +570,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : promotionDisplayCount,
                 itemBuilder: (context, index) {
                   final product = promotionProducts[index];
-                  final imageBytes = getImageBytes(product.images!.first);
+                  final imageBytes = getImageBytes(product.images.first);
                   return InkWell(
                     onTap: () {
                       context.goNamed('product_detail', pathParameters: {'id': product.id!});
@@ -947,7 +942,7 @@ class ProductSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               catId = product.categoryId;
-              final imageBytes = getImageBytes(product.images!.first);
+              final imageBytes = getImageBytes(product.images.first);
               return InkWell(
                 onTap: () {
                   context.goNamed('product_detail', pathParameters: {'id': product.id!});
