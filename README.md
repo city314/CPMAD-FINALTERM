@@ -1,57 +1,122 @@
-# CPMAD-FINALTERM 🎓💬
+# CPMAD – Đồ Án Cuối Kỳ
 
-Một ứng dụng chat đa nền tảng được phát triển bằng Flutter, sử dụng Firebase để quản lý xác thực, lưu trữ dữ liệu và đồng bộ hóa thời gian thực. Dự án được xây dựng như bài tập cuối kỳ môn **Cross-Platform Mobile App Development**.
+> **Môn học**: CPMAD – Phát triển Ứng dụng Di động đa nền tảng
+> **Học kỳ**: Cuối Kỳ  
+> **Đề tài**: Quản lý cửa hàng Lapizone bán laptop và phụ kiện 
+> **Tác giả**:
+> - Lê Công Tuấn - 52200033
+> - Mai Nguyễn Phương Trang - 52200051
+> - Đoàn Thống Lĩnh - 52200013
 
-## 🧠 Tính năng chính
+## 📖 Tổng Quan
 
-- 🧾 **Đăng ký / Đăng nhập**
-  - Xác thực người dùng qua email và mật khẩu sử dụng Firebase Authentication.
+Kho code này chứa toàn bộ mã nguồn của đồ án cuối kỳ môn CPMAD. Ứng dụng là một hệ thống đa nền tảng (mobile & web) xây dựng bằng **Flutter**, kết nối với API **Node.js/Express** và cơ sở dữ liệu **MongoDB**.  
+Ứng dụng minh họa:
 
-- 🤝 **Gửi và nhận lời mời kết bạn**
-  - Tìm kiếm bạn bè bằng email.
-  - Gửi yêu cầu kết bạn, xác nhận hoặc từ chối.
+- Xác thực phân quyền (Khách hàng & Phục vụ/Admin)
+- Đặt đơn hàng & quản lý đơn hàng theo thời gian thực
+- Khả năng hoạt động đồng bộ khi có mạng
+- Giao diện sạch, responsive trên các kích thước màn hình
 
-- 💬 **Nhắn tin thời gian thực**
-  - Giao diện trò chuyện đơn giản và hiệu quả.
-  - Tin nhắn được lưu trữ và đồng bộ qua Firebase Cloud Firestore.
+## 🚀 Tính Năng
 
-- 🔔 **Thông báo trong ứng dụng**
-  - Hiển thị thông báo khi có tin nhắn mới hoặc lời mời kết bạn mới.
+- **Xác thực người dùng**
+  - Đăng ký/Đăng nhập bằng email & mật khẩu
+  - Phân quyền: Khách hàng và Phục vụ/Admin
 
-- 📸 **Gửi ảnh trong trò chuyện**
-  - Hỗ trợ gửi hình ảnh qua tin nhắn bằng cách mã hóa base64 (không sử dụng Firebase Storage).
+- **Thực đơn & Giỏ hàng**
+  - Duyệt sản phẩm và biến thể
+  - Thêm/Xóa món, điều chỉnh số lượng
+  - Giỏ hàng hiển thị cố định bên cạnh
 
-## 🛠️ Công nghệ sử dụng
+- **Xử lý đơn hàng**
+  - Đặt đơn
+  - Xem lịch sử đơn và cập nhật trạng thái
 
-- [Flutter](https://flutter.dev/) – Framework UI đa nền tảng.
-- [Firebase Authentication](https://firebase.google.com/products/auth)
-- [Firebase Cloud Firestore](https://firebase.google.com/products/firestore)
-- [Provider](https://pub.dev/packages/provider) – Quản lý trạng thái ứng dụng.
-- [Base64](https://pub.dev/documentation/convert/latest/convert/base64.html) – Mã hóa hình ảnh trong tin nhắn.
+- **Bảng điều khiển Admin**
+  - Xem tất cả đơn hàng
+  - Duyệt/Từ chối đơn đang chờ
+  - Quản lý sản phẩm, danh mục, biến thể
 
-## 🏁 Cài đặt và chạy ứng dụng
+- **Chế độ Offline**
+  - Lưu cache thực đơn & đơn đặt
+  - Tự động đồng bộ khi có kết nối
 
-1. **Clone dự án**:
-   ```bash
-   git clone https://github.com/city314/CPMAD-FINALTERM.git
-   cd CPMAD-FINALTERM
+## 📁 Cấu Trúc Thư Mục
 
-## Hướng dẫn build & chạy Flutter Web
+CPMAD-FINALTERM/
+├── client/ # Ứng dụng Flutter (front-end)
+│ ├── lib/
+│ │ ├── main.dart
+│ │ ├── screens/ # Các màn hình (Home, Cart, Admin,…)
+│ │ ├── services/ # Service gọi API & lưu dữ liệu local
+│ │ ├── models/ # Các lớp mô hình (Product, Order, User,…)
+│ │ └── widgets/ # Component tái sử dụng
+│ └── pubspec.yaml
+│
+├── server/ # API Node.js/Express (back-end)
+│ ├── src/
+│ │ ├── controllers/ # Xử lý route
+│ │ ├── models/ # Schema Mongoose
+│ │ ├── routes/ # Định nghĩa route
+│ │ └── utils/ # Helper, middleware, config
+│ ├── .env.example # Mẫu biến môi trường
+│ └── package.json
+│
+└── README.md # Tập tin này
 
-### 1. Build web
-```bash
-flutter build web --release
-```
 
-### 2. Chạy thử local bằng serve (npm)
-```bash
-npm install -g serve
-serve build/web
-```
+## 🔧 Bắt Đầu
 
-- Sau đó truy cập: http://localhost:3000
-- Đảm bảo chạy lệnh ở thư mục gốc dự án (nơi có thư mục build/web)
+### Yêu Cầu
 
-### 3. Deploy lên server/nginx
-- Copy toàn bộ thư mục `build/web` lên server
-- Cấu hình nginx để trỏ root về thư mục này
+- **Flutter SDK** ≥ 3.7.2
+- **Node.js** ≥ 16.x & **npm**
+- **MongoDB** (cục bộ hoặc cloud)
+
+### 1. Mở database MongoDB Compass
+- Tạo Connection mới
+- Nhập URI: mongodb+srv://thonglinhiq:linhim0028@finalflutter.bfjgcda.mongodb.net/?retryWrites=true&w=majority&appName=FinalFlutter
+
+### 2. Mở Android sutdio
+- Mở dự án qua thư mục CPMAD-FINALTERM
+
+### 3. Cài Đặt Front-end
+- flutter pub get
+
+### 3. Cài Đặt Back-end
+- cd server
+- npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io nodemon concurrently
+- npm install --save-dev concurrently
+  - sửa trong package.json
+    {
+      "dependencies": {
+      "axios": "^1.9.0",
+      "bcrypt": "^5.1.1",
+      "body-parser": "^2.2.0",
+      "cors": "^2.8.5",
+      "dotenv": "^16.5.0",
+      "express": "^5.1.0",
+      "jsonwebtoken": "^9.0.2",
+      "moment": "^2.30.1",
+      "mongoose": "^8.14.2",
+      "nodemailer": "^7.0.3",
+      "uuid": "^11.1.0"
+      },
+  
+      "scripts": {
+        "dev:user": "nodemon UserService/server.js",
+        "dev:product": "nodemon ProductService/server.js",
+        "dev:order": "nodemon OrderService/server.js",
+        "dev": "concurrently \"npm run dev:user\" \"npm run dev:product\" \"npm run dev:order\""
+        }
+      }
+    }
+- npm run dev (ở folder service)
+
+### Công Nghệ Sử Dụng
+- Flutter & Dart cho mobile/web đa nền tảng
+- Node.js, Express cho RESTful API
+- MongoDB & Mongoose cho lưu trữ dữ liệu
+- GoRouter cho điều hướng trong app
+- Provider / Riverpod (hoặc thư viện bạn chọn) cho quản lý state
