@@ -84,7 +84,7 @@ CPMAD-FINALTERM/
 ### 3. Cài Đặt Front-end
 - flutter pub get
 
-### 3. Cài Đặt Back-end
+### 4. Cài Đặt Back-end
 - cd server
 - npm install express mongoose body-parser cors dotenv uuid axios bcrypt jsonwebtoken nodemailer moment socket.io nodemon concurrently
 - npm install --save-dev concurrently
@@ -113,6 +113,10 @@ CPMAD-FINALTERM/
       }
     }
 - npm run dev (ở folder service)
+
+### 5. Chạy chương trình
+- Chọn giao diện Chrome(web)
+- Nhấn nút start trên thanh bên phải
 
 ### Công Nghệ Sử Dụng
 - Flutter & Dart cho mobile/web đa nền tảng
