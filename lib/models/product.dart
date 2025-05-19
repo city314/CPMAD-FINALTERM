@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'variant.dart';
 
 class Product {
