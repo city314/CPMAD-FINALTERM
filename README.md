@@ -18,6 +18,10 @@ Kho code này chứa toàn bộ mã nguồn của đồ án cuối kỳ môn CPM
 - Khả năng hoạt động đồng bộ khi có mạng
 - Giao diện sạch, responsive trên các kích thước màn hình
 
+## Các đường link 
+- link Canva: https://www.canva.com/design/DAGnwQdwHXQ/ABvFMyvK6QEnqhyCdgb-ZQ/edit
+- link Railway (online web - web chỉ online được 6 ngày sẽ tắt vì tài khoản của chúng em là Free Tier): https://finalflutterfrontend-production.up.railway.app/
+
 ## 🚀 Tính Năng
 
 - **Xác thực người dùng**
